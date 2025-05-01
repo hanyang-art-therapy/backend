@@ -6,8 +6,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 @SpringBootApplication
 public class HanyangArttherapyApplication {
 
-	public static void main(String[] args) {
-		SpringApplication.run(HanyangArttherapyApplication.class, args);
-	}
-
+  public static void main(String[] args) {
+    SpringApplication.run(HanyangArttherapyApplication.class, args);
+  }
 }
