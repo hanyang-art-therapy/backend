@@ -1,0 +1,52 @@
+### Intellij ###
+.idea/
+*.iml
+*.ipr
+*.iws
+out/
+
+### Windows ###
+Thumbs.db
+ehthumbs.db
+$RECYCLE.BIN/
+Desktop.ini
+
+### macOS ###
+.DS_Store
+.AppleDouble
+.fseventsd
+.Spotlight-V100
+
+### Gradle ###
+.gradle
+build/
+gradle-app.setting
+gradletasknamecache
+
+### Maven ###
+.m2/
+target/
+
+### 로그 파일 ###
+*.log
+
+### 빌드 아티팩트 ###
+*.class
+*.jar
+*.war
+
+### 패키징 파일 ###
+*.zip
+*.tar.gz
+*.rar
+
+### IDE 관련 설정 ###
+.vscode/
+
+### 환경 설정 파일 ###
+.env
+*.yml
+*.properties
+
+# 빌드 폴더 제외 (소스 코드만 유지)
+**/build/
