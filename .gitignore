@@ -45,7 +45,6 @@ target/
 
 ### 환경 설정 파일 ###
 .env
-*.yml
 *.properties
 
 # 빌드 폴더 제외 (소스 코드만 유지)
