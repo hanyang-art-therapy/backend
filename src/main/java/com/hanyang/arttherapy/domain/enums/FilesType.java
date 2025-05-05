@@ -13,4 +13,8 @@ public enum FilesType {
   FilesType(String directory) {
     this.directory = directory;
   }
+
+  public String getFullPath(String basePath, String fileName) {
+    return basePath + "/" + directory + "/" + fileName;
+  }
 }
