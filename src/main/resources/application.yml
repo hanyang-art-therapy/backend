@@ -19,6 +19,9 @@ spring:
     multipart:
       max-file-size: 5242880 # 단일 요청 5MB 5242880
 
+  profiles:
+    active: local  # 기본적으로 'local' 프로파일을 활성화
+
 # 파일 저장 경로 추가
 app:
   storage:
