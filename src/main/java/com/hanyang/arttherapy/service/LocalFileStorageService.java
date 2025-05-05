@@ -1,5 +1,6 @@
 package com.hanyang.arttherapy.service;
 
+import java.io.File;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -63,6 +64,15 @@ public class LocalFileStorageService implements FileStorageService {
     Files file = getFileById(filesNo);
     file.markAsDeleted();
     filesRepository.save(file);
+  }
+
+  @Override
+  public void deletedFileFromSystem(Files file) {
+    File fileToDelete = new File(file.getUrl());
+    boolean deleted = fileToDelete.delete();
+    if (!deleted) {
+      throw new CustomException(FileSystemExceptionType.FILE_DELETE_FAILED);
+    }
   }
 
   private Files getFileById(Long filesNo) {
