@@ -25,4 +25,10 @@ public class FileController {
       @RequestParam("filesType") FilesType filesType) {
     return ResponseEntity.ok(fileStorageService.store(files, filesType));
   }
+
+  @DeleteMapping("/{filesNo}")
+  public ResponseEntity<Void> softDelete(@PathVariable Long filesNo) {
+    fileStorageService.softDeleteFile(filesNo);
+    return ResponseEntity.ok().build();
+  }
 }

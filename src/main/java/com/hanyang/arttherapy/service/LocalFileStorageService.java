@@ -1,5 +1,6 @@
 package com.hanyang.arttherapy.service;
 
+import java.io.File;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -9,6 +10,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.hanyang.arttherapy.common.exception.CustomException;
+import com.hanyang.arttherapy.common.exception.exceptionType.FileSystemExceptionType;
 import com.hanyang.arttherapy.domain.*;
 import com.hanyang.arttherapy.domain.enums.*;
 import com.hanyang.arttherapy.dto.response.*;
@@ -54,6 +57,28 @@ public class LocalFileStorageService implements FileStorageService {
             .collect(Collectors.toList());
 
     return FileResponseListDto.of(fileResponseDtos);
+  }
+
+  @Override
+  public void softDeleteFile(Long filesNo) {
+    Files file = getFileById(filesNo);
+    file.markAsDeleted();
+    filesRepository.save(file);
+  }
+
+  @Override
+  public void deletedFileFromSystem(Files file) {
+    File fileToDelete = new File(file.getUrl());
+    boolean deleted = fileToDelete.delete();
+    if (!deleted) {
+      throw new CustomException(FileSystemExceptionType.FILE_DELETE_FAILED);
+    }
+  }
+
+  private Files getFileById(Long filesNo) {
+    return filesRepository
+        .findByFilesNoAndUseYn(filesNo, true)
+        .orElseThrow(() -> new CustomException(FileSystemExceptionType.FILE_NOT_FOUND));
   }
 
   private Files convertToEntity(
