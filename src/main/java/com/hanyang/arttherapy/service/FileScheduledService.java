@@ -5,10 +5,10 @@ import java.time.temporal.ChronoUnit;
 import java.util.*;
 
 import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.*;
 
-import com.hanyang.arttherapy.domain.Files;
-import com.hanyang.arttherapy.repository.FilesRepository;
+import com.hanyang.arttherapy.domain.*;
+import com.hanyang.arttherapy.repository.*;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -27,14 +27,29 @@ public class FileScheduledService {
   public void deleteFile() {
     LocalDateTime cutoffDate = getCutoffDate(FILE_EXPIRATION_DAYS);
 
-    List<Files> oldFiles =
-        filesRepository.findByCreatedAtBeforeAndDelYnAndUseYn(cutoffDate, true, false);
+    List<Files> filesToDelete = findExpiredFilesToDelete(cutoffDate);
 
-    oldFiles.forEach(
-        file -> {
-          fileStorageService.deletedFileFromSystem(file);
-          filesRepository.delete(file);
-        });
+    List<Files> unusedFiles = findUnusedFiles(cutoffDate);
+
+    deleteFiles(filesToDelete);
+    deleteFiles(unusedFiles);
+  }
+
+  private List<Files> findUnusedFiles(LocalDateTime cutoffDate) {
+    return filesRepository.findByCreatedAtBeforeAndUseYn(cutoffDate, false);
+  }
+
+  private List<Files> findExpiredFilesToDelete(LocalDateTime cutoffDate) {
+    return filesRepository.findByCreatedAtBeforeAndDelYn(cutoffDate, true);
+  }
+
+  private void deleteFiles(List<Files> files) {
+    files.forEach(this::deleteFileFromSystem);
+  }
+
+  private void deleteFileFromSystem(Files files) {
+    fileStorageService.deletedFileFromSystem(files);
+    filesRepository.delete(files);
   }
 
   private LocalDateTime getCutoffDate(int days) {
