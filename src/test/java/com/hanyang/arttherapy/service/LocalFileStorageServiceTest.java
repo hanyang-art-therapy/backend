@@ -11,6 +11,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.hanyang.arttherapy.common.exception.CustomException;
+import com.hanyang.arttherapy.common.exception.exceptionType.FileSystemExceptionType;
 import com.hanyang.arttherapy.domain.enums.*;
 import com.hanyang.arttherapy.dto.response.*;
 import com.hanyang.arttherapy.repository.*;
@@ -49,5 +51,17 @@ class LocalFileStorageServiceTest {
     File savedFile = new File(storedFile.url());
     assertThat(savedFile).exists();
     assertThat(savedFile.isFile()).isTrue();
+  }
+
+  @Test
+  void invalidFileExtension() {
+    FilesType fileType = FilesType.ART;
+
+    MultipartFile invalidFile =
+        new MockMultipartFile("file", "invalid.mp4", "video/mp4", "test content".getBytes());
+
+    assertThatThrownBy(() -> fileStorageService.store(List.of(invalidFile), fileType))
+        .isInstanceOf(CustomException.class)
+        .hasMessageContaining(FileSystemExceptionType.INVALID_FILE_EXTENSION.getMessage());
   }
 }
