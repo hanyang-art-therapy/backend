@@ -9,10 +9,12 @@ import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.hanyang.arttherapy.common.exception.CustomException;
-import com.hanyang.arttherapy.common.exception.exceptionType.FileSystemExceptionType;
+import com.hanyang.arttherapy.common.exception.*;
+import com.hanyang.arttherapy.common.exception.exceptionType.*;
+import com.hanyang.arttherapy.domain.*;
 import com.hanyang.arttherapy.domain.enums.*;
 import com.hanyang.arttherapy.dto.response.*;
 import com.hanyang.arttherapy.repository.*;
@@ -26,6 +28,7 @@ class LocalFileStorageServiceTest {
   @Autowired FilesRepository fileRepository;
 
   private MultipartFile multipartFile;
+  private Files testFile;
 
   @BeforeEach
   void init() {
@@ -63,5 +66,31 @@ class LocalFileStorageServiceTest {
     assertThatThrownBy(() -> fileStorageService.store(List.of(invalidFile), fileType))
         .isInstanceOf(CustomException.class)
         .hasMessageContaining(FileSystemExceptionType.INVALID_FILE_EXTENSION.getMessage());
+  }
+
+  @Test
+  @Transactional
+  void softDeleteFile() {
+    createTestFile();
+
+    fileStorageService.softDeleteFile(testFile.getFilesNo());
+
+    Files deletedFile = fileRepository.findById(testFile.getFilesNo()).orElseThrow();
+
+    assertThat(deletedFile.isUseYn()).isFalse();
+    assertThat(deletedFile.isDelYn()).isTrue();
+  }
+
+  private void createTestFile() {
+    testFile =
+        Files.builder()
+            .name("test file.jpg")
+            .url("art/testFile.jpg")
+            .filesSize(12345L)
+            .extension("jpg")
+            .useYn(true)
+            .delYn(false)
+            .build();
+    fileRepository.save(testFile);
   }
 }
