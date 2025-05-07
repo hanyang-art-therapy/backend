@@ -70,6 +70,12 @@ public class ArtistsService {
         .orElseThrow(() -> new CustomException(ArtistsException.ARTIST_NOT_FOUND));
   }
 
+  public Artists findByStudentNo(String studentNo) {
+    return artistsRepository
+        .findByStudentNo(studentNo)
+        .orElseThrow(() -> new CustomException(ArtistsException.ARTIST_NOT_FOUND));
+  }
+
   private Artists saveArtist(Artists artist) {
     try {
       return artistsRepository.save(artist);
