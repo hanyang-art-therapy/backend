@@ -52,6 +52,11 @@ public class ArtistsService {
     artistsRepository.save(artist);
   }
 
+  public void deleteAritst(Long artistsNo) {
+    Artists artist = findArtistById(artistsNo);
+    artistsRepository.delete(artist);
+  }
+
   private static void updateArtistInfo(Artists artist, ArtistRequestDto dto) {
     artist.updateArtistInfo(
         Optional.ofNullable(dto.artistName()),
