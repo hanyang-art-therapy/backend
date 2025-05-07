@@ -1,15 +1,28 @@
 spring:
-  web:
-    resources:
-      add-mappings: false
+#  web:
+#    resources:
+#      add-mappings: false
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: mingke48@gmail.com
+    password: xmfvdagvccuomiho
+    properties:
+      mail.smtp.auth: true
+      mail.smtp.starttls.enable: true
+
+  jwt:
+    secret: secretkey!jwt@43783732y874r4rutd44343
+
   datasource:
-    url: ${DB_URL}
     driver-class-name: com.mysql.cj.jdbc.Driver
-    username: ${DB_USERNAME}
-    password: ${DB_PASSWORD}
+    url: jdbc:mysql://localhost:3306/hanyang?serverTimezone=UTC&characterEncoding=UTF-8
+    username: root
+    password: 1234
+
   jpa:
-    database-platform: org.hibernate.dialect.MySQL5InnoDBDialect
+    database-platform: org.hibernate.dialect.MySQL8Dialect
     hibernate:
-      ddl-auto: create
-    defer-datasource-initialization: true
+      ddl-auto: create  # create는 매번 테이블 삭제 후 생성이므로 주의
     show-sql: true
+    defer-datasource-initialization: true
