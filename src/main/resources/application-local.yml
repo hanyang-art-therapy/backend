@@ -1,0 +1,9 @@
+# application-local.yml
+spring:
+  app:
+    storage:
+      path: /local/storage/files
+
+  servlet:
+    multipart:
+      max-file-size: 5242880  # 파일 업로드 제한 5MB
