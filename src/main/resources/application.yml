@@ -1,15 +1,30 @@
 # application.yml (공통 설정)
 spring:
-  web:
-    resources:
-      add-mappings: false
+#  web:
+#    resources:
+#      add-mappings: false
+
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username:
+    password:
+    properties:
+      mail.smtp.auth: true
+      mail.smtp.starttls.enable: true
+
+  jwt:
+    secret:
+
   datasource:
-    url: ${DB_URL}
     driver-class-name: com.mysql.cj.jdbc.Driver
-    username: ${DB_USERNAME}
-    password: ${DB_PASSWORD}
+    url: jdbc:mysql://localhost:3306/hanyang?serverTimezone=UTC&characterEncoding=UTF-8
+    username:
+    password:
+
   jpa:
 #    database-platform: org.hibernate.dialect.MySQL5InnoDBDialect
+    database-platform: org.hibernate.dialect.MySQL8Dialect
     hibernate:
       ddl-auto: create
     defer-datasource-initialization: true
