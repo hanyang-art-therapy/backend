@@ -1,5 +1,6 @@
 package com.hanyang.arttherapy.domain;
 
+import java.util.List;
 import java.util.Optional;
 
 import jakarta.persistence.*;
@@ -25,6 +26,9 @@ public class Artists {
 
   @Column(nullable = false)
   private int cohort;
+
+  @OneToMany(mappedBy = "artist", fetch = FetchType.LAZY)
+  private List<ArtArtistRel> artArtistRels;
 
   public void updateArtistInfo(
       Optional<String> artistName, Optional<String> studentNo, Optional<Integer> cohort) {

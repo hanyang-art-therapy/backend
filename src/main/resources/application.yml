@@ -1,8 +1,8 @@
 # application.yml (공통 설정)
 spring:
-#  web:
-#    resources:
-#      add-mappings: false
+  #  web:
+  #    resources:
+  #      add-mappings: false
 
   mail:
     host: smtp.gmail.com
@@ -23,7 +23,7 @@ spring:
     password:
 
   jpa:
-#    database-platform: org.hibernate.dialect.MySQL5InnoDBDialect
+    #    database-platform: org.hibernate.dialect.MySQL5InnoDBDialect
     database-platform: org.hibernate.dialect.MySQL8Dialect
     hibernate:
       ddl-auto: create
