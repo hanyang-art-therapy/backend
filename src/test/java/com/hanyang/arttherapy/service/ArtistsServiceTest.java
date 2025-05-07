@@ -52,4 +52,20 @@ class ArtistsServiceTest {
     assertThat(response.studentNo()).isEqualTo(savedArtist.getStudentNo());
     assertThat(response.cohort()).isEqualTo(savedArtist.getCohort());
   }
+
+  @Test
+  void updateArtist() {
+    artistsService.registerArtist(artistRequestDto);
+    savedArtist = artistsService.findByStudentNo(artistRequestDto.studentNo());
+
+    ArtistRequestDto updatedDto = new ArtistRequestDto("김한양", "2015151515", 25);
+
+    artistsService.updateArtist(savedArtist.getArtistsNo(), updatedDto);
+
+    savedArtist = artistsService.findByStudentNo(updatedDto.studentNo());
+
+    assertThat(savedArtist.getArtistName()).isEqualTo(updatedDto.artistName());
+    assertThat(savedArtist.getCohort()).isEqualTo(updatedDto.cohort());
+    assertThat(savedArtist.getStudentNo()).isEqualTo(updatedDto.studentNo());
+  }
 }
