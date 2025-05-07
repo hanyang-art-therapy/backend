@@ -2,14 +2,6 @@ spring:
 #  web:
 #    resources:
 #      add-mappings: false
-  mail:
-    host: smtp.gmail.com
-    port: 587
-    username: mingke48@gmail.com
-    password: xmfvdagvccuomiho
-    properties:
-      mail.smtp.auth: true
-      mail.smtp.starttls.enable: true
 
   jwt:
     secret: secretkey!jwt@43783732y874r4rutd44343
