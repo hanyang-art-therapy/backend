@@ -13,10 +13,9 @@ public class GalleriesService {
 
   private final GalleriesRepository galleriesRepository;
 
-  // 전시회 수정
-  public Galleries update(Long id, Galleries updated) {
+  // 전시회 삭제
+  public void delete(Long id) {
     Galleries gallery = getGalleryById(id);
-    gallery.update(updated.getTitle(), updated.getStartDate(), updated.getEndDate());
-    return galleriesRepository.save(gallery);
+    galleriesRepository.delete(gallery);
   }
 }
