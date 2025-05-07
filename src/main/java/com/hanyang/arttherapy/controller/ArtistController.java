@@ -32,4 +32,11 @@ public class ArtistController {
   public ResponseEntity<ArtistResponseListDto> getArtists() {
     return ResponseEntity.ok(artistsService.getArtists());
   }
+
+  @PatchMapping("/{artistsNo}")
+  public ResponseEntity<Void> updateArtist(
+      @PathVariable Long artistsNo, @RequestBody ArtistRequestDto dto) {
+    artistsService.updateArtist(artistsNo, dto);
+    return ResponseEntity.ok().build();
+  }
 }
