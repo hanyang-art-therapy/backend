@@ -29,6 +29,16 @@ public class ArtistsService {
     saveArtist(artist);
   }
 
+  public ArtistResponseDto getArtist(Long artistNo) {
+    return ArtistResponseDto.of(findArtistById(artistNo));
+  }
+
+  private Artists findArtistById(Long artistNo) {
+    return artistsRepository
+        .findById(artistNo)
+        .orElseThrow(() -> new CustomException(ArtistsException.ARTIST_NOT_FOUND));
+  }
+
   private Artists saveArtist(Artists artist) {
     try {
       return artistsRepository.save(artist);
