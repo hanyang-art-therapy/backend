@@ -1,7 +1,5 @@
 package com.hanyang.arttherapy.controller;
 
-import java.util.List;
-
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -17,17 +15,10 @@ public class GalleriesController {
 
   private final GalleriesService galleriesService;
 
-  //  전시회 전체 조회
-  @GetMapping
-  public ResponseEntity<List<Galleries>> getAllGalleries() {
-    List<Galleries> galleries = galleriesService.getAllGalleries();
-    return ResponseEntity.ok(galleries);
-  }
-
-  //  전시회 개별 조회
-  @GetMapping("/{id}")
-  public ResponseEntity<Galleries> getGalleryById(@PathVariable Long id) {
-    Galleries gallery = galleriesService.getGalleryById(id);
-    return ResponseEntity.ok(gallery);
+  //  전시회 수정
+  @PutMapping("/{id}")
+  public ResponseEntity<Galleries> update(@PathVariable Long id, @RequestBody Galleries updated) {
+    Galleries updatedGallery = galleriesService.update(id, updated);
+    return ResponseEntity.ok(updatedGallery);
   }
 }
