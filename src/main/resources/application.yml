@@ -4,13 +4,13 @@ spring:
 #      add-mappings: false
 
   jwt:
-    secret: secretkey!jwt@43783732y874r4rutd44343
+    secret: secretkey!jwt@437
 
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://localhost:3306/hanyang?serverTimezone=UTC&characterEncoding=UTF-8
-    username: root
-    password: 1234
+    username:
+    password:
 
   jpa:
     database-platform: org.hibernate.dialect.MySQL8Dialect
