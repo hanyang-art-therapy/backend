@@ -41,9 +41,27 @@ public class ArtistsService {
     return ArtistResponseListDto.of(responseDtos);
   }
 
-  private Artists findArtistById(Long artistNo) {
+  public void updateArtist(long artistsNo, ArtistRequestDto dto) {
+    Artists artist = findArtistById(artistsNo);
+
+    Optional.ofNullable(dto.studentNo())
+        .filter(newStudentNo -> !newStudentNo.equals(artist.getStudentNo()))
+        .ifPresent(this::isStudentNoDuplicate);
+
+    updateArtistInfo(artist, dto);
+    artistsRepository.save(artist);
+  }
+
+  private static void updateArtistInfo(Artists artist, ArtistRequestDto dto) {
+    artist.updateArtistInfo(
+        Optional.ofNullable(dto.artistName()),
+        Optional.ofNullable(dto.studentNo()),
+        Optional.ofNullable(dto.cohort()));
+  }
+
+  private Artists findArtistById(Long artistsNo) {
     return artistsRepository
-        .findById(artistNo)
+        .findById(artistsNo)
         .orElseThrow(() -> new CustomException(ArtistsException.ARTIST_NOT_FOUND));
   }
 
