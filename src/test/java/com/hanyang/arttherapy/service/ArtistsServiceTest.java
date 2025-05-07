@@ -68,4 +68,18 @@ class ArtistsServiceTest {
     assertThat(savedArtist.getCohort()).isEqualTo(updatedDto.cohort());
     assertThat(savedArtist.getStudentNo()).isEqualTo(updatedDto.studentNo());
   }
+
+  @Test
+  void deleteArtist() {
+    artistsService.registerArtist(artistRequestDto);
+    savedArtist = artistsService.findByStudentNo(artistRequestDto.studentNo());
+
+    artistsService.deleteAritst(savedArtist.getArtistsNo());
+
+    Assertions.assertThrows(
+        CustomException.class,
+        () -> {
+          artistsService.findByStudentNo(artistRequestDto.studentNo());
+        });
+  }
 }
