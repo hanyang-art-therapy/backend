@@ -4,8 +4,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import com.hanyang.arttherapy.dto.request.*;
-import com.hanyang.arttherapy.dto.response.ArtistResponseDto;
-import com.hanyang.arttherapy.dto.response.ArtistResponseListDto;
+import com.hanyang.arttherapy.dto.response.*;
 import com.hanyang.arttherapy.service.ArtistsService;
 
 import lombok.RequiredArgsConstructor;
@@ -37,6 +36,12 @@ public class ArtistController {
   public ResponseEntity<Void> updateArtist(
       @PathVariable Long artistsNo, @RequestBody ArtistRequestDto dto) {
     artistsService.updateArtist(artistsNo, dto);
+    return ResponseEntity.ok().build();
+  }
+
+  @DeleteMapping("/{artistsNo}")
+  public ResponseEntity<Void> deleteArtist(@PathVariable Long artistsNo) {
+    artistsService.deleteAritst(artistsNo);
     return ResponseEntity.ok().build();
   }
 }
