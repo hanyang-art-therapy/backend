@@ -1,6 +1,7 @@
 package com.hanyang.arttherapy.service;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,6 +28,23 @@ public class ArtistsService {
     isStudentNoDuplicate(dto.studentNo());
     Artists artist = convertToEntity(dto);
     saveArtist(artist);
+  }
+
+  public ArtistResponseDto getArtist(Long artistNo) {
+    return ArtistResponseDto.of(findArtistById(artistNo));
+  }
+
+  public ArtistResponseListDto getArtists() {
+    List<Artists> artists = artistsRepository.findAll();
+    List<ArtistResponseDto> responseDtos =
+        artists.stream().map(ArtistResponseDto::of).collect(Collectors.toList());
+    return ArtistResponseListDto.of(responseDtos);
+  }
+
+  private Artists findArtistById(Long artistNo) {
+    return artistsRepository
+        .findById(artistNo)
+        .orElseThrow(() -> new CustomException(ArtistsException.ARTIST_NOT_FOUND));
   }
 
   private Artists saveArtist(Artists artist) {
