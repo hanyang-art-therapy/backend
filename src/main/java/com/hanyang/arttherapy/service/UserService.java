@@ -9,8 +9,11 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.hanyang.arttherapy.common.exception.CustomException;
+import com.hanyang.arttherapy.common.exception.exceptionType.UserException;
 import com.hanyang.arttherapy.domain.Users;
-import com.hanyang.arttherapy.dto.request.PasswordResetRequest;
+import com.hanyang.arttherapy.dto.request.userRequest.IdRequest;
+import com.hanyang.arttherapy.dto.request.userRequest.PasswordResetRequest;
 import com.hanyang.arttherapy.repository.UserRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -36,8 +39,24 @@ public class UserService {
   }
 
   // 아이디 찾기
-  public Users findByEmailAndUserName(String email, String userName) {
-    return userRepository.findByEmailAndUserName(email, userName).orElse(null); // 메서드 이름 수정
+  public String findByEmailAndUserName(IdRequest request) {
+    Users user =
+        userRepository
+            .findByEmailAndUserName(request.email(), request.userName())
+            .orElseThrow(() -> new CustomException(UserException.USER_NOT_FOUND));
+
+    String originalId = user.getUserId();
+    String maskedId = maskUserId(originalId);
+
+    return maskedId;
+  }
+
+  // 아이디 *처리
+  private String maskUserId(String originalId) {
+    if (originalId.length() <= 4) {
+      return originalId;
+    }
+    return originalId.substring(0, 4) + "*".repeat(originalId.length() - 4);
   }
 
   // 비밀번호 찾기
@@ -46,7 +65,7 @@ public class UserService {
     Optional<Users> userOpt = userRepository.findByUserIdAndEmail(userId, email);
 
     if (userOpt.isEmpty()) {
-      throw new IllegalArgumentException("아이디 또는 이메일이 일치하는 사용자가 없습니다.");
+      throw new CustomException(UserException.USER_NOT_FOUND);
     }
 
     Users user = userOpt.get();
@@ -81,27 +100,34 @@ public class UserService {
 
   // 이메일로 임시 비밀번호 보내기
   private void sendTemporaryPasswordEmail(String email, String temporaryPassword) {
-    SimpleMailMessage message = new SimpleMailMessage();
-    message.setTo(email);
-    message.setSubject("임시 비밀번호 안내");
-    message.setText("안녕하세요.\n\n임시 비밀번호는 " + temporaryPassword + " 입니다.");
-    message.setFrom("mingke48@gmail.com");
-    mailSender.send(message);
+    try {
+      SimpleMailMessage message = new SimpleMailMessage();
+      message.setTo(email);
+      message.setSubject("임시 비밀번호 안내");
+      message.setText("안녕하세요.\n\n임시 비밀번호는 " + temporaryPassword + " 입니다.");
+      message.setFrom("mingke48@gmail.com");
+      mailSender.send(message);
+    } catch (Exception e) {
+      throw new CustomException(UserException.EMAIL_SEND_FAIL);
+    }
   }
 
-  public void resetPassword(PasswordResetRequest request) {
+  public String resetPassword(PasswordResetRequest request) {
+
     Users user =
         userRepository
             .findByUserId(request.userId())
-            .orElseThrow(() -> new IllegalArgumentException("해당 사용자가 존재하지 않습니다."));
+            .orElseThrow(() -> new CustomException(UserException.USER_NOT_FOUND));
 
     // 현재 비밀번호 확인
     if (!bCryptpasswordEncoder.matches(request.currentPassword(), user.getPassword())) {
-      throw new IllegalArgumentException("현재 비밀번호가 일치하지 않습니다.");
+      throw new CustomException(UserException.ERROR_PASSWORD);
     }
 
     // 새 비밀번호로 변경
     user.setPassword(bCryptpasswordEncoder.encode(request.newPassword()));
     userRepository.save(user);
+
+    return "비밀번호가 변경되었습니다.";
   }
 }
