@@ -12,18 +12,23 @@ import org.springframework.stereotype.Service;
 
 import com.hanyang.arttherapy.domain.ArtArtistRel;
 import com.hanyang.arttherapy.domain.Arts;
+import com.hanyang.arttherapy.domain.Files;
 import com.hanyang.arttherapy.dto.response.*;
 import com.hanyang.arttherapy.repository.ArtsRepository;
+import com.hanyang.arttherapy.repository.FilesRepository;
 
 @Service
 public class ArtsService {
 
   private final ArtsRepository artsRepository;
+  private final FilesRepository filesRepository;
   private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy.MM.dd");
   private final ReviewService reviewService;
 
-  public ArtsService(ArtsRepository artsRepository, ReviewService reviewService) {
+  public ArtsService(
+      ArtsRepository artsRepository, FilesRepository filesRepository, ReviewService reviewService) {
     this.artsRepository = artsRepository;
+    this.filesRepository = filesRepository;
     this.reviewService = reviewService;
   }
 
@@ -51,7 +56,6 @@ public class ArtsService {
               response.setGalleries(galleryDto);
             });
 
-    // 작가마다 같은 작품에 대해 설명이 다를 수 있으나 우선 첫번째 설명만 가져오도록 매핑
     List<String> descriptions =
         arts.getArtArtistRelList().stream()
             .map(ArtArtistRel::getDescription)
@@ -66,15 +70,23 @@ public class ArtsService {
 
     response.setArtists(artistDtos);
 
-    Optional.ofNullable(arts.getFile())
-        .ifPresent(
-            file -> {
-              if (file.getFilesType() == null) {
-                throw new IllegalStateException("FilesType이 null입니다.");
-              }
-              FileResponseDto fileDto = FileResponseDto.of(file);
-              response.setFile(fileDto);
-            });
+    List<Files> fileDetails =
+        filesRepository.findByFilesNoInAndUseYn(
+            artsRepository.findFileIdsByArtsNo(arts.getArtsNo()), true);
+
+    List<FileResponseDto> fileDtos =
+        fileDetails.stream()
+            .map(
+                file ->
+                    new FileResponseDto(
+                        file.getFilesNo(),
+                        file.getName(),
+                        file.getUrl(),
+                        file.getFilesSize(),
+                        file.getExtension(),
+                        file.getFilesType()))
+            .collect(Collectors.toList());
+    response.setFiles(fileDtos);
 
     Page<ReviewResponseDto> reviewPage = reviewService.getReviews(artsNo, 0, 5);
     response.setReviews(reviewPage.getContent());

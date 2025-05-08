@@ -15,6 +15,6 @@ public class ArtsDetailResponseDto {
   private String uploadedAt;
   private GallerySimpleDto galleries;
   private List<ArtistResponseDto> artists;
-  private FileResponseDto file;
+  private List<FileResponseDto> files;
   private List<ReviewResponseDto> reviews;
 }

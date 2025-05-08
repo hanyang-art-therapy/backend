@@ -1,6 +1,7 @@
 package com.hanyang.arttherapy.dto.response;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import lombok.*;
 
@@ -15,5 +16,5 @@ public class ReviewResponseDto {
   private String reviewText;
   private LocalDateTime createdAt;
   private String userName;
-  private FileResponseDto file;
+  private List<FileResponseDto> files;
 }
