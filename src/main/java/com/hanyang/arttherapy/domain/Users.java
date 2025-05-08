@@ -2,6 +2,9 @@ package com.hanyang.arttherapy.domain;
 
 import jakarta.persistence.*;
 
+import com.hanyang.arttherapy.domain.enums.Role;
+import com.hanyang.arttherapy.domain.enums.UserStatus;
+
 import lombok.Getter;
 import lombok.Setter;
 

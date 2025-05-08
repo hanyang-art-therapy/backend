@@ -1,0 +1,577 @@
+[33mcommit 5afa5c2b6d531b2570d6afd5c9f6d9ac22bd5a69[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mfeat/#8[m[33m, [m[1;31morigin/feat/#8[m[33m)[m
+Merge: 5c8d011 aa4ccfd
+Author: MoonMinah <mingke48@gmail.com>
+Date:   Wed May 7 15:00:49 2025 +0900
+
+    [FEAT]#8
+
+[33mcommit 5c8d0113c38ac9f9eb1ba021f812aec41ae294fa[m
+Author: MoonMinah <mingke48@gmail.com>
+Date:   Wed May 7 14:06:16 2025 +0900
+
+    [FEAT] #8
+
+[33mcommit 3f7a90a8e44476b40c8a11483895d6b698b45c03[m
+Author: MoonMinah <mingke48@gmail.com>
+Date:   Wed May 7 14:05:06 2025 +0900
+
+    [FEAT]#8
+
+[33mcommit 0d675bfc119a20366fd3c8fd90cff426a3d25c53[m
+Author: MoonMinah <mingke48@gmail.com>
+Date:   Wed May 7 13:56:47 2025 +0900
+
+    [FEAT]#8
+
+[33mcommit aa4ccfd27b6b90c5f6eee861c025053d2f2270cc[m
+Merge: 013afc1 ab8901e
+Author: bbwest0709 <150890966+bbwest0709@users.noreply.github.com>
+Date:   Wed May 7 13:48:27 2025 +0900
+
+    [MERGE] test/#27
+    
+    [TEST] 작가 기능 테스트
+
+[33mcommit ab8901e19bb17c57aa0c7c0601725f9f4340d846[m
+Author: SeoJeongYu <bbwest0709@gmail.com>
+Date:   Wed May 7 13:45:12 2025 +0900
+
+    [TEST] 작가 삭제 테스트
+
+[33mcommit 8882c9c4db1a91ac08538d5d0eadc7f7e7913637[m
+Author: SeoJeongYu <bbwest0709@gmail.com>
+Date:   Wed May 7 13:44:36 2025 +0900
+
+    [TEST] 작가 수정 테스트
+
+[33mcommit 3fee9d3ddd5d77b3d29d75a819ecdfe6e9ea5491[m
+Author: SeoJeongYu <bbwest0709@gmail.com>
+Date:   Wed May 7 13:43:42 2025 +0900
+
+    [TEST] 작가 개별 조회 테스트
+
+[33mcommit 548746a46ebcdb2382264b28d27a1ad970106730[m
+Author: SeoJeongYu <bbwest0709@gmail.com>
+Date:   Wed May 7 13:43:18 2025 +0900
+
+    [TEST] 작가 등록 테스트
+
+[33mcommit d8a5b326ea5b7f71d1ba22a5df3cb8480d5737cc[m
+Author: SeoJeongYu <bbwest0709@gmail.com>
+Date:   Wed May 7 13:42:46 2025 +0900
+
+    [FEAT] 학번으로 작가 조회 메서드 추가
+
+[33mcommit 013afc17fbd14883e9df372ff9ffdb06e37727a8[m
+Merge: 21faf14 ddcbbac
+Author: bbwest0709 <150890966+bbwest0709@users.noreply.github.com>
+Date:   Wed May 7 13:33:36 2025 +0900
+
+    [MERGE] feat/#22
+    
+    [FEAT] 작가 삭제
+
+[33mcommit ddcbbac7b58fa2c1d3ebcb70609dcfb92dccfe9d[m
+Author: SeoJeongYu <bbwest0709@gmail.com>
+Date:   Wed May 7 13:31:26 2025 +0900
+
+    [FEAT] 작가 삭제 API
+
+[33mcommit 0f06b9efac2a37acafe8be6e70379a04cc44f266[m
+Author: SeoJeongYu <bbwest0709@gmail.com>
+Date:   Wed May 7 13:31:04 2025 +0900
+
+    [FEAT] 작가 삭제 기능
+
+[33mcommit 21faf14b7c2413b6c07ba2ac41a800425d1fe8c2[m
+Merge: 7ea5605 e8e309e
+Author: bbwest0709 <150890966+bbwest0709@users.noreply.github.com>
+Date:   Wed May 7 13:24:02 2025 +0900
+
+    [MERGE] feat/#21
+    
+    [FEAT] 작가 정보 수정
+
+[33mcommit e8e309ed8ee59a88e16fa7a4c51f06d106624bda[m
+Author: SeoJeongYu <bbwest0709@gmail.com>
+Date:   Wed May 7 13:16:51 2025 +0900
+
+    [FEAT] 작가 정보 수정 API
+
+[33mcommit c8051f27d437c13c67b3e8233f42de85f156e17d[m
+Author: SeoJeongYu <bbwest0709@gmail.com>
+Date:   Wed May 7 13:16:42 2025 +0900
+
+    [FEAT] 작가 정보 수정 기능
+
+[33mcommit 7ea56059a8371ccade48aea5c5f43207cc684102[m
+Merge: 95b5d73 11c5ba5
+Author: bbwest0709 <150890966+bbwest0709@users.noreply.github.com>
+Date:   Wed May 7 12:44:48 2025 +0900
+
+    [MERGE] feat/#20
+    
+    [FEAT] 작가 조회
+
+[33mcommit 11c5ba5465f02b9b82f4aa59920084bb1d5e559c[m
+Author: SeoJeongYu <bbwest0709@gmail.com>
+Date:   Wed May 7 12:22:10 2025 +0900
+
+    [FEAT] 작가 전체 조회 API
+
+[33mcommit 478871bc98ae1d91b5ea0671aea3d542e7a429ad[m
+Author: SeoJeongYu <bbwest0709@gmail.com>
+Date:   Wed May 7 12:22:01 2025 +0900
+
+    [FEAT] 작가 전체 조회 기능
+
+[33mcommit 21277aab9f082fbbfe9dfa6ab7aca769598f1143[m
+Author: SeoJeongYu <bbwest0709@gmail.com>
+Date:   Wed May 7 12:20:57 2025 +0900
+
+    [FEAT] 작가 개별 조회 API
+
+[33mcommit a521a186d9247e8faee0141518739a489894c929[m
+Author: SeoJeongYu <bbwest0709@gmail.com>
+Date:   Wed May 7 12:20:38 2025 +0900
+
+    [FEAT] 작가 개별 조회 기능
+
+[33mcommit 95b5d736ca5f8539e6ede1a32ea14794228761ab[m
+Merge: 643bd6e 8cd0886
+Author: bbwest0709 <150890966+bbwest0709@users.noreply.github.com>
+Date:   Wed May 7 12:11:35 2025 +0900
+
+    [MERGE] feat/#19
+    
+    [FEAT] 작가 등록
+
+[33mcommit 8cd0886fad95a4e17626a2d9b97c52e83063a44c[m
+Author: SeoJeongYu <bbwest0709@gmail.com>
+Date:   Wed May 7 12:05:08 2025 +0900
+
+    [FEAT] 작가 등록 API
+
+[33mcommit 16cb5b935ea36ac69a3c8e7af295f609cdf69a7b[m
+Author: SeoJeongYu <bbwest0709@gmail.com>
+Date:   Wed May 7 12:04:56 2025 +0900
+
+    [FEAT] 작가 등록 기능
+
+[33mcommit 9bc3536d738cd76e77deabda5efb6402a94443a8[m
+Author: SeoJeongYu <bbwest0709@gmail.com>
+Date:   Wed May 7 12:04:30 2025 +0900
+
+    [FEAT] 학번 중복 체크 메서드 추가
+
+[33mcommit 7ca202b1b176a3e6dff137f0fae224016e3c8bc7[m
+Author: SeoJeongYu <bbwest0709@gmail.com>
+Date:   Wed May 7 10:02:35 2025 +0900
+
+    [FEAT] ArtistsRepository 추가
+
+[33mcommit f5811af668e0d350a890268927f1f51f03c5de4e[m
+Author: SeoJeongYu <bbwest0709@gmail.com>
+Date:   Wed May 7 09:58:07 2025 +0900
+
+    [FEAT] 작가 예외 유형 추가
+
+[33mcommit 60fc4f83bc6619ea53a0ba5216421c7b7c2af01e[m
+Author: SeoJeongYu <bbwest0709@gmail.com>
+Date:   Wed May 7 08:44:44 2025 +0900
+
+    [FEAT] 작가 Response DTO 추가
+
+[33mcommit 75974b35746624b80b45cfc45d78182af0e71fa6[m
+Author: SeoJeongYu <bbwest0709@gmail.com>
+Date:   Wed May 7 08:44:34 2025 +0900
+
+    [FEAT] 작가 Request DTO 추가
+
+[33mcommit f97ac719312de46e64d8b6cafc24fa26aae429a4[m
+Author: SeoJeongYu <bbwest0709@gmail.com>
+Date:   Wed May 7 08:43:58 2025 +0900
+
+    [FEAT] Artists 엔티티 클래스 생성
+
+[33mcommit 643bd6e6976c784d4cc938d6a4e5793627fa8253[m
+Merge: 6b6e226 71c5e7d
+Author: bbwest0709 <150890966+bbwest0709@users.noreply.github.com>
+Date:   Tue May 6 18:33:25 2025 +0900
+
+    [MERGE] refactor/#16
+    
+    [RENAME] 매개변수 오타 수정
+
+[33mcommit 71c5e7dd1b962559dce3c9ccea2af2a52cdf5fc9[m
+Author: SeoJeongYu <bbwest0709@gmail.com>
+Date:   Tue May 6 18:31:38 2025 +0900
+
+    [RENAME] 매개변수 오타 수정
+
+[33mcommit 6b6e22659d26a2b55fd6c0d429e0cd8c3eb43fe2[m
+Merge: f9f6522 647e53a
+Author: bbwest0709 <150890966+bbwest0709@users.noreply.github.com>
+Date:   Tue May 6 18:27:40 2025 +0900
+
+    [REFACTOR] refactor/#16
+    
+    [REFACTOR] 파일 삭제 처리
+
+[33mcommit 647e53a849506dd6bcddbaf6e8939c79f7e5ca0c[m
+Author: SeoJeongYu <bbwest0709@gmail.com>
+Date:   Tue May 6 18:23:55 2025 +0900
+
+    [REFACTOR] 파일 삭제 처리
+    
+    - 소프트 삭제 처리/사용되지 않은 파일 조건 분리
+
+[33mcommit f9f6522164ead48a71d7f690d9525fc98fcfeba2[m
+Merge: 4b97452 78affa8
+Author: bbwest0709 <150890966+bbwest0709@users.noreply.github.com>
+Date:   Tue May 6 17:48:14 2025 +0900
+
+    [MERGE] test/#14
+    
+    [TEST] 파일 테스트 - 로컬
+
+[33mcommit 78affa85add11ebaf775f44c61eb34535f76536c[m
+Author: SeoJeongYu <bbwest0709@gmail.com>
+Date:   Tue May 6 17:43:22 2025 +0900
+
+    [TEST] 소프트 삭제 테스트
+
+[33mcommit 607cb7e2ea6eab32e1d006387f65d6605cc044fa[m
+Author: SeoJeongYu <bbwest0709@gmail.com>
+Date:   Tue May 6 17:42:32 2025 +0900
+
+    [TEST] 파일 확장자 검증 테스트
+
+[33mcommit ff4170be5a280a24b47e171f9d4e5f69225563ea[m
+Author: SeoJeongYu <bbwest0709@gmail.com>
+Date:   Tue May 6 17:41:37 2025 +0900
+
+    [TEST] 파일 업로드 테스트
+
+[33mcommit 4b9745208bf95d2fd91cfc325d0d56d2f14a0106[m
+Merge: 7971a1c 7263570
+Author: bbwest0709 <150890966+bbwest0709@users.noreply.github.com>
+Date:   Tue May 6 03:06:14 2025 +0900
+
+    [MERGE] feat/#11
+    
+    [FEAT] 파일 삭제
+
+[33mcommit 7263570a20add8769c8ca2ff53611006a2e0c896[m
+Author: SeoJeongYu <bbwest0709@gmail.com>
+Date:   Tue May 6 03:02:37 2025 +0900
+
+    [FEAT] 파일 삭제 스케줄러 구현
+
+[33mcommit f2ee04b41093077679acc21ffa5bf8ec3e6d2ab3[m
+Author: SeoJeongYu <bbwest0709@gmail.com>
+Date:   Tue May 6 03:02:05 2025 +0900
+
+    [FEAT] 파일 삭제 기능
+
+[33mcommit ff8cf4cdb2bf35f51db0aefd8abffc7feb9ca5c5[m
+Author: SeoJeongYu <bbwest0709@gmail.com>
+Date:   Tue May 6 03:01:53 2025 +0900
+
+    [FEAT] 파일 삭제 메서드 추가
+
+[33mcommit fb21601f16291b63c0d346a5a6b857aaf4d81e27[m
+Author: SeoJeongYu <bbwest0709@gmail.com>
+Date:   Tue May 6 03:01:30 2025 +0900
+
+    [FEAT] 생성일자 기준으로 소프트 삭제된 파일 조회 메서드 추가
+
+[33mcommit f4cf8d235b4a20fbd4db5f83013bfa20d450008f[m
+Author: SeoJeongYu <bbwest0709@gmail.com>
+Date:   Tue May 6 02:58:31 2025 +0900
+
+    [FEAT] 소프트 삭제 기능 API
+
+[33mcommit bdbe8671a93413f2c9719fc42502f4ce957def3e[m
+Author: SeoJeongYu <bbwest0709@gmail.com>
+Date:   Tue May 6 02:58:15 2025 +0900
+
+    [FEAT] 소프트 삭제 기능
+    
+    - 삭제 대기 상태로 변경
+
+[33mcommit ac2d5e8577b367e5f51ae1135fd8e7a87625ace1[m
+Author: SeoJeongYu <bbwest0709@gmail.com>
+Date:   Tue May 6 02:57:55 2025 +0900
+
+    [FEAT] 소프트 삭제 메서드 추가
+
+[33mcommit 56d813ac8cc2910b16a69210c5360ea99c548319[m
+Author: SeoJeongYu <bbwest0709@gmail.com>
+Date:   Tue May 6 02:55:07 2025 +0900
+
+    [FEAT] 파일 번호와 사용 여부로 조회 메서드 추가
+
+[33mcommit dc3e94c1eb584322cb7aeeedb69a733cf73c752f[m
+Author: SeoJeongYu <bbwest0709@gmail.com>
+Date:   Mon May 5 23:39:06 2025 +0900
+
+    [REMOVE] .gitkeep 삭제
+
+[33mcommit 7971a1ccd45e58c0933c7ffba854e489c617d772[m
+Merge: 5e2f825 51d323a
+Author: bbwest0709 <150890966+bbwest0709@users.noreply.github.com>
+Date:   Mon May 5 22:56:06 2025 +0900
+
+    [MERGE] feat/#7
+    
+    [FEAT] 파일 업로드
+
+[33mcommit 51d323ac0e5723dc41ff34a2751f3a4a014d98a4[m
+Author: SeoJeongYu <bbwest0709@gmail.com>
+Date:   Mon May 5 22:50:07 2025 +0900
+
+    [ADD] 기본 프로파일 local 설정
+
+[33mcommit 6650ae91f51bd841b666384aebbd86ff72650fc3[m
+Author: SeoJeongYu <bbwest0709@gmail.com>
+Date:   Mon May 5 22:34:36 2025 +0900
+
+    [REFACTOR] 파일 서비스 인터페이스 분리
+    
+    - LocalFileStorageService 리네이밍
+    - Profile local 설정
+
+[33mcommit 53ca6cf1acec0df4c6def6c511ef107491709fa3[m
+Author: SeoJeongYu <bbwest0709@gmail.com>
+Date:   Mon May 5 22:31:03 2025 +0900
+
+    [FEAT] FileRepository 추가
+
+[33mcommit 378f89d5e226dfee39983140dd4d72effdb29d2e[m
+Author: SeoJeongYu <bbwest0709@gmail.com>
+Date:   Mon May 5 22:25:27 2025 +0900
+
+    [FEAT] 파일 업로드 API
+
+[33mcommit 91b97e370dcc8ac00f8cfacbcdb4f5e9d87bc4ce[m
+Author: SeoJeongYu <bbwest0709@gmail.com>
+Date:   Mon May 5 22:17:42 2025 +0900
+
+    [FEAT] 파일 용량 초과 예외 처리 추가
+
+[33mcommit ec5945efa0241560b1fe458fbb7c70faa53960d3[m
+Author: SeoJeongYu <bbwest0709@gmail.com>
+Date:   Mon May 5 22:16:56 2025 +0900
+
+    [REFACTOR] 파일 업로드 공통 로직 분리
+
+[33mcommit d616d31c95a4b39c653296ad45ea3fd82575df2a[m
+Author: SeoJeongYu <bbwest0709@gmail.com>
+Date:   Mon May 5 22:15:08 2025 +0900
+
+    [ADD] 파일 확장자 타입 정의
+
+[33mcommit 7e89034e4f108735c8aa8c293c8e61e9c22fc89a[m
+Author: SeoJeongYu <bbwest0709@gmail.com>
+Date:   Mon May 5 22:04:57 2025 +0900
+
+    [FEAT] 파일 업로드 구현
+    
+    - 파일 업로드
+    - 확장자 검증
+    - UUID 기반 파일명 생성
+
+[33mcommit fd1c758595bb972d7a43d1a556a4bd72c5e9f7a4[m
+Author: SeoJeongYu <bbwest0709@gmail.com>
+Date:   Mon May 5 21:59:24 2025 +0900
+
+    [FEAT] 파일 예외 유형 추가
+    
+    - 상태 코드 및 메세지 정의
+
+[33mcommit 999f19300c9f4a0bc415175d4ddf1070e0a1bb5b[m
+Author: SeoJeongYu <bbwest0709@gmail.com>
+Date:   Mon May 5 21:50:48 2025 +0900
+
+    [ADD] 파일 경로 처리 로직
+
+[33mcommit 16e7c2e67c7bb0c698f74374ffd09abca8bdb92b[m
+Author: SeoJeongYu <bbwest0709@gmail.com>
+Date:   Mon May 5 21:48:00 2025 +0900
+
+    [ADD] 파일 업로드 크기 제한 및 저장 경로 설정
+
+[33mcommit c337f02e4e1370b73f1ea6ce6cd9d1fd776f001c[m
+Author: SeoJeongYu <bbwest0709@gmail.com>
+Date:   Mon May 5 16:42:16 2025 +0900
+
+    [FEAT] 파일 Response DTO 추가
+    
+    - FileResponseDto
+    - FileResponseListDto
+
+[33mcommit dad990dcb4ce862e304ee980c0b71b8aba1b3143[m
+Author: SeoJeongYu <bbwest0709@gmail.com>
+Date:   Mon May 5 16:41:29 2025 +0900
+
+    [FEAT] AppConfig 추가
+    
+    - 파일 저장 디렉토리 초기화 빈 등록
+
+[33mcommit 7c43f80b77dcf7083fb69c13810c9e061627ec4d[m
+Author: SeoJeongYu <bbwest0709@gmail.com>
+Date:   Mon May 5 16:40:54 2025 +0900
+
+    [FEAT] 파일 저장 디렉토리 초기화 기능
+
+[33mcommit b984dc7dde609d99dacded3aa091fdf6120e8f14[m
+Author: SeoJeongYu <bbwest0709@gmail.com>
+Date:   Mon May 5 16:39:47 2025 +0900
+
+    [FEAT] 스케줄링 및 JPA 감사 기능 활성화
+
+[33mcommit 92dfa600ccfe9dd9505fd1049bd3c405714f38de[m
+Author: SeoJeongYu <bbwest0709@gmail.com>
+Date:   Sun May 4 21:37:58 2025 +0900
+
+    [FEAT] BaseEntity 생성
+    
+    - createAt 생성일자 자동 매핑
+
+[33mcommit 075658ff660309d54056f9cb3deea80aa006a8c5[m
+Author: SeoJeongYu <bbwest0709@gmail.com>
+Date:   Sun May 4 21:37:29 2025 +0900
+
+    [FEAT] FilesType ENUM 생성
+
+[33mcommit 91609207d3696f4fa61fde47e14218fdf4d59e46[m
+Author: SeoJeongYu <bbwest0709@gmail.com>
+Date:   Sun May 4 21:32:58 2025 +0900
+
+    [FEAT] Files 엔티티 클래스 생성
+
+[33mcommit 5e2f825aef2eaccfd37734136bbcbea4408869d6[m
+Merge: 2aef495 f5865c0
+Author: bbwest0709 <150890966+bbwest0709@users.noreply.github.com>
+Date:   Thu May 1 21:51:15 2025 +0900
+
+    [MERGE] feat/#5
+    
+    [FEAT] 공통 예외 구현
+
+[33mcommit f5865c053ce382832027cc000095bc5630b546ed[m
+Author: SeoJeongYu <bbwest0709@gmail.com>
+Date:   Thu May 1 21:45:46 2025 +0900
+
+    [REMOVE] .gitkeep 삭제
+
+[33mcommit 30d38913eea5fb22b5b10c7eb2951bca77fb2d03[m
+Author: SeoJeongYu <bbwest0709@gmail.com>
+Date:   Thu May 1 21:44:39 2025 +0900
+
+    [ADD] application.yml
+
+[33mcommit 3bdcef13dae932b63ecd5f40b720e822b1016f27[m
+Author: SeoJeongYu <bbwest0709@gmail.com>
+Date:   Thu May 1 21:43:18 2025 +0900
+
+    [CHORE] .gitignore 수정
+
+[33mcommit 10f0dee513ac69520940083656e72551a5e62100[m
+Author: SeoJeongYu <bbwest0709@gmail.com>
+Date:   Thu May 1 21:42:54 2025 +0900
+
+    [FEAT] 전역 예외 처리
+
+[33mcommit af9b723783c66d351b12229a2dc84b239ca769b4[m
+Author: SeoJeongYu <bbwest0709@gmail.com>
+Date:   Thu May 1 21:42:36 2025 +0900
+
+    [FEAT] 공통 예외 처리 유형 enum 생성
+
+[33mcommit a6f185bf19764c28cb228ec20ff08370d0131c61[m
+Author: SeoJeongYu <bbwest0709@gmail.com>
+Date:   Thu May 1 21:41:45 2025 +0900
+
+    [FEAT] 예외 처리에 필요한 인터페이스 생성
+
+[33mcommit d9c766ad6bed717e8ac8e65b010a0d7b9a841fe9[m
+Author: SeoJeongYu <bbwest0709@gmail.com>
+Date:   Thu May 1 21:41:04 2025 +0900
+
+    [FEAT] 커스텀 예외 처리
+
+[33mcommit 2aef49539ecb6f687000ec0c45acd30b85835bed[m
+Author: bbwest0709 <150890966+bbwest0709@users.noreply.github.com>
+Date:   Thu May 1 18:54:29 2025 +0900
+
+    [ADD] 이슈 템플릿
+
+[33mcommit 924a84778371cbce7bbfdb979ec3d92732f4a6aa[m
+Merge: 7377717 76dc20c
+Author: bbwest0709 <150890966+bbwest0709@users.noreply.github.com>
+Date:   Thu May 1 18:38:54 2025 +0900
+
+    [MERGE] setting/#3
+    
+    [RENAME] 루트 디렉토리 구조 변경
+
+[33mcommit 76dc20c543436bb515b6d682ec9b6c155da3721b[m[33m ([m[1;31morigin/Setting[m[33m)[m
+Author: SeoJeongYu <bbwest0709@gmail.com>
+Date:   Thu May 1 18:35:36 2025 +0900
+
+    [RENAME] 폴더 구조 변경
+    
+    - hanyang-arttherapy 폴더 제거 및 파일 이동
+
+[33mcommit 7377717bb82ca66b49d4f5257cbdb76a296612b0[m
+Merge: 19a9a0a adfa056
+Author: bbwest0709 <150890966+bbwest0709@users.noreply.github.com>
+Date:   Thu May 1 17:27:30 2025 +0900
+
+    [MERGE] setting/#1
+    
+    [SETTING] 초기 프로젝트 세팅
+
+[33mcommit adfa056d9dcd3b52bde513c56a58e06b5ce42902[m
+Author: SeoJeongYu <bbwest0709@gmail.com>
+Date:   Thu May 1 17:16:02 2025 +0900
+
+    [CHORE] 이슈 템플릿 마크다운 수정
+
+[33mcommit 6d9793889a088244de0597399e99824f74ed22de[m
+Author: SeoJeongYu <bbwest0709@gmail.com>
+Date:   Thu May 1 17:04:22 2025 +0900
+
+    [ADD] pre-commmiti 적용
+
+[33mcommit 1078d7b7b38bed572eb71666bef714f3c38717f5[m
+Author: SeoJeongYu <bbwest0709@gmail.com>
+Date:   Thu May 1 16:55:46 2025 +0900
+
+    [ADD] 이슈 및 PR 템플릿 추가
+
+[33mcommit 34d3bb8477a49ea2a931e0cda1d814d6cd02a0ff[m
+Author: SeoJeongYu <bbwest0709@gmail.com>
+Date:   Thu May 1 16:44:07 2025 +0900
+
+    [CHORE] 디렉토리 구조 유지 위한 .gitkeep 파일 추가
+
+[33mcommit 025fef17b7394d06947e871dbdc1e3ff6e2830e9[m
+Author: SeoJeongYu <bbwest0709@gmail.com>
+Date:   Thu May 1 16:38:46 2025 +0900
+
+    [SETTING] 스프링부트 세팅
+
+[33mcommit 98a5894ea2e1053340ccca76508bd43b7a01a173[m
+Author: SeoJeongYu <bbwest0709@gmail.com>
+Date:   Thu May 1 16:34:47 2025 +0900
+
+    [CHORE] 불필요한 파일을 제외 .gitignore 추가
+
+[33mcommit 19a9a0a0af336fd94e3a2d1e1b14a044ad74e47f[m[33m ([m[1;31morigin/main[m[33m, [m[1;32mmain[m[33m)[m
+Author: Kled Yu <83483378+kledyu@users.noreply.github.com>
+Date:   Tue Apr 29 13:52:59 2025 +0900
+
+    Initial commit
