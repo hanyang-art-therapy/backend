@@ -59,7 +59,8 @@ public class LocalFileStorageService implements FileStorageService {
   }
 
   @Override
-  public void deletedFileFromSystem(Files file) {
+  public void deletedFileFromSystem(Long filesNo) {
+    Files file = getFileById(filesNo);
     File fileToDelete = new File(file.getUrl());
     boolean deleted = fileToDelete.delete();
     if (!deleted) {
