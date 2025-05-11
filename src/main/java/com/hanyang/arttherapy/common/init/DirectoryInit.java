@@ -6,6 +6,7 @@ import java.nio.file.Paths;
 import jakarta.annotation.PostConstruct;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 import com.hanyang.arttherapy.common.exception.CustomException;
@@ -13,6 +14,7 @@ import com.hanyang.arttherapy.common.exception.exceptionType.FileSystemException
 import com.hanyang.arttherapy.domain.enums.FilesType;
 
 @Component
+@Profile("local")
 public class DirectoryInit {
 
   @Value("${app.storage.path}")
