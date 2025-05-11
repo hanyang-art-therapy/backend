@@ -60,10 +60,24 @@ public class S3FileStorageService implements FileStorageService {
   }
 
   @Override
-  public void softDeleteFile(Long filesNo) {}
+  public void softDeleteFile(Long filesNo) {
+    Files file = getFileById(filesNo);
+    file.markAsDeleted();
+    filesRepository.save(file);
+  }
 
   @Override
-  public void deletedFileFromSystem(Files file) {}
+  public void deletedFileFromSystem(Long filesNo) {
+    Files file = getFileById(filesNo);
+    String s3Key = extractS3Key(file.getUrl());
+    deleteFileFromS3(s3Key);
+  }
+
+  private Files getFileById(Long filesNo) {
+    return filesRepository
+        .findById(filesNo)
+        .orElseThrow(() -> new CustomException(FileSystemExceptionType.FILE_NOT_FOUND));
+  }
 
   private void uploadFileToS3(MultipartFile file, String fileName) {
     try {
@@ -75,12 +89,26 @@ public class S3FileStorageService implements FileStorageService {
     }
   }
 
+  private void deleteFileFromS3(String s3Key) {
+    try {
+      s3Client.deleteObject(deleteObjectRequest -> deleteObjectRequest.bucket(bucket).key(s3Key));
+      log.info("S3 파일 삭제 완료: {}", s3Key);
+    } catch (Exception e) {
+      log.error("S3 파일 삭제 실패: {}", s3Key, e);
+      throw new CustomException(FileSystemExceptionType.FILE_DELETE_FAILED);
+    }
+  }
+
   private PutObjectRequest createPutObjectRequest(MultipartFile file, String fileName) {
     return PutObjectRequest.builder()
         .bucket(bucket)
         .key(fileName)
         .contentType(file.getContentType())
         .build();
+  }
+
+  private String extractS3Key(String url) {
+    return url.replace(cloudFrontUrl + "/", "");
   }
 
   private Files convertToEntity(

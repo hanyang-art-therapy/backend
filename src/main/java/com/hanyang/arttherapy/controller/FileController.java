@@ -29,6 +29,6 @@ public class FileController {
   @DeleteMapping("/{filesNo}")
   public ResponseEntity<Void> softDelete(@PathVariable Long filesNo) {
     fileStorageService.softDeleteFile(filesNo);
-    return ResponseEntity.ok().build();
+    return ResponseEntity.noContent().build();
   }
 }

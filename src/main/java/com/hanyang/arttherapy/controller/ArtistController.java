@@ -42,6 +42,6 @@ public class ArtistController {
   @DeleteMapping("/{artistsNo}")
   public ResponseEntity<Void> deleteArtist(@PathVariable Long artistsNo) {
     artistsService.deleteAritst(artistsNo);
-    return ResponseEntity.ok().build();
+    return ResponseEntity.noContent().build();
   }
 }
