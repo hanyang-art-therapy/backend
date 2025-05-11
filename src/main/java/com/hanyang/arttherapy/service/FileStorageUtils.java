@@ -22,6 +22,12 @@ public class FileStorageUtils {
     }
   }
 
+  public String getValidFileExtension(FilesType type, String extension) {
+    String extention = extractExtension(extension);
+    validateFileExtension(type, extention);
+    return extention;
+  }
+
   // 확장자 검증
   public void validateFileExtension(FilesType type, String extension) {
     if (!type.isAllowed(extension)) {
