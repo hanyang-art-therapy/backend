@@ -22,6 +22,12 @@ public class FileStorageUtils {
     }
   }
 
+  public String getValidFileExtension(FilesType type, String extension) {
+    String extention = extractExtension(extension);
+    validateFileExtension(type, extention);
+    return extention;
+  }
+
   // 확장자 검증
   public void validateFileExtension(FilesType type, String extension) {
     if (!type.isAllowed(extension)) {
@@ -41,5 +47,20 @@ public class FileStorageUtils {
   // UUID 파일명 생성
   public String generateUUIDFileName(String extension) {
     return UUID.randomUUID().toString() + "." + extension;
+  }
+
+  // 로컬 경로 생성
+  public String getLocalPath(FilesType type, String savedName, String storagePath) {
+    return storagePath + "/" + type.getDirectory() + "/" + savedName;
+  }
+
+  // S3 경로 생성
+  public String getS3Path(FilesType type, String savedName) {
+    return type.getDirectory() + "/" + savedName;
+  }
+
+  // CloudFront URL 생성
+  public String getCloudFrontFileUrl(String cloudFrontUrl, String fileName) {
+    return cloudFrontUrl + "/" + fileName;
   }
 }

@@ -3,6 +3,10 @@ package com.hanyang.arttherapy.controller;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import com.hanyang.arttherapy.dto.request.userRequest.IdRequest;
+import com.hanyang.arttherapy.dto.request.userRequest.PasswordResetRequest;
+import com.hanyang.arttherapy.dto.request.userRequest.TemporaryPasswordRequest;
+import com.hanyang.arttherapy.dto.response.userResponse.CommonMessageResponse;
 import com.hanyang.arttherapy.service.UserService;
 
 import lombok.RequiredArgsConstructor;
@@ -28,5 +32,25 @@ public class UserController {
   @GetMapping("/check-studentNo")
   public ResponseEntity<Boolean> checkStudentNo(@RequestParam String studentNo) {
     return ResponseEntity.ok(!userService.existsByStudentNo(studentNo));
+  }
+
+  @PostMapping("/find-id")
+  public ResponseEntity<CommonMessageResponse> findUserId(@RequestBody IdRequest request) {
+    String message = userService.findByEmailAndUserName(request);
+    return ResponseEntity.ok(new CommonMessageResponse(message));
+  }
+
+  @PostMapping("/find-password")
+  public ResponseEntity<CommonMessageResponse> newPassword(
+      @RequestBody TemporaryPasswordRequest request) {
+    String message = userService.newPassword(request.userId(), request.email());
+    return ResponseEntity.ok(new CommonMessageResponse(message));
+  }
+
+  @PostMapping("/reset-password")
+  public ResponseEntity<CommonMessageResponse> resetPassword(
+      @RequestBody PasswordResetRequest request) {
+    String message = userService.resetPassword(request);
+    return ResponseEntity.ok(new CommonMessageResponse(message));
   }
 }

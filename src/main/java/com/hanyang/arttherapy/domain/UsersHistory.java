@@ -10,8 +10,8 @@ import lombok.Setter;
 @Getter
 @Setter
 @Entity
-@Table(name = "users_history")
-public class Users_history {
+@Table(name = "usersHistory")
+public class UsersHistory {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long userHistoryNo;

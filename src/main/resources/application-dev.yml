@@ -1,4 +1,4 @@
-# application-local.yml
+# application-dev.yml
 spring:
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
@@ -12,7 +12,3 @@ spring:
       ddl-auto: update
     defer-datasource-initialization: true
     show-sql: true
-
-  app:
-    storage:
-      path: /local/storage/files

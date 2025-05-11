@@ -1,4 +1,4 @@
-package com.hanyang.arttherapy.domain;
+package com.hanyang.arttherapy.domain.enums;
 
 public enum UserStatus {
   ACTIVE,
