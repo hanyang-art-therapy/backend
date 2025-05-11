@@ -9,7 +9,7 @@ import com.hanyang.arttherapy.domain.enums.*;
 import com.hanyang.arttherapy.dto.response.*;
 
 public interface FileStorageService {
-  FileResponseListDto store(List<MultipartFile> files, FilesType type);
+  List<FileResponseDto> store(List<MultipartFile> files, FilesType type);
 
   void softDeleteFile(Long filesNo);
 
