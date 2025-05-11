@@ -2,7 +2,6 @@ package com.hanyang.arttherapy.service;
 
 import java.util.List;
 
-import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,7 +15,6 @@ import lombok.RequiredArgsConstructor;
 @Service
 @RequiredArgsConstructor
 @Transactional
-@Profile("h2")
 public class GalleriesService {
 
   private final GalleriesRepository galleriesRepository;

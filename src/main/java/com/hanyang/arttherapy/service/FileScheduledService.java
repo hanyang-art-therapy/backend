@@ -18,7 +18,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class FileScheduledService {
 
-  private final LocalFileStorageService fileStorageService;
+  private final FileStorageService fileStorageService;
   private final FilesRepository filesRepository;
 
   private static final int FILE_EXPIRATION_DAYS = 5;

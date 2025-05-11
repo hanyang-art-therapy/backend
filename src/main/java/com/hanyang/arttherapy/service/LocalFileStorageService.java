@@ -1,8 +1,7 @@
 package com.hanyang.arttherapy.service;
 
-import java.io.File;
+import java.io.*;
 import java.util.*;
-import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
@@ -11,7 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.hanyang.arttherapy.common.exception.CustomException;
-import com.hanyang.arttherapy.common.exception.exceptionType.FileSystemExceptionType;
+import com.hanyang.arttherapy.common.exception.exceptionType.*;
 import com.hanyang.arttherapy.domain.*;
 import com.hanyang.arttherapy.domain.enums.*;
 import com.hanyang.arttherapy.dto.response.*;
@@ -33,30 +32,23 @@ public class LocalFileStorageService implements FileStorageService {
   @Value("${app.storage.path}")
   private String storagePath;
 
-  @Value("${spring.servlet.multipart.max-file-size}")
-  private long maxFileSize;
-
   @Override
-  public FileResponseListDto store(List<MultipartFile> files, FilesType type) {
-    List<FileResponseDto> fileResponseDtos =
-        files.stream()
-            .map(
-                file -> {
-                  String extension = fileUtils.extractExtension(file.getOriginalFilename());
-                  fileUtils.validateFileExtension(type, extension);
-                  String savedName = fileUtils.generateUUIDFileName(extension);
-                  String filePath = type.getFullPath(storagePath, savedName);
+  public List<FileResponseDto> store(List<MultipartFile> files, FilesType type) {
+    return files.stream()
+        .map(
+            file -> {
+              String extension = fileUtils.getValidFileExtension(type, file.getOriginalFilename());
+              String savedName = fileUtils.generateUUIDFileName(extension);
+              String filePath = fileUtils.getLocalPath(type, savedName, storagePath);
 
-                  fileUtils.saveFile(file, filePath);
+              fileUtils.saveFile(file, filePath);
 
-                  Files filesEntity = convertToEntity(file, type, savedName, filePath, extension);
-                  filesRepository.save(filesEntity);
+              Files fileEntity = convertToEntity(file, type, savedName, filePath, extension);
+              filesRepository.save(fileEntity);
 
-                  return FileResponseDto.of(filesEntity);
-                })
-            .collect(Collectors.toList());
-
-    return FileResponseListDto.of(fileResponseDtos);
+              return FileResponseDto.of(fileEntity, filePath);
+            })
+        .toList();
   }
 
   @Override
