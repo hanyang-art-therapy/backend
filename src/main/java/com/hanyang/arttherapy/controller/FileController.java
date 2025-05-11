@@ -13,7 +13,7 @@ import com.hanyang.arttherapy.service.*;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("api/files")
+@RequestMapping("files")
 @RequiredArgsConstructor
 public class FileController {
 
