@@ -70,7 +70,7 @@ public class LocalFileStorageService implements FileStorageService {
 
   private Files getFileById(Long filesNo) {
     return filesRepository
-        .findByFilesNoAndUseYn(filesNo, true)
+        .findById(filesNo)
         .orElseThrow(() -> new CustomException(FileSystemExceptionType.FILE_NOT_FOUND));
   }
 
