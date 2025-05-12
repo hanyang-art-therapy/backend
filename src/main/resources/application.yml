@@ -16,10 +16,10 @@ spring:
   jwt:
     secret: ${JWT_SECRETKEY}
 
-#  security:
-#    user:
-#      name: yoursecurityName
-#      password: yoursecurityPassword
+  security:
+    user:
+      name: ${SECURITY_NAME}
+      password: ${SECURITY_PASSWORD}
 
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
