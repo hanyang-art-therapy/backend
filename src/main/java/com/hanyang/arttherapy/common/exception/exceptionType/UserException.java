@@ -9,15 +9,17 @@ import lombok.RequiredArgsConstructor;
 @Getter
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 public enum UserException implements ExceptionType {
-  UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "다시 로그인해주세요."), // 토큰 만료됐을 때
-  FORBIDDEN(HttpStatus.FORBIDDEN, "접근 권한이 없습니다."),
-  DUPLICATE_USER_ID(HttpStatus.CONFLICT, "이미 등록된 학번입니다."),
-  DUPLICATE_EMAIL(HttpStatus.CONFLICT, "이미 사용 중인 이메일입니다."),
-  DUPLICATE_STUDENT_NO(HttpStatus.CONFLICT, "이미 등록된 학번입니다."),
+  UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "토큰만료"), // 토큰 만료됐을 때
+  FORBIDDEN(HttpStatus.FORBIDDEN, "다시 로그인해주세요"),
+  USER_ALREADY_EXISTS(HttpStatus.CONFLICT, "이미 존재하는 아이디입니다."),
+  EMAIL_ALREADY_EXISTS(HttpStatus.CONFLICT, "이미 사용 중인 이메일입니다."),
+  STUDENT_ALREADY_EXISTS(HttpStatus.CONFLICT, "이미 등록된 학번입니다."),
   USER_NOT_FOUND(HttpStatus.BAD_REQUEST, "일치하는 계정을 찾을 수 없습니다."),
   ERROR_PASSWORD(HttpStatus.BAD_REQUEST, "비밀번호가 일치하지 않습니다."),
   EMAIL_SEND_FAIL(HttpStatus.INTERNAL_SERVER_ERROR, "이메일 전송 실패"),
-  INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "서버 오류로 등록이 실패했습니다.");
+  INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "서버 오류로 등록이 실패했습니다."),
+  INVALID_ACCESS_TOKEN(HttpStatus.UNAUTHORIZED, "유효하지 않은 ACCESSTOKEN입니다."),
+  INVALID_REFRESH_TOKEN(HttpStatus.FORBIDDEN, "유효하지 않은 REFRESHTOKEN입니다.");
 
   private final HttpStatus status;
   private final String message;
