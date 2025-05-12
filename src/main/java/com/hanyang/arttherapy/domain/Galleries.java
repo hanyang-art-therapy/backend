@@ -4,8 +4,6 @@ import java.time.LocalDateTime;
 
 import jakarta.persistence.*;
 
-import com.hanyang.arttherapy.common.entity.BaseEntity;
-
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -16,7 +14,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "galleries")
-public class Galleries extends BaseEntity {
+public class Galleries {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
