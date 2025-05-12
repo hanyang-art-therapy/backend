@@ -13,6 +13,9 @@ import com.hanyang.arttherapy.common.exception.CustomException;
 import com.hanyang.arttherapy.common.exception.exceptionType.FileSystemExceptionType;
 import com.hanyang.arttherapy.domain.enums.FilesType;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 @Component
 @Profile("local")
 public class DirectoryInit {
@@ -35,6 +38,7 @@ public class DirectoryInit {
   private void createDirectoryIfNotExist(String directoryPath) {
     File directory = new File(directoryPath);
     if (!directory.exists() && !directory.mkdirs()) {
+      log.error("디렉토리 생성 실패: {}", directoryPath);
       throw new CustomException(FileSystemExceptionType.DIRECTORY_CREATION_FAILED);
     }
   }

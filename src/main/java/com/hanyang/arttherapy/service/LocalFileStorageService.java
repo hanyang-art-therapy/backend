@@ -59,7 +59,8 @@ public class LocalFileStorageService implements FileStorageService {
   }
 
   @Override
-  public void deletedFileFromSystem(Files file) {
+  public void deletedFileFromSystem(Long filesNo) {
+    Files file = getFileById(filesNo);
     File fileToDelete = new File(file.getUrl());
     boolean deleted = fileToDelete.delete();
     if (!deleted) {
@@ -67,9 +68,15 @@ public class LocalFileStorageService implements FileStorageService {
     }
   }
 
+  @Override
+  public String getFileUrl(Long filesNo) {
+    Files file = getFileById(filesNo);
+    return file.getUrl();
+  }
+
   private Files getFileById(Long filesNo) {
     return filesRepository
-        .findByFilesNoAndUseYn(filesNo, true)
+        .findById(filesNo)
         .orElseThrow(() -> new CustomException(FileSystemExceptionType.FILE_NOT_FOUND));
   }
 

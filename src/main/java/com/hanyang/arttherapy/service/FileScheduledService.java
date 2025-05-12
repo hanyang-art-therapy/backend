@@ -23,7 +23,7 @@ public class FileScheduledService {
 
   private static final int FILE_EXPIRATION_DAYS = 5;
 
-  @Scheduled(cron = "0 0 0 * * ?")
+  @Scheduled(cron = "0 0 3 ? * SUN")
   public void deleteFile() {
     LocalDateTime cutoffDate = getCutoffDate(FILE_EXPIRATION_DAYS);
 
@@ -48,8 +48,19 @@ public class FileScheduledService {
   }
 
   private void deleteFileFromSystem(Files files) {
-    fileStorageService.deletedFileFromSystem(files);
-    filesRepository.delete(files);
+    try {
+      if (isFileExist(files.getFilesNo())) {
+        fileStorageService.deletedFileFromSystem(files.getFilesNo());
+        filesRepository.delete(files);
+      }
+    } catch (Exception e) {
+      log.error("파일 삭제 실패, 파일 번호: {}, 오류: {}", files.getFilesNo(), e.getMessage(), e);
+    }
+  }
+
+  private boolean isFileExist(Long filesNo) {
+    Optional<Files> fileOptional = filesRepository.findById(filesNo);
+    return fileOptional.isPresent();
   }
 
   private LocalDateTime getCutoffDate(int days) {
