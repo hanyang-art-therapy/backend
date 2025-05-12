@@ -31,7 +31,7 @@ public class ReviewService {
   private final ReviewRepository reviewRepository;
   private final FilesRepository filesRepository;
   private final UserRepository userRepository;
-  private final LocalFileStorageService localFileStorageService;
+  private final FileStorageService fileStorageService;
 
   // 리뷰 조회
   public Page<ReviewResponseDto> getReviews(Long artsNo, Pageable pageable) {
