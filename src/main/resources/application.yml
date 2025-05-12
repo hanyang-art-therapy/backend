@@ -7,19 +7,14 @@ spring:
   mail:
     host: smtp.gmail.com
     port: 587
-    username:
-    password:
+    username: ${MAIL_USERNAME}
+    password: ${MAIL_PASSWORD}
     properties:
       mail.smtp.auth: true
       mail.smtp.starttls.enable: true
 
   jwt:
-    secret: ${JWT_SECRETKEY}
-
-  security:
-    user:
-      name: ${SECURITY_NAME}
-      password: ${SECURITY_PASSWORD}
+    secret: ${JWT_SECRET}
 
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
@@ -30,13 +25,13 @@ spring:
   jpa:
     database-platform: org.hibernate.dialect.MySQL8Dialect
     hibernate:
-      ddl-auto: update
+      ddl-auto: create
     defer-datasource-initialization: true
     show-sql: true
 
   servlet:
     multipart:
-      max-file-size: 5242880 # 단일 요청 5MB
+      max-file-size: 5242880 # 단일 요청 5MB 5242880
 
   profiles:
     active: dev
