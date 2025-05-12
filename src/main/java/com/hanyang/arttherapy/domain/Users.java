@@ -5,12 +5,14 @@ import jakarta.persistence.*;
 import com.hanyang.arttherapy.domain.enums.Role;
 import com.hanyang.arttherapy.domain.enums.UserStatus;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 @Getter
 @Setter
 @Entity
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "users")
 public class Users {
 
@@ -30,7 +32,7 @@ public class Users {
   @Column(nullable = false)
   private String userName;
 
-  @Column(nullable = true, unique = true)
+  @Column(unique = true)
   private String studentNo;
 
   @Enumerated(EnumType.STRING)
