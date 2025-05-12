@@ -4,6 +4,8 @@ import java.time.LocalDateTime;
 
 import jakarta.persistence.*;
 
+import com.hanyang.arttherapy.common.entity.BaseEntity;
+
 import lombok.*;
 
 @Getter
@@ -12,14 +14,14 @@ import lombok.*;
 @Builder
 @Entity
 @Table(name = "galleries")
-public class Galleries {
+public class Galleries extends BaseEntity {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long galleriesNo;
 
   @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "user_no", nullable = false)
+  @JoinColumn(name = "userNo", nullable = false)
   private Users user;
 
   @Column(nullable = false, length = 255)
@@ -30,14 +32,6 @@ public class Galleries {
 
   @Column(nullable = false)
   private LocalDateTime endDate;
-
-  @Column(nullable = false, updatable = false)
-  private LocalDateTime createdAt;
-
-  @PrePersist
-  protected void onCreate() {
-    this.createdAt = LocalDateTime.now();
-  }
 
   public void update(String title, LocalDateTime startDate, LocalDateTime endDate) {
     this.title = title;
