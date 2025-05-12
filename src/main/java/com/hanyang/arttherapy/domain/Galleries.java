@@ -4,25 +4,25 @@ import java.time.LocalDateTime;
 
 import jakarta.persistence.*;
 
-import com.hanyang.arttherapy.common.entity.BaseEntity;
-
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Getter
-@Entity
-@AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor
+@Builder
+@Entity
 @Table(name = "galleries")
-public class Galleries extends BaseEntity {
+public class Galleries {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long galleriesNo;
 
-  @Column(nullable = false)
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "user_no", nullable = false)
+  private Users user;
+
+  @Column(nullable = false, length = 255)
   private String title;
 
   @Column(nullable = false)
@@ -30,6 +30,14 @@ public class Galleries extends BaseEntity {
 
   @Column(nullable = false)
   private LocalDateTime endDate;
+
+  @Column(nullable = false, updatable = false)
+  private LocalDateTime createdAt;
+
+  @PrePersist
+  protected void onCreate() {
+    this.createdAt = LocalDateTime.now();
+  }
 
   public void update(String title, LocalDateTime startDate, LocalDateTime endDate) {
     this.title = title;
