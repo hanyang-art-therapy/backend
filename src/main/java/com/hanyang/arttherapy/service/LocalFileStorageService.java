@@ -68,6 +68,12 @@ public class LocalFileStorageService implements FileStorageService {
     }
   }
 
+  @Override
+  public String getFileUrl(Long filesNo) {
+    Files file = getFileById(filesNo);
+    return file.getUrl();
+  }
+
   private Files getFileById(Long filesNo) {
     return filesRepository
         .findById(filesNo)

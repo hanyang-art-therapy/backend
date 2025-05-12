@@ -73,6 +73,12 @@ public class S3FileStorageService implements FileStorageService {
     deleteFileFromS3(s3Key);
   }
 
+  @Override
+  public String getFileUrl(Long filesNo) {
+    Files file = getFileById(filesNo);
+    return fileUtils.getCloudFrontFileUrl(cloudFrontUrl, file.getUrl());
+  }
+
   private Files getFileById(Long filesNo) {
     return filesRepository
         .findById(filesNo)

@@ -13,4 +13,6 @@ public interface FileStorageService {
   void softDeleteFile(Long filesNo);
 
   void deletedFileFromSystem(Long filesNo);
+
+  String getFileUrl(Long filesNo);
 }
