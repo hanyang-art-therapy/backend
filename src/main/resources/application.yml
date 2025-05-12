@@ -1,34 +1,33 @@
 # application.yml (공통 설정)
 spring:
-  #  web:
-  #    resources:
-  #      add-mappings: false
+  web:
+    resources:
+      add-mappings: false
 
   mail:
     host: smtp.gmail.com
     port: 587
-    username: mingke48@gmail.com
+    username:
     password:
     properties:
       mail.smtp.auth: true
       mail.smtp.starttls.enable: true
 
-  security:
-    user:
-      name: yoursecurityName
-      password: yoursecurityPassword
-
   jwt:
     secret: "yourSecretKey@sfw37t284934!8w7t"
+
+#  security:
+#    user:
+#      name: yoursecurityName
+#      password: yoursecurityPassword
 
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://localhost:3306/hanyang?serverTimezone=UTC&characterEncoding=UTF-8
-    username: root
-    password: 1234
+    username: 
+    password:
 
   jpa:
-    #    database-platform: org.hibernate.dialect.MySQL5InnoDBDialect
     database-platform: org.hibernate.dialect.MySQL8Dialect
     hibernate:
       ddl-auto: update
@@ -37,12 +36,26 @@ spring:
 
   servlet:
     multipart:
-      max-file-size: 5242880 # 단일 요청 5MB 5242880
+      max-file-size: 5242880 # 단일 요청 5MB
 
   profiles:
-    active: local  # 기본적으로 'local' 프로파일을 활성화
+    active: dev
+
+  cloud:
+    aws:
+      credentials:
+        accessKey: ${AWS_S3_ACCESS_KEY}
+        secretKey: ${AWS_S3_SECRET_ACCESS_KEY}
+      s3:
+        bucket: ${AWS_S3_BUCKET_NAME}
+      cloudfront:
+        url: ${CLOUDFRONT_URL}
+      region:
+        static: ap-northeast-2
+      stack:
+        auto: false
 
 # 파일 저장 경로 추가
 app:
   storage:
-    path: ${STORAGE_PATH:/default/storage/files} #임시
+    path: ${STORAGE_PATH:/default/storage/files}

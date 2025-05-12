@@ -13,14 +13,14 @@ import com.hanyang.arttherapy.service.*;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("api/files")
+@RequestMapping("files")
 @RequiredArgsConstructor
 public class FileController {
 
   private final FileStorageService fileStorageService;
 
   @PostMapping
-  public ResponseEntity<FileResponseListDto> uploadFiles(
+  public ResponseEntity<List<FileResponseDto>> store(
       @RequestPart("files") List<MultipartFile> files,
       @RequestParam("filesType") FilesType filesType) {
     return ResponseEntity.ok(fileStorageService.store(files, filesType));
@@ -29,6 +29,6 @@ public class FileController {
   @DeleteMapping("/{filesNo}")
   public ResponseEntity<Void> softDelete(@PathVariable Long filesNo) {
     fileStorageService.softDeleteFile(filesNo);
-    return ResponseEntity.ok().build();
+    return ResponseEntity.noContent().build();
   }
 }
