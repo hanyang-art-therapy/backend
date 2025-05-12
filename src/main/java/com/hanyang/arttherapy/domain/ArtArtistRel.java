@@ -2,11 +2,12 @@ package com.hanyang.arttherapy.domain;
 
 import jakarta.persistence.*;
 
+import lombok.AccessLevel;
 import lombok.Getter;
-import lombok.Setter;
+import lombok.NoArgsConstructor;
 
 @Getter
-@Setter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
 @Table(name = "art_artist_rel")
 public class ArtArtistRel {
@@ -15,13 +16,11 @@ public class ArtArtistRel {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long artArtistRelNo;
 
-  @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "artistsNo", nullable = false)
-  private Artists artist;
+  @Column(nullable = false)
+  private Long artistsNo;
 
-  @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "artsNo", nullable = false)
-  private Arts arts;
+  @Column(nullable = false)
+  private Long artsNo;
 
   @Column(columnDefinition = "LONGTEXT")
   private String description;

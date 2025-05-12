@@ -15,4 +15,6 @@ public interface FilesRepository extends JpaRepository<Files, Long> {
   List<Files> findByCreatedAtBeforeAndUseYn(LocalDateTime cutoffDate, boolean useYn);
 
   List<Files> findByFilesNoInAndUseYn(List<Long> filesNoList, Boolean useYn);
+
+  List<Files> findByFilesNoIn(List<Long> filesNoList);
 }

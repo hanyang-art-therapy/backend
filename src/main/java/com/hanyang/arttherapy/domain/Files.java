@@ -43,4 +43,9 @@ public class Files extends BaseEntity {
     this.useYn = false;
     this.delYn = true;
   }
+
+  public void activateFile() {
+    this.useYn = true;
+    this.delYn = false;
+  }
 }
