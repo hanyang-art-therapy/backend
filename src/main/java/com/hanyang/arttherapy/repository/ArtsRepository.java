@@ -41,9 +41,9 @@ public interface ArtsRepository extends JpaRepository<Arts, Long> {
   Page<Arts> findByGalleriesNoAndCohort(
       @Param("galleriesNo") Long galleriesNo, @Param("cohort") int cohort, Pageable pageable);
 
-  @Query("SELECT ar.arts FROM ArtArtistRel ar WHERE ar.artist.studentNo = :studentNo")
-  List<Arts> findAllByStudentNo(@Param("studentNo") String studentNo);
+  //  @Query("SELECT ar.arts FROM ArtArtistRel ar WHERE ar.artist.studentNo = :studentNo")
+  //  List<Arts> findAllByStudentNo(@Param("studentNo") String studentNo);
 
-  @Query("SELECT a FROM Arts a WHERE a.galleries.user.userNo = :userNo")
-  List<Arts> findAllByUserNo(@Param("userNo") Long userNo);
+  //  @Query("SELECT a FROM Arts a WHERE a.galleries.user.userNo = :userNo")
+  //  List<Arts> findAllByUserNo(@Param("userNo") Long userNo);
 }
