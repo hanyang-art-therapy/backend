@@ -26,14 +26,22 @@ public class UserController {
     return ResponseEntity.ok(!userService.existsByUserId(userId));
   }
 
-  @GetMapping("/check-email")
-  public ResponseEntity<Boolean> checkEmail(@RequestParam String email) {
-    return ResponseEntity.ok(!userService.existsByEmail(email));
-  }
-
   @GetMapping("/check-studentNo")
   public ResponseEntity<Boolean> checkStudentNo(@RequestParam String studentNo) {
     return ResponseEntity.ok(!userService.existsByStudentNo(studentNo));
+  }
+
+  @PostMapping("/check-email")
+  public ResponseEntity<CommonMessageResponse> checkEmail(@RequestBody EmailRequest request) {
+    String message = userService.checkEmail(request);
+    return ResponseEntity.ok(new CommonMessageResponse(message));
+  }
+
+  @PostMapping("/check-code")
+  public ResponseEntity<CommonMessageResponse> verifyEmail(
+      @RequestBody VerificationRequest request) {
+    String message = userService.verifyEmailCode(request);
+    return ResponseEntity.ok(new CommonMessageResponse(message));
   }
 
   @PostMapping("/find-id")

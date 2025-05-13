@@ -1,48 +1,107 @@
 package com.hanyang.arttherapy.service;
 
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.Random;
 
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.hanyang.arttherapy.common.exception.CustomException;
 import com.hanyang.arttherapy.common.exception.exceptionType.UserException;
 import com.hanyang.arttherapy.common.util.JwtUtil;
 import com.hanyang.arttherapy.domain.RefreshToken;
 import com.hanyang.arttherapy.domain.Users;
+import com.hanyang.arttherapy.domain.UsersHistory;
 import com.hanyang.arttherapy.dto.request.userRequest.*;
 import com.hanyang.arttherapy.dto.response.userResponse.*;
 import com.hanyang.arttherapy.repository.RefreshTokenRepository;
 import com.hanyang.arttherapy.repository.UserRepository;
+import com.hanyang.arttherapy.repository.UsersHistoryRepository;
 
 import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
 public class UserService {
+  @Autowired private HttpSession session;
   @Autowired private JavaMailSender mailSender;
   private final UserRepository userRepository;
+  private final UsersHistoryRepository usersHistoryRepository;
   private final RefreshTokenRepository refreshTokenRepository;
   private final JwtUtil jwtUtil;
   private final BCryptPasswordEncoder bCryptpasswordEncoder;
+
+  private static final long VERIFICATION_CODE_EXPIRATION_TIME = 3 * 60 * 1000;
 
   public boolean existsByUserId(String userId) {
     return userRepository.existsByUserId(userId);
   }
 
-  public boolean existsByEmail(String email) {
-    return userRepository.existsByEmail(email);
-  }
-
   public boolean existsByStudentNo(String studentNo) {
     return userRepository.existsByStudentNo(studentNo);
+  }
+
+  public String checkEmail(EmailRequest request) {
+    // 이메일이 이미 존재하는지 확인
+    if (userRepository.existsByEmail(request.email())) {
+      return "이미 사용 중인 이메일입니다.";
+    }
+    // 인증번호 생성
+    String verificationCode = generateTemporaryPassword();
+
+    // 이메일 발송 및 세션 저장
+    sendEmailVerification(request.email(), verificationCode);
+
+    return "이메일이 발송되었습니다.";
+  }
+
+  // 이메일 발송 + 세션 저장
+  private void sendEmailVerification(String email, String verificationCode) {
+    // 이메일 발송
+    try {
+      SimpleMailMessage message = new SimpleMailMessage();
+      message.setTo(email);
+      message.setSubject("회원가입 이메일 인증");
+      message.setText("인증 번호: " + verificationCode);
+      message.setFrom("mingke48@gmail.com");
+      mailSender.send(message);
+    } catch (Exception e) {
+      throw new CustomException(UserException.EMAIL_SEND_FAIL);
+    }
+
+    // 세션 저장
+    long expirationTime = System.currentTimeMillis() + VERIFICATION_CODE_EXPIRATION_TIME;
+    session.setAttribute("verificationCode", verificationCode);
+    session.setAttribute("verificationCodeExpirationTime", expirationTime);
+  }
+
+  // 인증 번호 검증
+  public String verifyEmailCode(VerificationRequest request) {
+    String storedCode = (String) session.getAttribute("verificationCode");
+    Long expirationTime = (Long) session.getAttribute("verificationCodeExpirationTime");
+
+    if (storedCode != null && expirationTime != null) {
+      // 인증 번호의 만료 시간 확인
+      if (System.currentTimeMillis() > expirationTime) {
+        return "인증 번호가 만료되었습니다.";
+      }
+      // 인증 번호 비교
+      if (storedCode.equals(request.verificationCode())) {
+        return "이메일 인증이 완료되었습니다.";
+      } else {
+        return "인증 번호가 일치하지 않습니다.";
+      }
+    }
+    return "인증 번호가 존재하지 않습니다.";
   }
 
   // 아이디 찾기
@@ -68,7 +127,6 @@ public class UserService {
 
   // 비밀번호 찾기
   public String newPassword(String userId, String email) {
-    //    System.out.println(">>> newPassword called with userId: " + userId + ", email: " + email);
     Optional<Users> userOpt = userRepository.findByUserIdAndEmail(userId, email);
 
     if (userOpt.isEmpty()) {
@@ -90,9 +148,9 @@ public class UserService {
     return "임시 비밀번호가 이메일로 전송되었습니다.";
   }
 
-  // 임시 비밀번호 생성 (예: 10자리 랜덤 비밀번호)
+  // 임시 비밀번호 생성 (예: 10자리 랜덤 -> 9자리 랜덤+마지막 고정!주는거 설정)
   private String generateTemporaryPassword() {
-    int length = 10;
+    int length = 9;
     String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789~!@#$%^&*";
     Random random = new Random();
     StringBuilder sb = new StringBuilder(length);
@@ -101,7 +159,7 @@ public class UserService {
       int index = random.nextInt(chars.length());
       sb.append(chars.charAt(index));
     }
-
+    sb.append('@'); // 마지막 고정 문자 추가
     return sb.toString();
   }
 
@@ -138,6 +196,7 @@ public class UserService {
     return "비밀번호가 변경되었습니다.";
   }
 
+  @Transactional
   public String signup(SignupRequest request) {
     if (userRepository.existsByUserId(request.userId())) {
       throw new CustomException(UserException.USER_ALREADY_EXISTS);
@@ -162,13 +221,18 @@ public class UserService {
 
       userRepository.save(user);
 
-      //      // 트랜잭션 유저히스토리관리 추가
-      //        @Transactional
-      //        UsersHistory usersHistory =
+      // UsersHistory 생성 및 저장
+      UsersHistory history = new UsersHistory();
+      history.setUser(user);
+      Timestamp now = new Timestamp(System.currentTimeMillis());
+      history.setSigninTimestamp(now);
+
+      usersHistoryRepository.save(history); // UsersHistory 저장
     }
     return "회원가입 성공";
   }
 
+  @Transactional
   public SigninResponse signin(
       SigninRequest request, String ip, String userAgent, HttpServletResponse httpResponse) {
     Users user =
