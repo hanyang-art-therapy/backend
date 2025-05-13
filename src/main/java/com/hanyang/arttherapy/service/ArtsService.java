@@ -1,7 +1,9 @@
 package com.hanyang.arttherapy.service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -30,12 +32,9 @@ public class ArtsService {
   // 공통 메서드 분리(리팩토링)
   private final ArtsRepository artsRepository;
   private final FilesRepository filesRepository;
-  private final UserRepository userRepository;
   private final ArtArtistRelRepository artArtistRelRepository;
   private final ReviewService reviewService;
   private final GalleriesRepository galleriesRepository;
-
-  private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy.MM.dd");
   private final ArtistsRepository artistsRepository;
 
   // 작품 상세 조회
@@ -73,7 +72,14 @@ public class ArtsService {
   }
 
   // 작품 전체 조회
-  public Page<ArtsListResponseDto> getArtsByYear(int year, Pageable pageable) {
+  public Page<ArtsListResponseDto> getArtsByYear(Integer year, Pageable pageable) {
+
+    pageable = PageRequest.of(pageable.getPageNumber(), 9);
+
+    // 만약 year가 null로 넘어오면 시스템 연도로 대체
+    if (year == null) {
+      year = LocalDate.now().getYear();
+    }
 
     // 해당 연도의 모든 전시회 조회
     List<Galleries> galleriesList = findByYear(year);
@@ -84,12 +90,23 @@ public class ArtsService {
             .flatMap(gallery -> artsRepository.findByGalleriesNo(gallery.getGalleriesNo()).stream())
             .collect(Collectors.toList());
 
+    // 정렬 (작가 이름 가나다 순)
+    List<Arts> sortedList =
+        artsList.stream()
+            .sorted(Comparator.comparing(Arts::getArtName))
+            .collect(Collectors.toList());
+
     // 작품 정보를 DTO로 변환
     List<ArtsListResponseDto> dtoList =
-        artsList.stream().map(this::mapToArtsListResponseDto).collect(Collectors.toList());
+        sortedList.stream().map(this::mapToArtsListResponseDto).collect(Collectors.toList());
+
+    // 페이지네이션 처리
+    int start = (int) pageable.getOffset();
+    int end = Math.min((start + pageable.getPageSize()), dtoList.size());
+    List<ArtsListResponseDto> pageList = dtoList.subList(start, end);
 
     // 페이징 처리된 결과 반환
-    return new PageImpl<>(dtoList, pageable, dtoList.size());
+    return new PageImpl<>(pageList, pageable, dtoList.size());
   }
 
   // 기수별 조회
