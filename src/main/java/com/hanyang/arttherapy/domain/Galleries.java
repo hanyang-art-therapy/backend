@@ -18,10 +18,6 @@ public class Galleries {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long galleriesNo;
 
-  @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "user_no", nullable = false)
-  private Users user;
-
   @Column(nullable = false, length = 255)
   private String title;
 
@@ -30,14 +26,6 @@ public class Galleries {
 
   @Column(nullable = false)
   private LocalDateTime endDate;
-
-  @Column(nullable = false, updatable = false)
-  private LocalDateTime createdAt;
-
-  @PrePersist
-  protected void onCreate() {
-    this.createdAt = LocalDateTime.now();
-  }
 
   public void update(String title, LocalDateTime startDate, LocalDateTime endDate) {
     this.title = title;

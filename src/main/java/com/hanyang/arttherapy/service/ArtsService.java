@@ -9,6 +9,8 @@ import java.util.stream.Collectors;
 
 import jakarta.persistence.EntityNotFoundException;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -30,12 +32,9 @@ public class ArtsService {
   // 공통 메서드 분리(리팩토링)
   private final ArtsRepository artsRepository;
   private final FilesRepository filesRepository;
-  private final UserRepository userRepository;
   private final ArtArtistRelRepository artArtistRelRepository;
   private final ReviewService reviewService;
   private final GalleriesRepository galleriesRepository;
-
-  private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy.MM.dd");
   private final ArtistsRepository artistsRepository;
 
   // 작품 상세 조회
@@ -43,19 +42,21 @@ public class ArtsService {
     Arts arts = getArtById(artsNo);
 
     GalleryResponseDto galleryResponse = getGalleryResponseDto(arts.getGalleriesNo());
+
     List<ArtArtistRel> artistRels = artArtistRelRepository.findByArtsNo(artsNo);
     List<ArtistResponseDto> artistResponses = getArtistResponseDto(artistRels);
     List<FileResponseDto> fileResponses = getFileResponseDto(arts.getFilesNo());
-    List<ReviewResponseDto> reviews = getReviewResponseDto(artsNo);
+    Pageable pageable = PageRequest.of(0, 5);
+    List<ReviewResponseDto> reviews = getReviewResponseDto(artsNo, pageable);
     String description = getDescription(artistRels);
-    String formattedDate = getFormattedDate(arts);
+    String createdAt = getFormattedDate(arts);
 
     return new ArtsResponseDto(
         arts.getArtsNo(),
         arts.getArtName(),
         arts.getCaption(),
         description,
-        formattedDate,
+        createdAt,
         galleryResponse,
         artistResponses,
         fileResponses,
@@ -71,69 +72,71 @@ public class ArtsService {
   }
 
   // 작품 전체 조회
-  public List<ArtsListResponseDto> getArtsByYear(int year) {
+  public Page<ArtsListResponseDto> getArtsByYear(Integer year, Pageable pageable) {
+
+    pageable = PageRequest.of(pageable.getPageNumber(), 9);
+
+    // 만약 year가 null로 넘어오면 시스템 연도로 대체
+    if (year == null) {
+      year = LocalDate.now().getYear();
+    }
+
+    // 해당 연도의 모든 전시회 조회
     List<Galleries> galleriesList = findByYear(year);
 
+    // 전시회에 속한 모든 작품 조회
     List<Arts> artsList =
         galleriesList.stream()
             .flatMap(gallery -> artsRepository.findByGalleriesNo(gallery.getGalleriesNo()).stream())
             .collect(Collectors.toList());
 
-    return mapToDtoList(artsList, year);
-  }
+    // 정렬 (작가 이름 가나다 순)
+    List<Arts> sortedList =
+        artsList.stream()
+            .sorted(Comparator.comparing(Arts::getArtName))
+            .collect(Collectors.toList());
 
-  // 작품 리스트 매핑
-  private List<ArtsListResponseDto> mapToDtoList(List<Arts> artsList, int year) {
-    return artsList.stream()
-        .map(
-            arts -> {
-              String thumbnailUrl = getThumbnailUrl(arts.getFilesNo());
-              List<String> artistInfoList = getArtistInfoList(arts.getArtsNo());
+    // 작품 정보를 DTO로 변환
+    List<ArtsListResponseDto> dtoList =
+        sortedList.stream().map(this::mapToArtsListResponseDto).collect(Collectors.toList());
 
-              Galleries gallery =
-                  galleriesRepository
-                      .findById(arts.getGalleriesNo())
-                      .orElseThrow(() -> new IllegalArgumentException("해당 전시회가 존재하지 않습니다."));
+    // 페이지네이션 처리
+    int start = (int) pageable.getOffset();
+    int end = Math.min((start + pageable.getPageSize()), dtoList.size());
+    List<ArtsListResponseDto> pageList = dtoList.subList(start, end);
 
-              return new ArtsListResponseDto(
-                  arts.getArtsNo(),
-                  arts.getArtName(),
-                  gallery.getStartDate().getYear(),
-                  thumbnailUrl != null ? thumbnailUrl : "No Thumbnail",
-                  String.join(", ", artistInfoList),
-                  new GalleryResponseDto(gallery.getGalleriesNo()));
-            })
-        .sorted(Comparator.comparing(ArtsListResponseDto::artistInfo))
-        .collect(Collectors.toList());
+    // 페이징 처리된 결과 반환
+    return new PageImpl<>(pageList, pageable, dtoList.size());
   }
 
   // 기수별 조회
-  public List<ArtsListResponseDto> getArtsByCohort(int cohort) {
-    List<Arts> artsList = artsRepository.findByCohort(cohort);
-    return mapToDtoList(artsList, LocalDate.now().getYear());
+  public Page<ArtsListResponseDto> getArtsByCohort(int cohort, Pageable pageable) {
+    // JPQL로 페이징 처리된 결과를 바로 가져오기
+    Page<Arts> artsPage = artsRepository.findByCohort(cohort, pageable);
+
+    // DTO 변환
+    List<ArtsListResponseDto> dtoList =
+        artsPage.stream().map(this::mapToArtsListResponseDto).collect(Collectors.toList());
+
+    return new PageImpl<>(dtoList, pageable, artsPage.getTotalElements());
   }
 
   // 연도 + 기수 조회
-  public List<ArtsListResponseDto> getArtsByYearAndCohort(int year, int cohort) {
-    // 연도별로 전시회 조회
+  public Page<ArtsListResponseDto> getArtsByYearAndCohort(int year, int cohort, Pageable pageable) {
     List<Galleries> galleriesList = findByYear(year);
 
-    // 전시회 번호와 기수를 조합하여 작품 조회
-    List<Arts> artsList =
+    // JPQL로 페이징 처리된 결과를 바로 가져오기
+    List<ArtsListResponseDto> dtoList =
         galleriesList.stream()
             .flatMap(
                 gallery ->
-                    artsRepository.findByCohort(cohort).stream()
-                        .filter(arts -> arts.getGalleriesNo().equals(gallery.getGalleriesNo())))
+                    artsRepository
+                        .findByGalleriesNoAndCohort(gallery.getGalleriesNo(), cohort, pageable)
+                        .stream())
+            .map(this::mapToArtsListResponseDto)
             .collect(Collectors.toList());
 
-    return mapToDtoList(artsList, LocalDate.now().getYear());
-  }
-
-  // 키워드 검색
-  public List<ArtsListResponseDto> searchArtsByName(String keyword) {
-    List<Arts> artsList = artsRepository.findByArtNameContaining(keyword);
-    return mapToDtoList(artsList, LocalDate.now().getYear());
+    return new PageImpl<>(dtoList, pageable, dtoList.size());
   }
 
   private Arts getArtById(Long artsNo) {
@@ -142,11 +145,40 @@ public class ArtsService {
         .orElseThrow(() -> new EntityNotFoundException("해당 작품을 찾을 수 없습니다."));
   }
 
+  private ArtsListResponseDto mapToArtsListResponseDto(Arts arts) {
+    // 파일 조회
+    Files file =
+        filesRepository
+            .findById(arts.getFilesNo())
+            .orElseThrow(() -> new IllegalArgumentException("파일을 찾을 수 없습니다."));
+
+    // 작가 조회
+    ArtArtistRel artistRel =
+        artArtistRelRepository.findByArtsNo(arts.getArtsNo()).stream()
+            .findFirst()
+            .orElseThrow(() -> new IllegalArgumentException("작가를 찾을 수 없습니다."));
+
+    // 작가 정보 매핑
+    ArtistResponseDto artistDto =
+        artistsRepository
+            .findById(artistRel.getArtistsNo())
+            .map(
+                artist ->
+                    new ArtistResponseDto(
+                        artist.getArtistName(), artist.getStudentNo(), artist.getCohort()))
+            .orElseThrow(() -> new IllegalArgumentException("작가 정보를 찾을 수 없습니다."));
+
+    // ArtistResponse로 변환
+    ArtsListResponseDto.ArtistResponse artistResponse =
+        new ArtsListResponseDto.ArtistResponse(artistDto.artistName(), artistDto.cohort());
+
+    return ArtsListResponseDto.of(arts, file, artistResponse);
+  }
+
   private List<ArtistResponseDto> getArtistResponseDto(List<ArtArtistRel> artistRels) {
     return artistRels.stream()
         .map(
             rel -> {
-              // artistsNo를 통해 직접 조회
               return artistsRepository
                   .findById(rel.getArtistsNo())
                   .map(
@@ -164,9 +196,8 @@ public class ArtsService {
         .collect(Collectors.toList());
   }
 
-  private List<ReviewResponseDto> getReviewResponseDto(Long artsNo) {
-    Pageable pageRequest = PageRequest.of(0, 5);
-    return reviewService.getReviews(artsNo, pageRequest).getContent();
+  private List<ReviewResponseDto> getReviewResponseDto(Long artsNo, Pageable pageable) {
+    return reviewService.getReviews(artsNo, pageable).getContent();
   }
 
   private String getDescription(List<ArtArtistRel> artistRels) {
@@ -174,7 +205,7 @@ public class ArtsService {
   }
 
   private String getFormattedDate(Arts arts) {
-    return arts.getCreatedAt().format(formatter);
+    return arts.getCreatedAt().format(DateTimeFormatter.ofPattern("yyyy.MM.dd"));
   }
 
   private GalleryResponseDto getGalleryResponseDto(Long galleriesNo) {
@@ -182,23 +213,6 @@ public class ArtsService {
         galleriesRepository
             .findById(galleriesNo)
             .orElseThrow(() -> new IllegalArgumentException("해당 전시회가 존재하지 않습니다."));
-
     return new GalleryResponseDto(gallery.getGalleriesNo());
-  }
-
-  private List<String> getArtistInfoList(Long artsNo) {
-    return artArtistRelRepository.findByArtsNo(artsNo).stream()
-        .map(
-            rel ->
-                userRepository
-                    .findById(rel.getArtistsNo())
-                    .map(user -> user.getUserName() + " " + user.getStudentNo())
-                    .orElse("알 수 없음"))
-        .sorted()
-        .collect(Collectors.toList());
-  }
-
-  private String getThumbnailUrl(Long filesNo) {
-    return filesRepository.findById(filesNo).map(Files::getUrl).orElse(null);
   }
 }
