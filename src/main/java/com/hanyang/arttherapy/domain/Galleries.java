@@ -4,8 +4,6 @@ import java.time.LocalDateTime;
 
 import jakarta.persistence.*;
 
-import com.hanyang.arttherapy.common.entity.BaseEntity;
-
 import lombok.*;
 
 @Getter
@@ -14,15 +12,11 @@ import lombok.*;
 @Builder
 @Entity
 @Table(name = "galleries")
-public class Galleries extends BaseEntity {
+public class Galleries {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long galleriesNo;
-
-  @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "userNo", nullable = false)
-  private Users user;
 
   @Column(nullable = false, length = 255)
   private String title;

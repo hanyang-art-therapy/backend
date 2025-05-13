@@ -8,12 +8,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.hanyang.arttherapy.common.exception.CustomException;
 import com.hanyang.arttherapy.common.exception.exceptionType.GalleryExceptionType;
-import com.hanyang.arttherapy.common.exception.exceptionType.UserException;
 import com.hanyang.arttherapy.domain.Galleries;
-import com.hanyang.arttherapy.domain.Users;
-import com.hanyang.arttherapy.dto.request.GalleriesRequestDto;
 import com.hanyang.arttherapy.repository.GalleriesRepository;
-import com.hanyang.arttherapy.repository.UserRepository;
 
 import lombok.RequiredArgsConstructor;
 
@@ -24,22 +20,8 @@ import lombok.RequiredArgsConstructor;
 public class GalleriesService {
 
   private final GalleriesRepository galleriesRepository;
-  private final UserRepository userRepository;
 
-  public Galleries save(GalleriesRequestDto dto) {
-    Users user =
-        userRepository
-            .findById(dto.getUserNo())
-            .orElseThrow(() -> new CustomException(UserException.USER_NOT_FOUND));
-
-    Galleries galleries =
-        Galleries.builder()
-            .user(user)
-            .title(dto.getTitle())
-            .startDate(dto.getStartDate())
-            .endDate(dto.getEndDate())
-            .build();
-
+  public Galleries save(Galleries galleries) {
     return galleriesRepository.save(galleries);
   }
 
@@ -53,9 +35,9 @@ public class GalleriesService {
         .orElseThrow(() -> new CustomException(GalleryExceptionType.GALLERY_NOT_FOUND));
   }
 
-  public Galleries update(Long id, GalleriesRequestDto dto) {
+  public Galleries update(Long id, Galleries updated) {
     Galleries gallery = getGalleryById(id);
-    gallery.update(dto.getTitle(), dto.getStartDate(), dto.getEndDate());
+    gallery.update(updated.getTitle(), updated.getStartDate(), updated.getEndDate());
     return gallery;
   }
 

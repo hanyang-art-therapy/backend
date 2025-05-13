@@ -14,7 +14,6 @@ public class GalleriesResponseDto {
   private String title;
   private LocalDateTime startDate;
   private LocalDateTime endDate;
-  private Long userNo;
 
   public static GalleriesResponseDto from(Galleries galleries) {
     return GalleriesResponseDto.builder()
@@ -22,7 +21,6 @@ public class GalleriesResponseDto {
         .title(galleries.getTitle())
         .startDate(galleries.getStartDate())
         .endDate(galleries.getEndDate())
-        .userNo(galleries.getUser().getUserNo())
         .build();
   }
 }
