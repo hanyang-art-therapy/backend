@@ -7,8 +7,8 @@ public record ArtsResponseDto(
     String artName,
     String caption,
     String description,
-    String formattedDate,
-    GalleryResponseDto galleryResponse,
+    String createdAt,
+    GalleryResponseDto galleries,
     List<ArtistResponseDto> artists,
     List<FileResponseDto> files,
     List<ReviewResponseDto> reviews) {}

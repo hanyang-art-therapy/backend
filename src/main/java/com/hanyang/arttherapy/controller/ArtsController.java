@@ -1,8 +1,11 @@
 package com.hanyang.arttherapy.controller;
 
 import java.time.LocalDate;
-import java.util.List;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -29,28 +32,40 @@ public class ArtsController {
 
   // 작품 전체 조회 및 연도별, 기수별, 혹은 둘 다 필터링
   @GetMapping("/arts")
-  public ResponseEntity<List<ArtsListResponseDto>> getArtsByFilter(
+  public ResponseEntity<?> getArtsByFilter(
       @RequestParam(required = false) Integer year,
-      @RequestParam(required = false) Integer cohort) {
-    if (year == null) {
-      year = LocalDate.now().getYear(); // 시스템의 현재 연도
+      @RequestParam(required = false) Integer cohort,
+      Pageable pageable) {
+
+    Page<ArtsListResponseDto> response;
+
+    // 둘 다 없을 때: 시스템 연도로 조회
+    if (year == null && cohort == null) {
+      year = LocalDate.now().getYear();
+      response = artsService.getArtsByYear(year, pageable);
+    }
+    // 연도 + 기수 조회
+    else if (year != null && cohort != null) {
+      response = artsService.getArtsByYearAndCohort(year, cohort, pageable);
+    }
+    // 연도만 조회
+    else if (year != null) {
+      response = artsService.getArtsByYear(year, pageable);
+    }
+    // 기수만 조회
+    else {
+      response = artsService.getArtsByCohort(cohort, pageable);
     }
 
-    List<ArtsListResponseDto> response;
+    // 응답 포맷 통일
+    Map<String, Object> result = new LinkedHashMap<>();
+    result.put("content", response.getContent());
+    result.put("page", response.getNumber());
+    result.put("size", response.getSize());
+    result.put("totalElements", response.getTotalElements());
+    result.put("totalPages", response.getTotalPages());
+    result.put("last", response.isLast());
 
-    if (cohort != null) {
-      response = artsService.getArtsByYearAndCohort(year, cohort);
-    } else {
-      response = artsService.getArtsByYear(year);
-    }
-
-    return ResponseEntity.ok(response);
-  }
-
-  // 작품명 검색
-  @GetMapping("/arts/search")
-  public ResponseEntity<List<ArtsListResponseDto>> searchArts(@RequestParam String keyword) {
-    List<ArtsListResponseDto> response = artsService.searchArtsByName(keyword);
-    return ResponseEntity.ok(response);
+    return ResponseEntity.ok(result);
   }
 }

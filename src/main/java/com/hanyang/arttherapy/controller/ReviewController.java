@@ -8,6 +8,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.hanyang.arttherapy.dto.request.ReviewRequestDto;
 import com.hanyang.arttherapy.dto.response.ReviewResponseDto;
@@ -35,8 +36,7 @@ public class ReviewController {
   public ResponseEntity<ReviewResponseDto> createReview(
       @PathVariable Long galleriesNo,
       @PathVariable Long artsNo,
-      @RequestBody ReviewRequestDto reviewRequest) {
-
+      @ModelAttribute ReviewRequestDto reviewRequest) {
     ReviewResponseDto response = reviewService.createReview(galleriesNo, artsNo, reviewRequest);
     return ResponseEntity.status(201).body(response);
   }
@@ -47,11 +47,12 @@ public class ReviewController {
       @PathVariable Long galleriesNo,
       @PathVariable Long artsNo,
       @PathVariable Long reviewNo,
-      @RequestBody Map<String, Object> request) {
-    String reviewText = (String) request.get("reviewText");
-    List<Integer> filesNo = (List<Integer>) request.get("filesNo");
+      @ModelAttribute Map<String, Object> request) {
 
-    ReviewResponseDto responseDto = reviewService.patchReview(reviewNo, reviewText, filesNo);
+    String reviewText = (String) request.get("reviewText");
+    List<MultipartFile> files = (List<MultipartFile>) request.get("files");
+
+    ReviewResponseDto responseDto = reviewService.patchReview(reviewNo, reviewText, files);
     return ResponseEntity.ok(responseDto);
   }
 
@@ -62,7 +63,6 @@ public class ReviewController {
 
     Map<String, Object> response = new HashMap<>();
     response.put("message", "댓글이 성공적으로 삭제되었습니다.");
-    response.put("reviewNo", reviewNo);
 
     return ResponseEntity.ok(response);
   }
