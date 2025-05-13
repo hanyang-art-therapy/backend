@@ -12,7 +12,7 @@ import lombok.*;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@Table(name = "refreshToken")
+@Table(name = "refresh_token")
 public class RefreshToken {
 
   @Id
@@ -20,7 +20,7 @@ public class RefreshToken {
   private Long refreshTokenNo;
 
   @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "userNo", nullable = false, unique = true)
+  @JoinColumn(name = "user_no", nullable = false, unique = true)
   private Users users;
 
   @Column(nullable = false, unique = true)
