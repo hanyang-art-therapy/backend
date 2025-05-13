@@ -7,6 +7,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import com.hanyang.arttherapy.domain.Galleries;
+import com.hanyang.arttherapy.dto.request.GalleriesRequestDto;
+import com.hanyang.arttherapy.dto.response.GalleriesResponseDto;
 import com.hanyang.arttherapy.service.GalleriesService;
 
 import lombok.RequiredArgsConstructor;
@@ -20,10 +22,10 @@ public class GalleriesController {
 
   // 전시회 등록
   @PostMapping
-  public ResponseEntity<?> create(@RequestBody Galleries galleries) {
+  public ResponseEntity<?> create(@RequestBody GalleriesRequestDto requestDto) {
     try {
-      Galleries saved = galleriesService.save(galleries);
-      return ResponseEntity.status(201).body(saved);
+      Galleries saved = galleriesService.save(requestDto);
+      return ResponseEntity.status(201).body(GalleriesResponseDto.from(saved));
     } catch (Exception e) {
       e.printStackTrace();
       return ResponseEntity.status(500).body(Map.of("message", "서버 오류로 등록이 실패했습니다."));
@@ -32,24 +34,25 @@ public class GalleriesController {
 
   // 전시회 전체 조회
   @GetMapping
-  public ResponseEntity<List<Galleries>> getAllGalleries() {
-    List<Galleries> galleries = galleriesService.getAllGalleries();
-    return ResponseEntity.ok(galleries);
+  public ResponseEntity<List<GalleriesResponseDto>> getAllGalleries() {
+    List<GalleriesResponseDto> response =
+        galleriesService.getAllGalleries().stream().map(GalleriesResponseDto::from).toList();
+    return ResponseEntity.ok(response);
   }
 
   // 전시회 개별 조회
   @GetMapping("/{galleriesNo}")
-  public ResponseEntity<Galleries> getGalleryById(@PathVariable Long galleriesNo) {
+  public ResponseEntity<GalleriesResponseDto> getGalleryById(@PathVariable Long galleriesNo) {
     Galleries gallery = galleriesService.getGalleryById(galleriesNo);
-    return ResponseEntity.ok(gallery);
+    return ResponseEntity.ok(GalleriesResponseDto.from(gallery));
   }
 
   // 전시회 수정
   @PutMapping("/{galleriesNo}")
-  public ResponseEntity<Galleries> update(
-      @PathVariable Long galleriesNo, @RequestBody Galleries updated) {
-    Galleries updatedGallery = galleriesService.update(galleriesNo, updated);
-    return ResponseEntity.ok(updatedGallery);
+  public ResponseEntity<GalleriesResponseDto> update(
+      @PathVariable Long galleriesNo, @RequestBody GalleriesRequestDto requestDto) {
+    Galleries updatedGallery = galleriesService.update(galleriesNo, requestDto);
+    return ResponseEntity.ok(GalleriesResponseDto.from(updatedGallery));
   }
 
   // 전시회 삭제

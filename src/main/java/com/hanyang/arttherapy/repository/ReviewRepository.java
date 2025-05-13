@@ -19,4 +19,7 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
 
   @Query(value = "SELECT r.filesNo FROM reviews r WHERE r.reviewNo = :reviewNo", nativeQuery = true)
   List<Long> findFileIdsByReviewNo(@Param("reviewNo") Long reviewNo);
+
+  @Query("SELECT r FROM Review r WHERE r.user.userNo = :userNo")
+  List<Review> findAllByUser_UserNo(@Param("userNo") Long userNo);
 }

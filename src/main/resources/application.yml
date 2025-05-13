@@ -1,43 +1,4 @@
-# application.yml (공통 설정)
 spring:
-  #  web:
-  #    resources:
-  #      add-mappings: false
-
-  mail:
-    host: smtp.gmail.com
-    port: 587
-    username:
-    password:
-    properties:
-      mail.smtp.auth: true
-      mail.smtp.starttls.enable: true
-
-  jwt:
-    secret:
-
-  datasource:
-    driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://localhost:3306/hanyang?serverTimezone=UTC&characterEncoding=UTF-8
-    username:
-    password:
-
-  jpa:
-    #    database-platform: org.hibernate.dialect.MySQL5InnoDBDialect
-    database-platform: org.hibernate.dialect.MySQL8Dialect
-    hibernate:
-      ddl-auto: update
-    defer-datasource-initialization: true
-    show-sql: true
-
-  servlet:
-    multipart:
-      max-file-size: 5242880 # 단일 요청 5MB 5242880
-
   profiles:
-    active: local  # 기본적으로 'local' 프로파일을 활성화
+    active: h2
 
-# 파일 저장 경로 추가
-app:
-  storage:
-    path: ${STORAGE_PATH:/default/storage/files} #임시

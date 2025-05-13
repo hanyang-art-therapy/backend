@@ -6,15 +6,13 @@ import jakarta.persistence.*;
 
 import com.hanyang.arttherapy.common.entity.BaseEntity;
 
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Getter
-@Entity
-@AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor
+@Builder
+@Entity
 @Table(name = "galleries")
 public class Galleries extends BaseEntity {
 
@@ -22,7 +20,11 @@ public class Galleries extends BaseEntity {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long galleriesNo;
 
-  @Column(nullable = false)
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "userNo", nullable = false)
+  private Users user;
+
+  @Column(nullable = false, length = 255)
   private String title;
 
   @Column(nullable = false)

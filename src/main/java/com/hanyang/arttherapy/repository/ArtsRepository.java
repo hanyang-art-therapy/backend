@@ -18,4 +18,7 @@ public interface ArtsRepository extends JpaRepository<Arts, Long> {
 
   @Query(value = "SELECT a.filesNo FROM arts a WHERE a.artsNo = :artsNo", nativeQuery = true)
   List<Long> findFileIdsByArtsNo(@Param("artsNo") Long artsNo);
+
+  @Query("SELECT ar.arts FROM ArtArtistRel ar WHERE ar.artist.studentNo = :studentNo")
+  List<Arts> findAllByStudentNo(@Param("studentNo") String studentNo);
 }

@@ -2,11 +2,12 @@ package com.hanyang.arttherapy.domain;
 
 import jakarta.persistence.*;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 @Getter
-@Setter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor
+@Builder
 @Entity
 @Table(name = "art_artist_rel")
 public class ArtArtistRel {
