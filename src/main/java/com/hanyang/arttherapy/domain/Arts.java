@@ -5,14 +5,14 @@ import jakarta.persistence.*;
 import com.hanyang.arttherapy.common.entity.BaseEntity;
 import com.hanyang.arttherapy.domain.enums.ArtType;
 
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Getter
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
 @Table(name = "arts")
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Arts extends BaseEntity {
 
   @Id
@@ -34,4 +34,11 @@ public class Arts extends BaseEntity {
   @Enumerated(EnumType.STRING)
   @Column(nullable = false, length = 20)
   private ArtType artType;
+
+  public void updateArts(Long filesNo, String artName, String caption, ArtType artType) {
+    this.filesNo = filesNo;
+    this.artName = artName;
+    this.caption = caption;
+    this.artType = artType;
+  }
 }

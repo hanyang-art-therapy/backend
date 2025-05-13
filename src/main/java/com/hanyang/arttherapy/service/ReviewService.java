@@ -8,10 +8,12 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.hanyang.arttherapy.domain.Files;
 import com.hanyang.arttherapy.domain.Reviews;
 import com.hanyang.arttherapy.domain.Users;
+import com.hanyang.arttherapy.domain.enums.FilesType;
 import com.hanyang.arttherapy.dto.request.ReviewRequestDto;
 import com.hanyang.arttherapy.dto.response.FileResponseDto;
 import com.hanyang.arttherapy.dto.response.ReviewResponseDto;
@@ -56,12 +58,22 @@ public class ReviewService {
       Long galleriesNo, Long artsNo, ReviewRequestDto reviewRequestDto) {
     Users user = getUserByUserId();
 
-    List<Long> filesNoList = reviewRequestDto.filesNo();
-    if (filesNoList == null || filesNoList.isEmpty()) {
-      throw new IllegalArgumentException("파일 번호가 전달되지 않았습니다.");
+    // S3에 파일 저장 및 DB에 기록
+    List<MultipartFile> multipartFiles = reviewRequestDto.files();
+    List<FileResponseDto> storedFiles = fileStorageService.store(multipartFiles, FilesType.REVIEW);
+
+    if (storedFiles.isEmpty()) {
+      throw new IllegalArgumentException("파일 업로드에 실패했습니다.");
     }
 
-    Long firstFileNo = filesNoList.get(0);
+    // 파일 활성화
+    List<Long> filesNoList =
+        storedFiles.stream().map(FileResponseDto::filesNo).collect(Collectors.toList());
+    List<Files> files = validateFiles(filesNoList); // 유효성 검사
+    activateFiles(files); // 활성화 처리
+
+    // DB에 기록된 파일 정보로 Dto 생성
+    Long firstFileNo = storedFiles.get(0).filesNo();
 
     Reviews review =
         Reviews.builder()
@@ -73,20 +85,16 @@ public class ReviewService {
 
     reviewRepository.save(review);
 
-    List<Files> files = validateFiles(filesNoList);
-    activateFiles(files);
-
-    List<FileResponseDto> fileResponseDtos = toFileResponseDtos(files);
-
     return new ReviewResponseDto(
         review.getReviewsNo(),
         review.getReviewText(),
         maskUserName(user.getUserName()),
-        fileResponseDtos);
+        storedFiles);
   }
 
   // 댓글 수정
-  public ReviewResponseDto patchReview(Long reviewNo, String reviewText, List<Integer> filesNo) {
+  public ReviewResponseDto patchReview(
+      Long reviewNo, String reviewText, List<MultipartFile> files) {
     Users user = getUserByUserId();
 
     Reviews review =
@@ -97,25 +105,26 @@ public class ReviewService {
     if (reviewText != null) {
       review.updateReviewText(reviewText);
     }
+    if (files != null && !files.isEmpty()) {
+      List<FileResponseDto> newFiles = fileStorageService.store(files, FilesType.REVIEW);
 
-    if (filesNo != null && !filesNo.isEmpty()) {
-      List<Long> filesLongNo = filesNo.stream().map(Long::valueOf).collect(Collectors.toList());
+      // DB에 저장된 파일 활성화 처리
+      List<Long> filesNoList =
+          newFiles.stream().map(FileResponseDto::filesNo).collect(Collectors.toList());
+      List<Files> savedFiles = validateFiles(filesNoList); // 유효성 검사
+      activateFiles(savedFiles); // 활성화 처리
 
-      List<Files> newFiles = validateFiles(filesLongNo);
       deactivateFile(review.getFilesNo());
-      activateFiles(newFiles);
-
-      review.updateFilesNo(filesLongNo.get(0));
+      review.updateFilesNo(newFiles.get(0).filesNo());
       reviewRepository.save(review);
 
       return new ReviewResponseDto(
           review.getReviewsNo(),
           review.getReviewText(),
           maskUserName(user.getUserName()),
-          toFileResponseDtos(newFiles));
+          newFiles);
     }
 
-    // 기존 파일 반환
     List<Files> existingFiles = findFiles(List.of(review.getFilesNo()));
     return new ReviewResponseDto(
         review.getReviewsNo(),
@@ -132,20 +141,16 @@ public class ReviewService {
             .findById(reviewNo)
             .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 리뷰입니다."));
 
-    // 연결된 파일 번호 조회
     Long fileNo = review.getFilesNo();
-
-    // 파일 조회 및 delYn 업데이트
     filesRepository
         .findById(fileNo)
         .ifPresent(
             file -> {
-              // 파일의 delYn만 true로 업데이트
+              fileStorageService.deletedFileFromSystem(fileNo);
               file.markAsDeleted();
               filesRepository.save(file);
             });
 
-    // 리뷰 삭제
     reviewRepository.delete(review);
   }
 
