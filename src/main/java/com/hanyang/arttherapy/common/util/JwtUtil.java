@@ -27,7 +27,6 @@ public class JwtUtil {
           .encodeToString("yoursecretlongandsecuresecretkeymustbeatleast32bywcg".getBytes());
 
   private final long accessTokenValidity = 1000L * 60; // 1분
-  private final long refreshTokenValidity = 1000L * 60 * 60 * 24 * 7; // 7일
 
   public String createAccessToken(Users user) {
     return createToken(user.getUserNo(), accessTokenValidity);

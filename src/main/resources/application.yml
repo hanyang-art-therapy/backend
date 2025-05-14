@@ -1,8 +1,8 @@
 # application.yml (공통 설정)
 spring:
-  web:
-    resources:
-      add-mappings: false
+  #  web:
+  #    resources:
+  #      add-mappings: false
 
   mail:
     host: smtp.gmail.com
@@ -10,8 +10,11 @@ spring:
     username: ${MAIL_USERNAME}
     password: ${MAIL_PASSWORD}
     properties:
-      mail.smtp.auth: true
-      mail.smtp.starttls.enable: true
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
 
   jwt:
     secret: ${JWT_SECRET}

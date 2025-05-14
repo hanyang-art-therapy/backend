@@ -55,11 +55,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     }
 
     Users user = userOptional.get();
+    CustomUserDetail userDetails = new CustomUserDetail(user);
 
     // 4. 인증 객체 생성 및 SecurityContext에 저장
     UsernamePasswordAuthenticationToken authentication =
-        new UsernamePasswordAuthenticationToken(
-            user, null, null); // 권한 설정 필요 시 세 번째 인자에 authorities 추가
+        new UsernamePasswordAuthenticationToken(user, null, userDetails.getAuthorities());
     authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
     SecurityContextHolder.getContext().setAuthentication(authentication);
 

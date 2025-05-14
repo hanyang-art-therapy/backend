@@ -263,6 +263,7 @@ public class UserService {
       } else {
         // 만료되지 않았고 IP/UserAgent가 같으면 기존 토큰 사용
         String accessToken = jwtUtil.createAccessToken(user);
+        jwtUtil.addRefreshTokenToCookie(httpResponse, token.getRefreshToken());
         return new SigninResponse(user.getUserNo(), accessToken);
       }
     }
@@ -270,17 +271,20 @@ public class UserService {
     String refreshToken = jwtUtil.createRefreshToken(user);
 
     // RefreshToken 엔티티 저장
-    RefreshToken tokenEntity = RefreshToken.builder().build();
-    tokenEntity.setUsers(user);
-    tokenEntity.setRefreshToken(refreshToken);
-    tokenEntity.setExpiredAt(LocalDateTime.now().plusDays(7)); // 만료 기간 설정
-    tokenEntity.setIp(ip);
-    tokenEntity.setUserAgent(userAgent);
+    RefreshToken tokenEntity =
+        RefreshToken.builder()
+            .users(user)
+            .refreshToken(refreshToken)
+            .expiredAt(LocalDateTime.now().plusDays(7))
+            .ip(ip)
+            .userAgent(userAgent)
+            .build();
 
     refreshTokenRepository.save(tokenEntity);
 
     jwtUtil.addRefreshTokenToCookie(httpResponse, tokenEntity.getRefreshToken());
 
+    httpResponse.setHeader("Authorization", "Bearer " + accessToken);
     return new SigninResponse(user.getUserNo(), accessToken);
   }
 
