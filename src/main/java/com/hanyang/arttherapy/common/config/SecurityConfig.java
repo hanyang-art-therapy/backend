@@ -1,11 +1,16 @@
 package com.hanyang.arttherapy.common.config;
 
+import java.util.List;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import com.hanyang.arttherapy.common.filter.JwtAuthenticationFilter;
 
@@ -21,35 +26,34 @@ public class SecurityConfig {
   @Bean
   public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
     http.csrf(csrf -> csrf.disable())
-        .cors(cors -> {})
+        .cors(cors -> cors.configurationSource(corsConfigurationSource()))
         .authorizeHttpRequests(
             authorize ->
                 authorize
-                    .requestMatchers("/admin/**")
-                    .hasRole("ADMIN")
-                    .requestMatchers("/user/**")
-                    .permitAll()
+                    //                    .requestMatchers("/admin/**")
+                    //                    .hasRole("ADMIN")
+                    //                    .requestMatchers("/user/**")
                     .anyRequest()
-                    .authenticated())
+                    .permitAll())
+        //                    .authenticated())
         .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
     //    .requiresChannel(channel -> channel.anyRequest().requiresSecure());
 
     return http.build();
   }
 
-  //  @Bean
-  //  public CorsConfigurationSource corsConfigurationSource() {
-  //    CorsConfiguration configuration = new CorsConfiguration();
-  //    configuration.setAllowedOrigins(List.of("http://localhost:5173"));
-  //    configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH",
-  // "OPTIONS"));
-  //    configuration.setAllowedHeaders(List.of("*")); // 모든 헤더 허용
-  //    configuration.setAllowCredentials(true); // 인증정보(Cookie 등) 허용
-  //
-  //    UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-  //    source.registerCorsConfiguration("/**", configuration);
-  //    return source;
-  //  }
+  @Bean
+  public CorsConfigurationSource corsConfigurationSource() {
+    CorsConfiguration configuration = new CorsConfiguration();
+    configuration.setAllowedOriginPatterns(List.of("*"));
+    configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
+    configuration.setAllowedHeaders(List.of("*")); // 모든 헤더 허용
+    configuration.setAllowCredentials(true); // 인증정보(Cookie 등) 허용
+
+    UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+    source.registerCorsConfiguration("/**", configuration);
+    return source;
+  }
 
   @Bean
   public BCryptPasswordEncoder bCryptPasswordEncoder() {
