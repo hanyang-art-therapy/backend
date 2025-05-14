@@ -19,5 +19,7 @@ public interface UserRepository
 
   Optional<Users> findByUserIdAndEmail(String userId, String email);
 
-  Optional<Users> findByUserId(String userId /*, String password*/);
+  Optional<Users> findByUserId(String userId);
+
+  Optional<Users> findByUserNo(Long userNo);
 }
