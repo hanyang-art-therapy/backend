@@ -16,6 +16,11 @@ spring:
   jwt:
     secret: ${JWT_SECRET}
 
+  security:
+    user:
+      name: yoursecurityName
+      password: yoursecurityPassword
+
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: ${DB_URL}
