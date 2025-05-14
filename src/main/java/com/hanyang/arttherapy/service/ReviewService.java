@@ -5,6 +5,7 @@ import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -195,7 +196,7 @@ public class ReviewService {
   }
 
   private Users getUserByUserId() {
-    String userId = "user1";
+    String userId = SecurityContextHolder.getContext().getAuthentication().getName();
     return userRepository
         .findByUserId(userId)
         .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다."));
