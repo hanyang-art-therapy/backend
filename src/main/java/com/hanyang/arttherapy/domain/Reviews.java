@@ -11,37 +11,33 @@ import lombok.*;
 @AllArgsConstructor
 @Entity
 @Builder
-@Table(name = "reviews")
 public class Reviews extends BaseEntity {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
+  @Column(name = "reviews_no")
   private Long reviewsNo;
 
-  @Column(nullable = false)
-  private Long artsNo;
+  @ManyToOne
+  @JoinColumn(name = "arts_no")
+  private Arts arts;
 
-  @Column(nullable = false)
-  private Long filesNo;
+  @OneToOne
+  @JoinColumn(name = "files_no")
+  private Files file;
 
-  @Column(nullable = false)
-  private Long userNo;
+  @ManyToOne
+  @JoinColumn(name = "user_no")
+  private Users user;
 
   @Column(columnDefinition = "LONGTEXT")
   private String reviewText;
-
-  public Reviews(Long userNo, Long artsNo, Long filesNo, String reviewText) {
-    this.userNo = userNo;
-    this.artsNo = artsNo;
-    this.filesNo = filesNo;
-    this.reviewText = reviewText;
-  }
 
   public void updateReviewText(String reviewText) {
     this.reviewText = reviewText;
   }
 
-  public void updateFilesNo(Long filesNo) {
-    this.filesNo = filesNo;
+  public void updateFilesNo(Files file) {
+    this.file = file;
   }
 }
