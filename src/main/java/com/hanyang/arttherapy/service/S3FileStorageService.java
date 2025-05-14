@@ -24,7 +24,7 @@ import software.amazon.awssdk.services.s3.model.*;
 
 @Slf4j
 @Service
-@Profile("dev")
+@Profile("!local")
 @Transactional
 @RequiredArgsConstructor
 public class S3FileStorageService implements FileStorageService {
