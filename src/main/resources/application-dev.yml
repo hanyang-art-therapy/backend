@@ -1,5 +1,21 @@
-# application-dev.yml
+# application.yml (공통 설정)
 spring:
+  web:
+    resources:
+      add-mappings: false
+
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${MAIL_USERNAME}
+    password: ${MAIL_PASSWORD}
+    properties:
+      mail.smtp.auth: true
+      mail.smtp.starttls.enable: true
+
+  jwt:
+    secret: ${JWT_SECRET}
+
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: ${DB_URL}
@@ -12,3 +28,25 @@ spring:
       ddl-auto: update
     defer-datasource-initialization: true
     show-sql: true
+
+  servlet:
+    multipart:
+      max-file-size: 5242880 # 단일 요청 5MB 5242880
+  cloud:
+    aws:
+      credentials:
+        accessKey: ${AWS_S3_ACCESS_KEY}
+        secretKey: ${AWS_S3_SECRET_ACCESS_KEY}
+      s3:
+        bucket: ${AWS_S3_BUCKET_NAME}
+      cloudfront:
+        url: ${CLOUDFRONT_URL}
+      region:
+        static: ap-northeast-2
+      stack:
+        auto: false
+
+# 파일 저장 경로 추가
+app:
+  storage:
+    path: ${STORAGE_PATH:/default/storage/files}
