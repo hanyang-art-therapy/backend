@@ -1,60 +1,51 @@
 package com.hanyang.arttherapy.domain;
 
-import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
 import jakarta.persistence.*;
 
-import org.hibernate.annotations.Fetch;
-import org.hibernate.annotations.FetchMode;
-
+import com.hanyang.arttherapy.common.entity.BaseEntity;
 import com.hanyang.arttherapy.domain.enums.ArtType;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 @Getter
-@Setter
 @Entity
-@Table(name = "arts")
-public class Arts {
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+public class Arts extends BaseEntity {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
+  @Column(name = "arts_no")
   private Long artsNo;
 
   @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "galleriesNo", nullable = false)
+  @JoinColumn(name = "galleries_no")
   private Galleries galleries;
 
-  @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "filesNo", nullable = false)
+  @OneToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "files_no")
   private Files file;
 
-  @Column(nullable = false, length = 500)
+  @OneToMany(mappedBy = "arts", cascade = CascadeType.ALL, orphanRemoval = true)
+  private List<ArtArtistRel> artArtistRels;
+
+  @Column(name = "art_name", nullable = false, length = 500)
   private String artName;
 
-  @Column(length = 500)
+  @Column(name = "caption", length = 500)
   private String caption;
 
   @Enumerated(EnumType.STRING)
-  @Column(nullable = false)
+  @Column(name = "art_type", nullable = false, length = 20)
   private ArtType artType;
 
-  @Column(nullable = false)
-  private LocalDateTime uploadedAt;
-
-  @OneToMany(mappedBy = "arts", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-  @Fetch(FetchMode.SUBSELECT)
-  private List<ArtArtistRel> artArtistRelList = new ArrayList<>();
-
-  @OneToMany(mappedBy = "arts", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-  @Fetch(FetchMode.SUBSELECT)
-  private List<Review> reviews = new ArrayList<>();
-
-  @PrePersist
-  public void setUploadedAt() {
-    this.uploadedAt = LocalDateTime.now();
+  public void updateArts(Files file, String artName, String caption, ArtType artType) {
+    this.file = file;
+    this.artName = artName;
+    this.caption = caption;
+    this.artType = artType;
   }
 }

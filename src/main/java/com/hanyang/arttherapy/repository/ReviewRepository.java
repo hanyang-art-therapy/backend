@@ -7,16 +7,13 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
-import org.springframework.stereotype.Repository;
 
-import com.hanyang.arttherapy.domain.Review;
+import com.hanyang.arttherapy.domain.Reviews;
 
-@Repository
-public interface ReviewRepository extends JpaRepository<Review, Long> {
+public interface ReviewRepository extends JpaRepository<Reviews, Long> {
 
-  @Query("SELECT r FROM Review r WHERE r.arts.artsNo = :artsNo")
-  Page<Review> findAllByArtsNo(@Param("artsNo") Long artsNo, Pageable pageable);
+  Page<Reviews> findAllByArts_ArtsNo(Long artsNo, Pageable pageable);
 
-  @Query(value = "SELECT r.filesNo FROM reviews r WHERE r.reviewNo = :reviewNo", nativeQuery = true)
-  List<Long> findFileIdsByReviewNo(@Param("reviewNo") Long reviewNo);
+  @Query("SELECT r FROM Reviews r WHERE r.user.userNo = :userNo")
+  List<Reviews> findAllByUserNo(@Param("userNo") Long userNo);
 }

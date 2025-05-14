@@ -4,11 +4,12 @@ import java.time.LocalDateTime;
 
 import jakarta.persistence.*;
 
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Getter
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor
+@Builder
 @Entity
 @Table(name = "galleries")
 public class Galleries {
@@ -17,7 +18,7 @@ public class Galleries {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long galleriesNo;
 
-  @Column(nullable = false)
+  @Column(nullable = false, length = 255)
   private String title;
 
   @Column(nullable = false)
@@ -26,22 +27,6 @@ public class Galleries {
   @Column(nullable = false)
   private LocalDateTime endDate;
 
-  @Column(nullable = false, updatable = false)
-  private LocalDateTime createdAt;
-
-  @PrePersist
-  protected void onCreate() {
-    this.createdAt = LocalDateTime.now();
-  }
-
-  // 생성자
-  public Galleries(String title, LocalDateTime startDate, LocalDateTime endDate) {
-    this.title = title;
-    this.startDate = startDate;
-    this.endDate = endDate;
-  }
-
-  // 수정용 메서드
   public void update(String title, LocalDateTime startDate, LocalDateTime endDate) {
     this.title = title;
     this.startDate = startDate;

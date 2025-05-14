@@ -1,8 +1,8 @@
 # application.yml (공통 설정)
 spring:
-  #  web:
-  #    resources:
-  #      add-mappings: false
+  web:
+    resources:
+      add-mappings: false
 
   mail:
     host: smtp.gmail.com
@@ -10,22 +10,28 @@ spring:
     username: ${MAIL_USERNAME}
     password: ${MAIL_PASSWORD}
     properties:
-      mail:
-        smtp:
-          auth: true
-          starttls:
-            enable: true
+      mail.smtp.auth: true
+      mail.smtp.starttls.enable: true
 
   jwt:
     secret: ${JWT_SECRET}
 
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+
+  jpa:
+    database-platform: org.hibernate.dialect.MySQL8Dialect
+    hibernate:
+      ddl-auto: update
+    defer-datasource-initialization: true
+    show-sql: true
+
   servlet:
     multipart:
       max-file-size: 5242880 # 단일 요청 5MB 5242880
-
-  profiles:
-    active: dev
-
   cloud:
     aws:
       credentials:

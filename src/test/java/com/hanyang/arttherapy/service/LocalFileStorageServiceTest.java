@@ -9,6 +9,7 @@ import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -20,6 +21,7 @@ import com.hanyang.arttherapy.dto.response.*;
 import com.hanyang.arttherapy.repository.*;
 
 @SpringBootTest
+@ActiveProfiles("local")
 class LocalFileStorageServiceTest {
 
   @Autowired private LocalFileStorageService localFileStorageService;
@@ -41,9 +43,9 @@ class LocalFileStorageServiceTest {
 
     FilesType fileType = FilesType.ART;
 
-    FileResponseListDto result = fileStorageService.store(List.of(multipartFile), fileType);
+    List<FileResponseDto> result = fileStorageService.store(List.of(multipartFile), fileType);
 
-    FileResponseDto storedFile = result.files().get(0);
+    FileResponseDto storedFile = result.get(0);
 
     assertThat(storedFile).isNotNull();
     assertThat(storedFile.url()).contains("art");

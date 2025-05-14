@@ -10,7 +10,7 @@ import com.hanyang.arttherapy.service.ArtistsService;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("api/admin/artists")
+@RequestMapping("admin/artists")
 @RequiredArgsConstructor
 public class ArtistController {
 
@@ -42,6 +42,6 @@ public class ArtistController {
   @DeleteMapping("/{artistsNo}")
   public ResponseEntity<Void> deleteArtist(@PathVariable Long artistsNo) {
     artistsService.deleteAritst(artistsNo);
-    return ResponseEntity.ok().build();
+    return ResponseEntity.noContent().build();
   }
 }
