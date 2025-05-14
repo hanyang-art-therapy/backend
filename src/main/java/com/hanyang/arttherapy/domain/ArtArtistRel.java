@@ -2,25 +2,26 @@ package com.hanyang.arttherapy.domain;
 
 import jakarta.persistence.*;
 
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor
 @Entity
-@Table(name = "art_artist_rel")
+@Builder
 public class ArtArtistRel {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long artArtistRelNo;
 
-  @Column(nullable = false)
-  private Long artistsNo;
+  @ManyToOne
+  @JoinColumn(name = "arts_no")
+  private Arts arts;
 
-  @Column(nullable = false)
-  private Long artsNo;
+  @ManyToOne
+  @JoinColumn(name = "artist_no")
+  private Artists artists;
 
   @Column(columnDefinition = "LONGTEXT")
   private String description;

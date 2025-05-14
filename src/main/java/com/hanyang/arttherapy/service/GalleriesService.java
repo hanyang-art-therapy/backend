@@ -37,6 +37,7 @@ public class GalleriesService {
             .title(dto.getTitle())
             .startDate(dto.getStartDate())
             .endDate(dto.getEndDate())
+            .user(user)
             .build();
 
     Galleries saved = galleriesRepository.save(gallery);

@@ -3,6 +3,7 @@ package com.hanyang.arttherapy.dto.request;
 import java.time.LocalDateTime;
 
 import com.hanyang.arttherapy.domain.Galleries;
+import com.hanyang.arttherapy.domain.Users;
 
 import lombok.Builder;
 import lombok.Getter;
@@ -21,7 +22,12 @@ public class GalleriesRequestDto {
     this.endDate = endDate;
   }
 
-  public Galleries toEntity() {
-    return Galleries.builder().title(title).startDate(startDate).endDate(endDate).build();
+  public Galleries toEntity(Users user) {
+    return Galleries.builder()
+        .user(user)
+        .title(title)
+        .startDate(startDate)
+        .endDate(endDate)
+        .build();
   }
 }
