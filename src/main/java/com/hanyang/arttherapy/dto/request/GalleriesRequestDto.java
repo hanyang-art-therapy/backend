@@ -23,11 +23,6 @@ public class GalleriesRequestDto {
   }
 
   public Galleries toEntity(Users user) {
-    return Galleries.builder()
-        .user(user)
-        .title(title)
-        .startDate(startDate)
-        .endDate(endDate)
-        .build();
+    return Galleries.builder().title(title).startDate(startDate).endDate(endDate).build();
   }
 }

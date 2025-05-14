@@ -16,7 +16,7 @@ import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/galleries/{galleriesNo}/arts/{artsNo}/reviews")
+@RequestMapping("/galleries/arts/{artsNo}/reviews")
 public class ReviewController {
 
   private final ReviewService reviewService;
@@ -24,18 +24,15 @@ public class ReviewController {
   // 리뷰 조회
   @GetMapping
   public ResponseEntity<Page<ReviewResponseDto>> getReviews(
-      @PathVariable Long galleriesNo, @PathVariable Long artsNo, Pageable pageable) {
-    return ResponseEntity.ok(reviewService.getReviews(galleriesNo, artsNo, pageable));
+      @PathVariable Long artsNo, Pageable pageable) {
+    return ResponseEntity.ok(reviewService.getReviews(artsNo, pageable));
   }
 
   // 리뷰 생성
   @PostMapping
   public ResponseEntity<ReviewResponseDto> createReview(
-      @PathVariable Long galleriesNo,
-      @PathVariable Long artsNo,
-      @RequestBody ReviewRequestDto reviewRequestDto) {
-    ReviewResponseDto responseDto =
-        reviewService.createReview(galleriesNo, artsNo, reviewRequestDto);
+      @PathVariable Long artsNo, @RequestBody ReviewRequestDto reviewRequestDto) {
+    ReviewResponseDto responseDto = reviewService.createReview(artsNo, reviewRequestDto);
     return ResponseEntity.status(HttpStatus.CREATED).body(responseDto);
   }
 

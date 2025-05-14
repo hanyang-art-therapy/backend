@@ -10,29 +10,23 @@ import com.hanyang.arttherapy.domain.Files;
 import lombok.Builder;
 
 public record ArtsListResponseDto(
-    Long artsNo,
-    String artName,
-    FileResponse file,
-    List<ArtistResponse> artists,
-    Long galleriesNo) {
+    Long artsNo, String artName, FileResponseDto files, List<ArtistResponseDto> artists) {
 
   @Builder
-  public static ArtsListResponseDto of(
-      Arts arts, Files file, List<ArtArtistRel> artArtistRels, Long galleriesNo) {
+  public static ArtsListResponseDto of(Arts arts, Files file, List<ArtArtistRel> artArtistRels) {
     return new ArtsListResponseDto(
         arts.getArtsNo(),
         arts.getArtName(),
-        new FileResponse(file.getUrl()),
+        new FileResponseDto(file.getUrl()),
         artArtistRels.stream()
             .map(
                 rel ->
-                    new ArtistResponse(
+                    new ArtistResponseDto(
                         rel.getArtists().getArtistName(), rel.getArtists().getCohort()))
-            .collect(Collectors.toList()),
-        galleriesNo);
+            .collect(Collectors.toList()));
   }
 
-  public record FileResponse(String url) {}
+  public record FileResponseDto(String url) {}
 
-  public record ArtistResponse(String artistName, int cohort) {}
+  public record ArtistResponseDto(String artistName, int cohort) {}
 }
