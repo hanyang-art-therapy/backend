@@ -1,5 +1,6 @@
 package com.hanyang.arttherapy.dto.response;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 public record ArtsResponseDto(
@@ -7,22 +8,17 @@ public record ArtsResponseDto(
     String artName,
     String caption,
     String description,
-    String createdAt,
-    GalleryResponseDto gallery,
+    LocalDateTime createdAt,
     List<ArtistResponseDto> artists,
-    FileResponseDto file,
-    List<ReviewResponseDto> reviews) {
+    FileResponseDto file) {
   public static ArtsResponseDto of(
       Long artsNo,
       String artName,
       String caption,
       String description,
-      String createdAt,
-      GalleryResponseDto gallery,
+      LocalDateTime createdAt,
       List<ArtistResponseDto> artists,
-      FileResponseDto file,
-      List<ReviewResponseDto> reviews) {
-    return new ArtsResponseDto(
-        artsNo, artName, caption, description, createdAt, gallery, artists, file, reviews);
+      FileResponseDto file) {
+    return new ArtsResponseDto(artsNo, artName, caption, description, createdAt, artists, file);
   }
 }

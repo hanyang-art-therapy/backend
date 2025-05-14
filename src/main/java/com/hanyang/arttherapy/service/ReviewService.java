@@ -34,7 +34,7 @@ public class ReviewService {
   private final GalleriesRepository galleriesRepository;
 
   // 리뷰 조회
-  public Page<ReviewResponseDto> getReviews(Long galleriesNo, Long artsNo, Pageable pageable) {
+  public Page<ReviewResponseDto> getReviews(Long artsNo, Pageable pageable) {
     return reviewRepository
         .findAllByArts_ArtsNo(artsNo, pageable)
         .map(
@@ -58,15 +58,10 @@ public class ReviewService {
   }
 
   // 리뷰 등록
-  public ReviewResponseDto createReview(
-      Long galleriesNo, Long artsNo, ReviewRequestDto reviewRequestDto) {
+  public ReviewResponseDto createReview(Long artsNo, ReviewRequestDto reviewRequestDto) {
     // 유저 정보 가져오기
     Users user = getUserByUserId();
 
-    // 전시회 및 작품 존재 여부 확인
-    galleriesRepository
-        .findById(galleriesNo)
-        .orElseThrow(() -> new IllegalArgumentException("해당 전시회가 존재하지 않습니다."));
     Arts arts =
         artsRepository
             .findById(artsNo)

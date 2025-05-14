@@ -18,10 +18,6 @@ public class Galleries {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long galleriesNo;
 
-  @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "user_no", nullable = false)
-  private Users user;
-
   @Column(nullable = false, length = 255)
   private String title;
 

@@ -15,5 +15,5 @@ public interface ReviewRepository extends JpaRepository<Reviews, Long> {
   Page<Reviews> findAllByArts_ArtsNo(Long artsNo, Pageable pageable);
 
   @Query("SELECT r FROM Reviews r WHERE r.user.userNo = :userNo")
-  List<Reviews> findAllByUser_UserNo(@Param("userNo") Long userNo);
+  List<Reviews> findAllByUserNo(@Param("userNo") Long userNo);
 }
