@@ -16,7 +16,7 @@ import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/galleries/arts/{artsNo}/reviews")
+@RequestMapping("api/galleries/arts/{artsNo}/reviews")
 public class ReviewController {
 
   private final ReviewService reviewService;
