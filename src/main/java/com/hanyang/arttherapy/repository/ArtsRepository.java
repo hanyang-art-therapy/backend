@@ -22,6 +22,16 @@ public interface ArtsRepository extends JpaRepository<Arts, Long> {
   List<Arts> findTop9ByArtArtistRels_Artists_CohortAndArtsNoGreaterThanOrderByArtsNoAsc(
       int cohort, Long lastId);
 
+  List<Arts>
+      findTop9ByGalleries_GalleriesNoAndArtArtistRels_Artists_CohortAndArtsNoGreaterThanOrderByArtsNoAsc(
+          Long galleriesNo, int cohort, Long artsNo);
+
+  Long countByGalleries_GalleriesNo(Long galleriesNo);
+
+  Long countByGalleries_GalleriesNoAndArtArtistRels_Artists_Cohort(Long galleriesNo, int cohort);
+
+  Long countByArtArtistRels_Artists_Cohort(int cohort);
+
   @Query(
       value =
           """

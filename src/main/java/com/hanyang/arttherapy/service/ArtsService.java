@@ -1,8 +1,11 @@
 package com.hanyang.arttherapy.service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
@@ -33,9 +36,55 @@ public class ArtsService {
   private final GalleriesRepository galleriesRepository;
   private final ArtistsRepository artistsRepository;
 
+  /**
+   * 통합 조회 메서드 - 최초 로딩 시 (연도와 기수 모두 없음): 현재 연도로 조회 - 연도와 기수가 모두 있으면 Year + Cohort 조회 - 연도만 있으면 Year
+   * 조회 - 기수만 있으면 Cohort 조회
+   */
+  public Map<String, Object> getArtsByFilter(Integer year, Integer cohort, Long lastId) {
+    List<ArtsListResponseDto> response;
+    Long totalElements = 0L;
+
+    if (year == null && cohort == null) {
+      // 최초 페이지 로딩 시 현재 연도로 조회
+      year = LocalDate.now().getYear();
+      response = getArtsByYear(year, lastId);
+      totalElements =
+          artsRepository.countByGalleries_GalleriesNo(findGalleryByYear(year).getGalleriesNo());
+
+    } else if (year != null && cohort != null) {
+      // 연도 + 기수 조회
+      response = getArtsByYearAndCohort(year, cohort, lastId);
+      totalElements =
+          artsRepository.countByGalleries_GalleriesNoAndArtArtistRels_Artists_Cohort(
+              findGalleryByYear(year).getGalleriesNo(), cohort);
+    } else if (year != null) {
+      // 연도만 조회
+      response = getArtsBySelectedYear(year, lastId);
+      totalElements =
+          artsRepository.countByGalleries_GalleriesNo(findGalleryByYear(year).getGalleriesNo());
+    } else {
+      // 기수만 조회
+      response = getArtsByCohort(cohort, lastId);
+      totalElements = artsRepository.countByArtArtistRels_Artists_Cohort(cohort);
+    }
+
+    // 응답 포맷 통일
+    Map<String, Object> result = new LinkedHashMap<>();
+    result.put("content", response);
+    result.put("lastId", response.isEmpty() ? null : response.get(response.size() - 1).artsNo());
+    result.put("totalElements", totalElements);
+    result.put("hasNext", !response.isEmpty() && response.size() == 9);
+
+    return result;
+  }
+
   // 작품 상세 조회
   public ArtsResponseDto getArtDetail(Long artsNo) {
-    Arts arts = getArtById(artsNo);
+
+    Arts arts =
+        artsRepository
+            .findById(artsNo)
+            .orElseThrow(() -> new CustomException(ArtsExceptionType.ART_NOT_FOUND));
 
     List<ArtArtistRel> artistRels = artArtistRelRepository.findByArts_ArtsNo(artsNo);
     List<ArtistResponseDto> artistResponses = getArtistResponseDto(artistRels);
@@ -57,93 +106,72 @@ public class ArtsService {
 
   // 작품 전체 조회
   public List<ArtsListResponseDto> getArtsByYear(int year, Long lastId) {
+    Galleries gallery = findGalleryByYear(year);
 
-    // 해당 연도의 갤러리 조회 (1년에 한 번만 개최됨)
-    Galleries gallery =
-        galleriesRepository
-            .findByStartDateBetween(
-                LocalDateTime.of(year, 1, 1, 0, 0), LocalDateTime.of(year, 12, 31, 23, 59))
-            .stream()
-            .findFirst()
-            .orElseThrow(() -> new CustomException(GalleryExceptionType.GALLERY_NOT_FOUND));
+    if (gallery == null) {
+      return List.of();
+    }
 
-    // 작품 조회
-    List<Arts> artsList =
-        (lastId == null)
-            ? artsRepository.findTop9ByGalleries_GalleriesNoAndArtsNoGreaterThanOrderByArtsNoAsc(
-                gallery.getGalleriesNo(), 0L)
-            : artsRepository.findTop9ByGalleries_GalleriesNoAndArtsNoGreaterThanOrderByArtsNoAsc(
-                gallery.getGalleriesNo(), lastId);
-
-    // 정렬 (작가 이름 가나다 순)
-    List<Arts> sortedList = sortArtsByArtistNames(artsList);
-
-    // DTO 매핑
-    return sortedList.stream().map(this::mapToArtsListResponseDto).collect(Collectors.toList());
+    List<Arts> artsList = fetchArts(gallery.getGalleriesNo(), lastId);
+    return mapToDtoList(artsList);
   }
 
   // 연도별 조회 (드롭다운에서 연도만 선택했을 때)
   public List<ArtsListResponseDto> getArtsBySelectedYear(Integer year, Long lastId) {
-    // 해당 연도에 열린 모든 전시회 조회
-    Galleries gallery =
-        galleriesRepository
-            .findByStartDateBetween(
-                LocalDateTime.of(year, 1, 1, 0, 0), LocalDateTime.of(year, 12, 31, 23, 59))
-            .stream()
-            .findFirst()
-            .orElseThrow(() -> new IllegalArgumentException("해당 연도에 전시회가 존재하지 않습니다."));
+    Galleries gallery = findGalleryByYear(year);
+    if (gallery == null) {
+      return List.of();
+    }
 
-    // 작품 조회
-    List<Arts> artsList =
-        (lastId == null)
-            ? artsRepository.findTop9ByGalleries_GalleriesNoAndArtsNoGreaterThanOrderByArtsNoAsc(
-                gallery.getGalleriesNo(), 0L)
-            : artsRepository.findTop9ByGalleries_GalleriesNoAndArtsNoGreaterThanOrderByArtsNoAsc(
-                gallery.getGalleriesNo(), lastId);
-
-    // 정렬 (작가 이름 가나다 순)
-    List<Arts> sortedList = sortArtsByArtistNames(artsList);
-
-    // DTO 매핑
-    return sortedList.stream()
-        .map(art -> mapToArtsListResponseDto(art))
-        .collect(Collectors.toList());
+    List<Arts> artsList = fetchArts(gallery.getGalleriesNo(), lastId);
+    return mapToDtoList(artsList);
   }
 
   // 기수별 조회
   public List<ArtsListResponseDto> getArtsByCohort(int cohort, Long lastId) {
-    // 기수에 해당하는 작품 9개씩
     List<Arts> artsList =
         artsRepository.findTop9ByArtArtistRels_Artists_CohortAndArtsNoGreaterThanOrderByArtsNoAsc(
             cohort, lastId == null ? 0L : lastId);
-
-    // 정렬 (작가 이름 가나다 순)
-    List<Arts> sortedList = sortArtsByArtistNames(artsList);
-
-    // DTO 매핑
-    return sortedList.stream().map(this::mapToArtsListResponseDto).collect(Collectors.toList());
+    return mapToDtoList(artsList);
   }
 
   // 연도 + 기수 조회 (정렬 추가)
   public List<ArtsListResponseDto> getArtsByYearAndCohort(int year, int cohort, Long lastId) {
-    // 해당 연도에 열린 모든 전시회 조회
-    Galleries gallery =
-        galleriesRepository
-            .findByStartDateBetween(
-                LocalDateTime.of(year, 1, 1, 0, 0), LocalDateTime.of(year, 12, 31, 23, 59))
-            .stream()
-            .findFirst()
-            .orElseThrow(() -> new IllegalArgumentException("해당 연도에 전시회가 존재하지 않습니다."));
+    Galleries gallery = findGalleryByYear(year);
 
-    // 각 전시회에서 작품을 조회
+    if (gallery == null) {
+      return List.of();
+    }
+
     List<Arts> artsList =
-        artsRepository.findTop9ByArtArtistRels_Artists_CohortAndArtsNoGreaterThanOrderByArtsNoAsc(
-            cohort, lastId == null ? 0L : lastId);
+        artsRepository
+            .findTop9ByGalleries_GalleriesNoAndArtArtistRels_Artists_CohortAndArtsNoGreaterThanOrderByArtsNoAsc(
+                gallery.getGalleriesNo(), cohort, lastId == null ? 0L : lastId);
 
-    // 정렬 (작가 이름 가나다 순)
+    return mapToDtoList(artsList);
+  }
+
+  // 연도에 해당하는 전시회 조회
+  private Galleries findGalleryByYear(int year) {
+    return galleriesRepository
+        .findByStartDateBetween(
+            LocalDateTime.of(year, 1, 1, 0, 0), LocalDateTime.of(year, 12, 31, 23, 59))
+        .stream()
+        .findFirst()
+        .orElse(null);
+  }
+
+  // 전시회 번호에 맞춰 작품을 조회
+  private List<Arts> fetchArts(Long galleriesNo, Long lastId) {
+    return (lastId == null)
+        ? artsRepository.findTop9ByGalleries_GalleriesNoAndArtsNoGreaterThanOrderByArtsNoAsc(
+            galleriesNo, 0L)
+        : artsRepository.findTop9ByGalleries_GalleriesNoAndArtsNoGreaterThanOrderByArtsNoAsc(
+            galleriesNo, lastId);
+  }
+
+  private List<ArtsListResponseDto> mapToDtoList(List<Arts> artsList) {
     List<Arts> sortedList = sortArtsByArtistNames(artsList);
-
-    // DTO 매핑
     return sortedList.stream().map(this::mapToArtsListResponseDto).collect(Collectors.toList());
   }
 
@@ -158,7 +186,7 @@ public class ArtsService {
   private String getSortedArtistNames(Arts art) {
     return art.getArtArtistRels().stream()
         .map(rel -> rel.getArtists().getArtistName())
-        .sorted()
+        .sorted(String.CASE_INSENSITIVE_ORDER)
         .collect(Collectors.joining(", "));
   }
 

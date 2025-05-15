@@ -7,12 +7,9 @@ import com.hanyang.arttherapy.domain.ArtArtistRel;
 import com.hanyang.arttherapy.domain.Arts;
 import com.hanyang.arttherapy.domain.Files;
 
-import lombok.Builder;
-
 public record ArtsListResponseDto(
     Long artsNo, String artName, FileResponseDto files, List<ArtistResponseDto> artists) {
 
-  @Builder
   public static ArtsListResponseDto of(Arts arts, Files file, List<ArtArtistRel> artArtistRels) {
     return new ArtsListResponseDto(
         arts.getArtsNo(),
