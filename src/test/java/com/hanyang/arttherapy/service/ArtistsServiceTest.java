@@ -74,7 +74,7 @@ class ArtistsServiceTest {
     artistsService.registerArtist(artistRequestDto);
     savedArtist = artistsService.findByStudentNo(artistRequestDto.studentNo());
 
-    artistsService.deleteAritst(savedArtist.getArtistsNo());
+    artistsService.deleteArtist(savedArtist.getArtistsNo());
 
     Assertions.assertThrows(
         CustomException.class,

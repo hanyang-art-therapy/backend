@@ -52,7 +52,7 @@ public class ArtistsService {
     artistsRepository.save(artist);
   }
 
-  public void deleteAritst(Long artistsNo) {
+  public void deleteArtist(Long artistsNo) {
     Artists artist = findArtistById(artistsNo);
     artistsRepository.delete(artist);
   }
