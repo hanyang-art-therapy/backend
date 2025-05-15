@@ -16,7 +16,7 @@ import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/galleries/arts/{artsNo}/reviews")
+@RequestMapping("api/galleries/arts/{artsNo}/reviews")
 public class ReviewController {
 
   private final ReviewService reviewService;
@@ -32,6 +32,7 @@ public class ReviewController {
   @PostMapping
   public ResponseEntity<ReviewResponseDto> createReview(
       @PathVariable Long artsNo, @RequestBody ReviewRequestDto reviewRequestDto) {
+
     ReviewResponseDto responseDto = reviewService.createReview(artsNo, reviewRequestDto);
     return ResponseEntity.status(HttpStatus.CREATED).body(responseDto);
   }

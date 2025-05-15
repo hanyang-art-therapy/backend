@@ -30,13 +30,10 @@ public class SecurityConfig {
         .cors(cors -> cors.configurationSource(corsConfigurationSource()))
         .authorizeHttpRequests(
             auth ->
-                auth.requestMatchers("/auth/test")
-                    .authenticated()
-                    .requestMatchers("/admin/**")
+                auth.requestMatchers("/admin/**")
                     .hasRole("ADMIN")
                     .requestMatchers(
                         "/api/user/**",
-                        "/api/myPage/**",
                         "api/files",
                         "api/galleries/arts/{artsNo}/reviews",
                         "/css/**",

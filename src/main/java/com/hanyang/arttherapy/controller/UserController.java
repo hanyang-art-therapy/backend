@@ -14,7 +14,7 @@ import com.hanyang.arttherapy.service.UserService;
 import lombok.*;
 
 @RestController
-@RequestMapping("/api/user")
+@RequestMapping("api/user")
 @RequiredArgsConstructor
 public class UserController {
 
