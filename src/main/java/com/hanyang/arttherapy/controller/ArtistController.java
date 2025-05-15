@@ -10,7 +10,7 @@ import com.hanyang.arttherapy.service.ArtistsService;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("admin/artists")
+@RequestMapping("api/admin/artists")
 @RequiredArgsConstructor
 public class ArtistController {
 
@@ -22,7 +22,7 @@ public class ArtistController {
     return ResponseEntity.status(201).build();
   }
 
-  @GetMapping("api/{artistsNo}")
+  @GetMapping("{artistsNo}")
   public ResponseEntity<ArtistResponseDto> getArtist(@PathVariable Long artistsNo) {
     return ResponseEntity.ok(artistsService.getArtist(artistsNo));
   }
