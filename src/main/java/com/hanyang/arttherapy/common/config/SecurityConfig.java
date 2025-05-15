@@ -27,10 +27,7 @@ public class SecurityConfig {
             auth ->
                 auth
                     .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                    .requestMatchers("/auth/test")
-                    .authenticated()
-                    .requestMatchers("/admin/**")
-                    .hasRole("ADMIN")
+                    .requestMatchers("/css/**", "/js/**", "/img/**").permitAll()
                     .requestMatchers("/api/user/**", "/api/myPage/**")
                     .permitAll()
                     .anyRequest()
