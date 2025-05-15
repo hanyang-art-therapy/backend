@@ -148,7 +148,7 @@ public class UserService {
     return "임시 비밀번호가 이메일로 전송되었습니다.";
   }
 
-  // 임시 비밀번호 생성 (예: 10자리 랜덤 -> 9자리 랜덤+마지막 고정!주는거 설정)
+  // 임시 비밀번호 생성 (예: 9자리 랜덤+마지막 고정'@')
   private String generateTemporaryPassword() {
     int length = 9;
     String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789~!@#$%^&*";
@@ -210,12 +210,13 @@ public class UserService {
       // 비밀번호를 BCrypt로 인코딩
       String encodedPassword = bCryptpasswordEncoder.encode(request.password());
 
-      Users user = Users.builder().build();
-      user.setUserId(request.userId());
-      user.setPassword(encodedPassword);
-      user.setEmail(request.email());
-      user.setUserName(request.userName());
-      user.setStudentNo(request.studentNo());
+      Users user = Users.builder()
+              .userId(request.userId())
+              .password(encodedPassword)
+              .email(request.email())
+              .userName(request.userName())
+              .studentNo(request.studentNo())
+              .build();
 
       user.setDefaults();
 
@@ -244,6 +245,7 @@ public class UserService {
       throw new CustomException(UserException.ERROR_PASSWORD);
     }
 
+
     // 기존 리프레시 토큰 확인
     Optional<RefreshToken> existingTokenOpt = refreshTokenRepository.findByUsers(user);
     RefreshToken token = null;
@@ -263,6 +265,7 @@ public class UserService {
       } else {
         // 만료되지 않았고 IP/UserAgent가 같으면 기존 토큰 사용
         String accessToken = jwtUtil.createAccessToken(user);
+        jwtUtil.addRefreshTokenToCookie(httpResponse, token.getRefreshToken());
         return new SigninResponse(user.getUserNo(), accessToken);
       }
     }
@@ -270,17 +273,20 @@ public class UserService {
     String refreshToken = jwtUtil.createRefreshToken(user);
 
     // RefreshToken 엔티티 저장
-    RefreshToken tokenEntity = RefreshToken.builder().build();
-    tokenEntity.setUsers(user);
-    tokenEntity.setRefreshToken(refreshToken);
-    tokenEntity.setExpiredAt(LocalDateTime.now().plusDays(7)); // 만료 기간 설정
-    tokenEntity.setIp(ip);
-    tokenEntity.setUserAgent(userAgent);
+    RefreshToken tokenEntity =
+        RefreshToken.builder()
+            .users(user)
+            .refreshToken(refreshToken)
+            .expiredAt(LocalDateTime.now().plusDays(7))
+            .ip(ip)
+            .userAgent(userAgent)
+            .build();
 
     refreshTokenRepository.save(tokenEntity);
 
     jwtUtil.addRefreshTokenToCookie(httpResponse, tokenEntity.getRefreshToken());
 
+    httpResponse.setHeader("Authorization", "Bearer " + accessToken);
     return new SigninResponse(user.getUserNo(), accessToken);
   }
 
