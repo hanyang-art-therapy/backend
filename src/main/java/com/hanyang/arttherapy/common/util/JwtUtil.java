@@ -41,7 +41,7 @@ public class JwtUtil {
 
     Cookie cookie = new Cookie("refreshToken", refreshToken);
     cookie.setHttpOnly(true); // 보안을 위해 HttpOnly 설정
-    cookie.setSecure(false); // HTTPS 연결에서만 쿠키 전송
+    cookie.setSecure(true); // HTTPS 연결에서만 쿠키 전송
     cookie.setPath("/"); // 전체 경로에서 유효하도록 설정
     cookie.setMaxAge(7 * 24 * 60 * 60); // 7일 동안 유효
 
@@ -94,7 +94,7 @@ public class JwtUtil {
     Cookie cookie = new Cookie("refreshToken", null);
     cookie.setMaxAge(0); // 즉시 만료
     cookie.setPath("/");
-    cookie.setHttpOnly(true);
+    cookie.setHttpOnly(false);
     response.addCookie(cookie);
   }
 }

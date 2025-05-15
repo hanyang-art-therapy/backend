@@ -148,7 +148,7 @@ public class UserService {
     return "임시 비밀번호가 이메일로 전송되었습니다.";
   }
 
-  // 임시 비밀번호 생성 (예: 10자리 랜덤 -> 9자리 랜덤+마지막 고정!주는거 설정)
+  // 임시 비밀번호 생성 (예: 9자리 랜덤+마지막 고정'@')
   private String generateTemporaryPassword() {
     int length = 9;
     String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789~!@#$%^&*";
@@ -210,12 +210,14 @@ public class UserService {
       // 비밀번호를 BCrypt로 인코딩
       String encodedPassword = bCryptpasswordEncoder.encode(request.password());
 
-      Users user = Users.builder().build();
-      user.setUserId(request.userId());
-      user.setPassword(encodedPassword);
-      user.setEmail(request.email());
-      user.setUserName(request.userName());
-      user.setStudentNo(request.studentNo());
+      Users user =
+          Users.builder()
+              .userId(request.userId())
+              .password(encodedPassword)
+              .email(request.email())
+              .userName(request.userName())
+              .studentNo(request.studentNo())
+              .build();
 
       user.setDefaults();
 
