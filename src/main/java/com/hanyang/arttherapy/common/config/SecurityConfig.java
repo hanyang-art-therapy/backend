@@ -34,16 +34,16 @@ public class SecurityConfig {
                     .hasRole("ADMIN")
                     .requestMatchers(
                         "/api/user/**",
-                        "api/files",
-                        "api/galleries/arts/{artsNo}/reviews",
+                        "/api/files",
+                        "/api/galleries/arts/{artsNo}/reviews",
                         "/css/**",
                         "/js/**",
                         "/images/**")
                     .permitAll()
                     .anyRequest()
                     .authenticated())
-        .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
-        .requiresChannel(channel -> channel.anyRequest().requiresSecure());
+        .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+//        .requiresChannel(channel -> channel.anyRequest().requiresSecure());
 
     return http.build();
   }
@@ -51,7 +51,7 @@ public class SecurityConfig {
   @Bean
   public CorsConfigurationSource corsConfigurationSource() {
     CorsConfiguration configuration = new CorsConfiguration();
-    configuration.setAllowedOrigins(List.of("https://hy-erica-arttherapy.com"));
+    configuration.setAllowedOrigins(List.of("http://localhost:5173"));
     configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
     configuration.setAllowedHeaders(List.of("*"));
     configuration.setAllowCredentials(true);
