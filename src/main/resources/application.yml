@@ -1,4 +1,8 @@
 # application.yml (공통 설정)
+
+server:
+  address: 0.0.0.0
+
 spring:
   #  web:
   #    resources:
