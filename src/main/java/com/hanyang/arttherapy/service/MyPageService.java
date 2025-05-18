@@ -12,7 +12,6 @@ import com.hanyang.arttherapy.domain.Arts;
 import com.hanyang.arttherapy.domain.Reviews;
 import com.hanyang.arttherapy.domain.Users;
 import com.hanyang.arttherapy.domain.enums.Role;
-import com.hanyang.arttherapy.domain.enums.UserStatus;
 import com.hanyang.arttherapy.dto.response.MyInfoResponseDto;
 import com.hanyang.arttherapy.dto.response.MyPostResponseDto;
 import com.hanyang.arttherapy.dto.response.MyReviewResponseDto;
@@ -37,17 +36,6 @@ public class MyPageService {
             .findById(userId)
             .orElseThrow(() -> new CustomException(UserException.USER_NOT_FOUND));
     return MyInfoResponseDto.from(user);
-  }
-
-  // 탈퇴
-  @Transactional
-  public void withdrawByUserNo(Long userNo) {
-    Users user =
-        userRepository
-            .findById(userNo)
-            .orElseThrow(() -> new CustomException(UserException.USER_NOT_FOUND));
-
-    user.setUserStatus(UserStatus.UNACTIVE); // 상태 변경만
   }
 
   @Transactional(readOnly = true)
