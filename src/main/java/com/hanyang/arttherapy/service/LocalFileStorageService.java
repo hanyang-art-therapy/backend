@@ -1,27 +1,29 @@
 package com.hanyang.arttherapy.service;
 
-import java.io.*;
-import java.util.*;
+import java.io.File;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.hanyang.arttherapy.common.exception.CustomException;
-import com.hanyang.arttherapy.common.exception.exceptionType.*;
-import com.hanyang.arttherapy.domain.*;
-import com.hanyang.arttherapy.domain.enums.*;
-import com.hanyang.arttherapy.dto.response.*;
-import com.hanyang.arttherapy.repository.*;
+import com.hanyang.arttherapy.common.exception.exceptionType.FileSystemExceptionType;
+import com.hanyang.arttherapy.domain.Files;
+import com.hanyang.arttherapy.domain.enums.FilesType;
+import com.hanyang.arttherapy.dto.response.FileResponseDto;
+import com.hanyang.arttherapy.repository.FilesRepository;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Service
-@Profile("local")
+@Profile("h2") // ✅ h2 환경에서만 활성화
+@Primary // ✅ 기본 FileStorageService 구현체로 등록
 @Transactional
 @RequiredArgsConstructor
 public class LocalFileStorageService implements FileStorageService {
