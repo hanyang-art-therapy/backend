@@ -13,4 +13,7 @@ public interface ArtArtistRelRepository extends JpaRepository<ArtArtistRel, Long
   List<ArtArtistRel> findByArts_ArtsNo(Long artsNo);
 
   void deleteAllByArts(Arts arts);
+
+  // 관리자 작품
+  void deleteByArts(Arts arts);
 }
