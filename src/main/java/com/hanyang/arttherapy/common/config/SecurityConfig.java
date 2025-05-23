@@ -43,7 +43,7 @@ public class SecurityConfig {
                     .anyRequest()
                     .authenticated())
         .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
-//        .requiresChannel(channel -> channel.anyRequest().requiresSecure());
+    //        .requiresChannel(channel -> channel.anyRequest().requiresSecure());
 
     return http.build();
   }

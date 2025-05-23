@@ -87,21 +87,14 @@ public class ArtsService {
             .orElseThrow(() -> new CustomException(ArtsExceptionType.ART_NOT_FOUND));
 
     List<ArtArtistRel> artistRels = artArtistRelRepository.findByArts_ArtsNo(artsNo);
-    List<ArtistResponseDto> artistResponses = getArtistResponseDto(artistRels);
+    List<ArtArtistRelResponseDto> artistResponses =
+        artistRels.stream().map(ArtArtistRelResponseDto::of).collect(Collectors.toList());
 
     List<FileResponseDto> fileResponses = getFileResponseDto(arts.getFile().getFilesNo());
-
-    String description = getDescription(artistRels);
     LocalDateTime createdAt = arts.getCreatedAt();
 
-    return new ArtsResponseDto(
-        arts.getArtsNo(),
-        arts.getArtName(),
-        arts.getCaption(),
-        description,
-        createdAt,
-        artistResponses,
-        fileResponses.isEmpty() ? null : fileResponses.get(0));
+    return ArtsResponseDto.of(
+        arts, createdAt, artistResponses, fileResponses.isEmpty() ? null : fileResponses.get(0));
   }
 
   // 작품 전체 조회
@@ -171,8 +164,43 @@ public class ArtsService {
   }
 
   private List<ArtsListResponseDto> mapToDtoList(List<Arts> artsList) {
-    List<Arts> sortedList = sortArtsByArtistNames(artsList);
-    return sortedList.stream().map(this::mapToArtsListResponseDto).collect(Collectors.toList());
+    if (artsList.isEmpty()) return List.of();
+
+    // 1. 모든 artsNo, filesNo 추출
+    List<Long> artsNos = artsList.stream().map(Arts::getArtsNo).toList();
+
+    List<Long> fileNos = artsList.stream().map(a -> a.getFile().getFilesNo()).toList();
+
+    // 2. 파일, 작가 관계 미리 조회하여 Map으로 캐싱
+    Map<Long, Files> fileMap =
+        filesRepository.findAllById(fileNos).stream()
+            .collect(Collectors.toMap(Files::getFilesNo, f -> f));
+
+    Map<Long, List<ArtArtistRel>> artistRelMap =
+        artArtistRelRepository.findWithArtistsByArtsNoIn(artsNos).stream()
+            .collect(Collectors.groupingBy(rel -> rel.getArts().getArtsNo()));
+
+    // 3. 정렬 (작가 이름 가나다 순 기준)
+    List<Arts> sortedList =
+        artsList.stream()
+            .sorted(
+                Comparator.comparing(
+                    art ->
+                        artistRelMap.getOrDefault(art.getArtsNo(), List.of()).stream()
+                            .map(rel -> rel.getArtists().getArtistName())
+                            .sorted(String.CASE_INSENSITIVE_ORDER)
+                            .collect(Collectors.joining(", "))))
+            .toList();
+
+    // 4. DTO 매핑
+    return sortedList.stream()
+        .map(
+            arts -> {
+              Files file = fileMap.get(arts.getFile().getFilesNo());
+              List<ArtArtistRel> rels = artistRelMap.getOrDefault(arts.getArtsNo(), List.of());
+              return ArtsListResponseDto.of(arts, file, rels);
+            })
+        .toList();
   }
 
   // 작품의 작가 이름을 기준으로 정렬하는 메서드
@@ -207,25 +235,10 @@ public class ArtsService {
     return ArtsListResponseDto.of(arts, file, artistRels);
   }
 
-  private List<ArtistResponseDto> getArtistResponseDto(List<ArtArtistRel> artistRels) {
-    return artistRels.stream()
-        .map(
-            rel ->
-                new ArtistResponseDto(
-                    rel.getArtists().getArtistName(),
-                    rel.getArtists().getStudentNo(),
-                    rel.getArtists().getCohort()))
-        .collect(Collectors.toList());
-  }
-
   private List<FileResponseDto> getFileResponseDto(Long filesNo) {
     return filesRepository.findByFilesNoInAndUseYn(List.of(filesNo), true).stream()
         .map(file -> FileResponseDto.of(file, file.getUrl()))
         .collect(Collectors.toList());
-  }
-
-  private String getDescription(List<ArtArtistRel> artistRels) {
-    return artistRels.isEmpty() ? "작품 설명이 없습니다." : artistRels.get(0).getDescription();
   }
 
   private GalleryResponseDto getGalleryResponseDto(Long galleriesNo) {
