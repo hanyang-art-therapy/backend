@@ -3,22 +3,28 @@ package com.hanyang.arttherapy.dto.response;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import com.hanyang.arttherapy.domain.Arts;
+
 public record ArtsResponseDto(
     Long artsNo,
     String artName,
     String caption,
-    String description,
+    String coDescription,
     LocalDateTime createdAt,
-    List<ArtistResponseDto> artists,
+    List<ArtArtistRelResponseDto> artists,
     FileResponseDto file) {
   public static ArtsResponseDto of(
-      Long artsNo,
-      String artName,
-      String caption,
-      String description,
+      Arts arts,
       LocalDateTime createdAt,
-      List<ArtistResponseDto> artists,
+      List<ArtArtistRelResponseDto> artists,
       FileResponseDto file) {
-    return new ArtsResponseDto(artsNo, artName, caption, description, createdAt, artists, file);
+    return new ArtsResponseDto(
+        arts.getArtsNo(),
+        arts.getArtName(),
+        arts.getCaption(),
+        arts.getCoDescription(),
+        createdAt,
+        artists,
+        file);
   }
 }

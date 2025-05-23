@@ -38,6 +38,9 @@ public class Arts extends BaseEntity {
   @Column(name = "caption", length = 500)
   private String caption;
 
+  @Column(name = "co_description", columnDefinition = "LONGTEXT")
+  private String coDescription;
+
   @Enumerated(EnumType.STRING)
   @Column(name = "art_type", nullable = false, length = 20)
   private ArtType artType;
