@@ -26,24 +26,38 @@ public class SecurityConfig {
 
   @Bean
   public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-    http.csrf(csrf -> csrf.disable())
-        .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+    http.cors(cors -> cors.configurationSource(corsConfigurationSource()))
+        .csrf(csrf -> csrf.disable())
         .authorizeHttpRequests(
             auth ->
-                auth.requestMatchers("/admin/**")
-                    .hasRole("ADMIN")
-                    .requestMatchers(
-                        "/api/user/**",
-                        "api/files",
-                        "api/galleries/arts/{artsNo}/reviews",
-                        "/css/**",
-                        "/js/**",
-                        "/images/**")
+                auth.requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**")
                     .permitAll()
+                    //                                          .requestMatchers("/admin/**")
+                    //                                          .hasRole("ADMIN")
+                    //                                          .requestMatchers(
+                    //                                                  "/api/user/**",
+                    //                                                  "/api/files",
+                    //
+                    // "/api/galleries/arts/{artsNo}/reviews",
+                    //                                                  "/css/**",
+                    //                                                  "/js/**",
+                    //
+                    // "/images/**").requestMatchers("/admin/**")
+                    //                                          .hasRole("ADMIN")
+                    //                                          .requestMatchers(
+                    //                                                  "/api/user/**",
+                    //                                                  "/api/files",
+                    //
+                    // "/api/galleries/arts/{artsNo}/reviews",
+                    //                                                  "/css/**",
+                    //                                                  "/js/**",
+                    //                                                  "/images/**")
                     .anyRequest()
-                    .authenticated())
-        .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
-        .requiresChannel(channel -> channel.anyRequest().requiresSecure());
+                    .permitAll()
+            //                                          .authenticated()
+            )
+        .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+    //        .requiresChannel(channel -> channel.anyRequest().requiresSecure());
 
     return http.build();
   }
@@ -51,9 +65,15 @@ public class SecurityConfig {
   @Bean
   public CorsConfigurationSource corsConfigurationSource() {
     CorsConfiguration configuration = new CorsConfiguration();
-    configuration.setAllowedOrigins(List.of("https://hy-erica-arttherapy.com"));
+    configuration.setAllowedOrigins(
+        List.of(
+            "https://hy-erica-arttherapy.com",
+            "https://frontend-rho-woad.vercel.app",
+            "http://localhost:5173"));
     configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
-    configuration.setAllowedHeaders(List.of("*"));
+    configuration.setAllowedHeaders(
+        List.of(
+            "Authorization", "Content-Type", "X-Requested-With", "Accept", "Origin", "Referer"));
     configuration.setAllowCredentials(true);
     UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
     source.registerCorsConfiguration("/**", configuration);
