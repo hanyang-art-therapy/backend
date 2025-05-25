@@ -3,6 +3,8 @@ package com.hanyang.arttherapy.repository;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import com.hanyang.arttherapy.domain.ArtArtistRel;
 import com.hanyang.arttherapy.domain.Arts;
@@ -13,4 +15,16 @@ public interface ArtArtistRelRepository extends JpaRepository<ArtArtistRel, Long
   List<ArtArtistRel> findByArts_ArtsNo(Long artsNo);
 
   void deleteAllByArts(Arts arts);
+
+  @Query(
+      """
+  SELECT ar
+  FROM ArtArtistRel ar
+  JOIN FETCH ar.artists
+  WHERE ar.arts.artsNo IN :artsNos
+""")
+  List<ArtArtistRel> findWithArtistsByArtsNoIn(@Param("artsNos") List<Long> artsNos);
+
+  // 관리자 작품
+  void deleteByArts(Arts arts);
 }

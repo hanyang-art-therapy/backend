@@ -35,11 +35,11 @@ public interface ArtsRepository extends JpaRepository<Arts, Long> {
   @Query(
       value =
           """
-    SELECT a.* FROM arts a
-    JOIN art_artist_rel ar ON a.arts_no = ar.arts_no
-    JOIN artists artist ON ar.artists_no = artist.artists_no
-    WHERE artist.student_no = :studentNo
-""",
+                      SELECT a.* FROM arts a
+                      JOIN art_artist_rel ar ON a.arts_no = ar.arts_no
+                      JOIN artists artist ON ar.artist_no = artist.artists_no
+                      WHERE artist.student_no = :studentNo
+                      """,
       nativeQuery = true)
   List<Arts> findAllByStudentNo(@Param("studentNo") String studentNo);
 }

@@ -8,22 +8,34 @@ import com.hanyang.arttherapy.domain.Arts;
 import com.hanyang.arttherapy.domain.Files;
 
 public record ArtsListResponseDto(
-    Long artsNo, String artName, FileResponseDto files, List<ArtistResponseDto> artists) {
+    Long artsNo,
+    String artName,
+    String coDescription,
+    FileResponseDto files,
+    List<ArtistResponseDto> artists) {
 
   public static ArtsListResponseDto of(Arts arts, Files file, List<ArtArtistRel> artArtistRels) {
-    return new ArtsListResponseDto(
-        arts.getArtsNo(),
-        arts.getArtName(),
-        new FileResponseDto(file.getUrl()),
+    String coDescription = arts.getCoDescription(); // 공동 작품 설명 (공동 작품이 아닐 경우 null/빈 문자열로 저장돼 있음)
+
+    List<ArtistResponseDto> artistDtos =
         artArtistRels.stream()
             .map(
                 rel ->
                     new ArtistResponseDto(
-                        rel.getArtists().getArtistName(), rel.getArtists().getCohort()))
-            .collect(Collectors.toList()));
+                        rel.getArtists().getArtistName(),
+                        rel.getArtists().getCohort(),
+                        rel.getDescription()))
+            .collect(Collectors.toList());
+
+    return new ArtsListResponseDto(
+        arts.getArtsNo(),
+        arts.getArtName(),
+        coDescription,
+        new FileResponseDto(file.getUrl()),
+        artistDtos);
   }
 
   public record FileResponseDto(String url) {}
 
-  public record ArtistResponseDto(String artistName, int cohort) {}
+  public record ArtistResponseDto(String artistName, int cohort, String description) {}
 }
