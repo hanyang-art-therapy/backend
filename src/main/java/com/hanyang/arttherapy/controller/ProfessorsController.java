@@ -41,4 +41,12 @@ public class ProfessorsController {
     String message = professorsService.saveProfessor(requestDto);
     return ResponseEntity.status(HttpStatus.CREATED).body(new CommonMessageResponse(message));
   }
+
+  // 교수진 수정
+  @PatchMapping("/{professorNo}")
+  public ResponseEntity<CommonMessageResponse> updateProfessor(
+      @PathVariable Long professorNo, @RequestBody @Valid ProfessorsRequestDto requestDto) {
+    String message = professorsService.updateProfessor(professorNo, requestDto);
+    return ResponseEntity.ok(new CommonMessageResponse(message));
+  }
 }

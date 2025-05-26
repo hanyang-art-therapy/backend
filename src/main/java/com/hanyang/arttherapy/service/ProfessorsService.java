@@ -63,4 +63,31 @@ public class ProfessorsService {
     professorsRepository.save(professor);
     return "교수 등록에 성공했습니다";
   }
+
+  // 교수진 수정
+  @Transactional
+  public String updateProfessor(Long professorNo, ProfessorsRequestDto requestDto) {
+    Professors professor =
+        professorsRepository
+            .findById(professorNo)
+            .orElseThrow(() -> new CustomException(ProfessorExceptionType.PROFESSOR_NOT_FOUND));
+
+    Files file = null;
+    if (requestDto.getFilesNo() != null) {
+      file =
+          filesRepository
+              .findById(requestDto.getFilesNo())
+              .orElseThrow(() -> new CustomException(ProfessorExceptionType.FILE_NOT_FOUND));
+    }
+
+    professor.updateProfessorIfNotNull(
+        requestDto.getProfessorName(),
+        requestDto.getPosition(),
+        requestDto.getMajor(),
+        requestDto.getEmail(),
+        requestDto.getTel(),
+        file);
+
+    return "교수 정보가 수정되었습니다";
+  }
 }
