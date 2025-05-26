@@ -66,8 +66,8 @@ public class UserController {
 
   @PostMapping("/sign-up")
   public ResponseEntity<CommonMessageResponse> sigup(@RequestBody SignupRequest request) {
-    String message = userService.signup(request);
-    return ResponseEntity.ok(new CommonMessageResponse(message));
+    userService.signup(request);
+    return ResponseEntity.ok().build();
   }
 
   @PostMapping("/sign-in")

@@ -10,7 +10,9 @@ import com.hanyang.arttherapy.common.exception.*;
 import com.hanyang.arttherapy.common.exception.exceptionType.*;
 import com.hanyang.arttherapy.domain.*;
 import com.hanyang.arttherapy.dto.request.*;
-import com.hanyang.arttherapy.dto.response.*;
+import com.hanyang.arttherapy.dto.response.artistResponse.ArtistResponseDto;
+import com.hanyang.arttherapy.dto.response.artistResponse.ArtistResponseListDto;
+import com.hanyang.arttherapy.dto.response.artistResponse.ArtistUpdateResponse;
 import com.hanyang.arttherapy.repository.*;
 
 import lombok.RequiredArgsConstructor;
@@ -24,10 +26,11 @@ public class ArtistsService {
 
   private final ArtistsRepository artistsRepository;
 
-  public void registerArtist(ArtistRequestDto dto) {
+  public String registerArtist(ArtistRequestDto dto) {
     isStudentNoDuplicate(dto.studentNo());
     Artists artist = convertToEntity(dto);
     saveArtist(artist);
+    return "작가등록 성공";
   }
 
   public ArtistResponseDto getArtist(Long artistNo) {
@@ -41,7 +44,8 @@ public class ArtistsService {
     return ArtistResponseListDto.of(responseDtos);
   }
 
-  public void updateArtist(long artistsNo, ArtistRequestDto dto) {
+  public ArtistUpdateResponse<ArtistResponseDto> updateArtist(
+      long artistsNo, ArtistRequestDto dto) {
     Artists artist = findArtistById(artistsNo);
 
     Optional.ofNullable(dto.studentNo())
@@ -49,12 +53,16 @@ public class ArtistsService {
         .ifPresent(this::isStudentNoDuplicate);
 
     updateArtistInfo(artist, dto);
-    artistsRepository.save(artist);
+    Artists updated = artistsRepository.save(artist);
+    ArtistResponseDto dtoResponse = ArtistResponseDto.of(updated);
+
+    return new ArtistUpdateResponse<>("작가 수정이 완료되었습니다", dtoResponse);
   }
 
-  public void deleteArtist(Long artistsNo) {
+  public String deleteArtist(Long artistsNo) {
     Artists artist = findArtistById(artistsNo);
     artistsRepository.delete(artist);
+    return "작가 삭제가 완료되었습니다.";
   }
 
   private static void updateArtistInfo(Artists artist, ArtistRequestDto dto) {
