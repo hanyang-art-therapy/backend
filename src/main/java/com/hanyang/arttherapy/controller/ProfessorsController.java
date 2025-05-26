@@ -1,10 +1,16 @@
 package com.hanyang.arttherapy.controller;
 
+import java.util.List;
+
+import jakarta.validation.Valid;
+
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import com.hanyang.arttherapy.dto.request.ProfessorsRegisterRequestDto;
+import com.hanyang.arttherapy.dto.request.ProfessorsRequestDto;
 import com.hanyang.arttherapy.dto.response.ProfessorsResponseDto;
+import com.hanyang.arttherapy.dto.response.userResponse.CommonMessageResponse;
 import com.hanyang.arttherapy.service.ProfessorsService;
 
 import lombok.RequiredArgsConstructor;
@@ -17,18 +23,22 @@ public class ProfessorsController {
   private final ProfessorsService professorsService;
 
   // 교수진 전체 조회
+  @GetMapping
+  public ResponseEntity<List<ProfessorsResponseDto>> getAllProfessors() {
+    return ResponseEntity.ok(professorsService.getAllProfessors());
+  }
 
   // 교수진 상세조회
+  @GetMapping("/{professorNo}")
+  public ResponseEntity<ProfessorsResponseDto> getProfessorDetail(@PathVariable Long professorNo) {
+    return ResponseEntity.ok(professorsService.getProfessorDetail(professorNo));
+  }
 
   // 교수진 등록
   @PostMapping
-  public ResponseEntity<ProfessorsResponseDto> registerProfessor(
-      @RequestBody ProfessorsRegisterRequestDto requestDto, @RequestHeader("userId") Long userId) {
-    professorsService.registerProfessor(requestDto, userId);
-    return ResponseEntity.ok(new ProfessorsResponseDto("교수진 등록이 완료되었습니다."));
+  public ResponseEntity<CommonMessageResponse> createProfessor(
+      @RequestBody @Valid ProfessorsRequestDto requestDto) {
+    String message = professorsService.saveProfessor(requestDto);
+    return ResponseEntity.status(HttpStatus.CREATED).body(new CommonMessageResponse(message));
   }
-
-  // 교수진 수정
-
-  // 교수진 삭제
 }

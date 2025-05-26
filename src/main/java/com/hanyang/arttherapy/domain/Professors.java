@@ -37,13 +37,14 @@ public class Professors {
   private String tel;
 
   // 수정 메서드
-  public void updateProfessor(
+  public void updateProfessorIfNotNull(
       String professorName, String position, String major, String email, String tel, Files file) {
-    this.professorName = professorName;
-    this.position = position;
-    this.major = major;
-    this.email = email;
-    this.tel = tel;
-    this.file = file;
+
+    if (professorName != null) this.professorName = professorName;
+    if (position != null) this.position = position;
+    if (major != null) this.major = major;
+    if (email != null) this.email = email;
+    if (tel != null) this.tel = tel;
+    if (file != null) this.file = file;
   }
 }

@@ -3,7 +3,7 @@ package com.hanyang.arttherapy.dto.request;
 import lombok.Getter;
 
 @Getter
-public class ProfessorsRegisterRequestDto {
+public class ProfessorsRequestDto {
 
   private String professorName;
   private String position;
