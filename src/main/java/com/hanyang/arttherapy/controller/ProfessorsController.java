@@ -49,4 +49,11 @@ public class ProfessorsController {
     String message = professorsService.updateProfessor(professorNo, requestDto);
     return ResponseEntity.ok(new CommonMessageResponse(message));
   }
+
+  // 교수진 삭제
+  @DeleteMapping("/{professorNo}")
+  public ResponseEntity<CommonMessageResponse> deleteProfessor(@PathVariable Long professorNo) {
+    String message = professorsService.deleteProfessor(professorNo);
+    return ResponseEntity.ok(new CommonMessageResponse(message));
+  }
 }

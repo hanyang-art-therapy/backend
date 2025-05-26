@@ -90,4 +90,16 @@ public class ProfessorsService {
 
     return "교수 정보가 수정되었습니다";
   }
+
+  // 교수진 삭제
+  @Transactional
+  public String deleteProfessor(Long professorNo) {
+    Professors professor =
+        professorsRepository
+            .findById(professorNo)
+            .orElseThrow(() -> new CustomException(ProfessorExceptionType.PROFESSOR_NOT_FOUND));
+
+    professorsRepository.delete(professor);
+    return "교수 정보가 삭제되었습니다";
+  }
 }
