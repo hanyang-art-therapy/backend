@@ -13,7 +13,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.hanyang.arttherapy.common.exception.CustomException;
 import com.hanyang.arttherapy.common.exception.exceptionType.ArtsExceptionType;
-import com.hanyang.arttherapy.common.exception.exceptionType.FileSystemExceptionType;
 import com.hanyang.arttherapy.common.exception.exceptionType.GalleryExceptionType;
 import com.hanyang.arttherapy.domain.ArtArtistRel;
 import com.hanyang.arttherapy.domain.Arts;
@@ -80,21 +79,26 @@ public class ArtsService {
 
   // 작품 상세 조회
   public ArtsResponseDto getArtDetail(Long artsNo) {
+    try {
+      Arts arts =
+          artsRepository
+              .findById(artsNo)
+              .orElseThrow(() -> new CustomException(ArtsExceptionType.ART_NOT_FOUND));
 
-    Arts arts =
-        artsRepository
-            .findById(artsNo)
-            .orElseThrow(() -> new CustomException(ArtsExceptionType.ART_NOT_FOUND));
+      List<ArtArtistRel> artistRels = artArtistRelRepository.findByArts_ArtsNo(artsNo);
+      List<ArtArtistRelResponseDto> artistResponses =
+          artistRels.stream().map(ArtArtistRelResponseDto::of).collect(Collectors.toList());
 
-    List<ArtArtistRel> artistRels = artArtistRelRepository.findByArts_ArtsNo(artsNo);
-    List<ArtArtistRelResponseDto> artistResponses =
-        artistRels.stream().map(ArtArtistRelResponseDto::of).collect(Collectors.toList());
+      List<FileResponseDto> fileResponses = getFileResponseDto(arts.getFile().getFilesNo());
+      LocalDateTime createdAt = arts.getCreatedAt();
 
-    List<FileResponseDto> fileResponses = getFileResponseDto(arts.getFile().getFilesNo());
-    LocalDateTime createdAt = arts.getCreatedAt();
-
-    return ArtsResponseDto.of(
-        arts, createdAt, artistResponses, fileResponses.isEmpty() ? null : fileResponses.get(0));
+      return ArtsResponseDto.of(
+          arts, createdAt, artistResponses, fileResponses.isEmpty() ? null : fileResponses.get(0));
+    } catch (CustomException e) {
+      throw e;
+    } catch (Exception e) {
+      throw new CustomException(ArtsExceptionType.ART_LOAD_FAILED);
+    }
   }
 
   // 작품 전체 조회
@@ -144,6 +148,21 @@ public class ArtsService {
     return mapToDtoList(artsList);
   }
 
+  public List<Integer> getAvailableYears() {
+    return galleriesRepository.findAll().stream()
+        .map(g -> g.getStartDate().getYear())
+        .distinct()
+        .sorted()
+        .toList();
+  }
+
+  public List<Integer> getAvailableCohorts(Integer year) {
+    int targetYear = (year != null) ? year : LocalDate.now().getYear();
+    Galleries galleries = findGalleryByYear(targetYear);
+    if (galleries == null) return List.of();
+    return artArtistRelRepository.findDistinctCohortsByGalleriesNo(galleries.getGalleriesNo());
+  }
+
   // 연도에 해당하는 전시회 조회
   private Galleries findGalleryByYear(int year) {
     return galleriesRepository
@@ -166,73 +185,45 @@ public class ArtsService {
   private List<ArtsListResponseDto> mapToDtoList(List<Arts> artsList) {
     if (artsList.isEmpty()) return List.of();
 
-    // 1. 모든 artsNo, filesNo 추출
-    List<Long> artsNos = artsList.stream().map(Arts::getArtsNo).toList();
+    try {
+      // 1. 모든 artsNo, filesNo 추출
+      List<Long> artsNos = artsList.stream().map(Arts::getArtsNo).toList();
 
-    List<Long> fileNos = artsList.stream().map(a -> a.getFile().getFilesNo()).toList();
+      List<Long> fileNos = artsList.stream().map(a -> a.getFile().getFilesNo()).toList();
 
-    // 2. 파일, 작가 관계 미리 조회하여 Map으로 캐싱
-    Map<Long, Files> fileMap =
-        filesRepository.findAllById(fileNos).stream()
-            .collect(Collectors.toMap(Files::getFilesNo, f -> f));
+      // 2. 파일, 작가 관계 미리 조회하여 Map으로 캐싱
+      Map<Long, Files> fileMap =
+          filesRepository.findAllById(fileNos).stream()
+              .collect(Collectors.toMap(Files::getFilesNo, f -> f));
 
-    Map<Long, List<ArtArtistRel>> artistRelMap =
-        artArtistRelRepository.findWithArtistsByArtsNoIn(artsNos).stream()
-            .collect(Collectors.groupingBy(rel -> rel.getArts().getArtsNo()));
+      Map<Long, List<ArtArtistRel>> artistRelMap =
+          artArtistRelRepository.findWithArtistsByArtsNoIn(artsNos).stream()
+              .collect(Collectors.groupingBy(rel -> rel.getArts().getArtsNo()));
 
-    // 3. 정렬 (작가 이름 가나다 순 기준)
-    List<Arts> sortedList =
-        artsList.stream()
-            .sorted(
-                Comparator.comparing(
-                    art ->
-                        artistRelMap.getOrDefault(art.getArtsNo(), List.of()).stream()
-                            .map(rel -> rel.getArtists().getArtistName())
-                            .sorted(String.CASE_INSENSITIVE_ORDER)
-                            .collect(Collectors.joining(", "))))
-            .toList();
+      // 3. 정렬 (작가 이름 가나다 순 기준)
+      List<Arts> sortedList =
+          artsList.stream()
+              .sorted(
+                  Comparator.comparing(
+                      art ->
+                          artistRelMap.getOrDefault(art.getArtsNo(), List.of()).stream()
+                              .map(rel -> rel.getArtists().getArtistName())
+                              .sorted(String.CASE_INSENSITIVE_ORDER)
+                              .collect(Collectors.joining(", "))))
+              .toList();
 
-    // 4. DTO 매핑
-    return sortedList.stream()
-        .map(
-            arts -> {
-              Files file = fileMap.get(arts.getFile().getFilesNo());
-              List<ArtArtistRel> rels = artistRelMap.getOrDefault(arts.getArtsNo(), List.of());
-              return ArtsListResponseDto.of(arts, file, rels);
-            })
-        .toList();
-  }
-
-  // 작품의 작가 이름을 기준으로 정렬하는 메서드
-  private List<Arts> sortArtsByArtistNames(List<Arts> artsList) {
-    return artsList.stream()
-        .sorted(Comparator.comparing(this::getSortedArtistNames))
-        .collect(Collectors.toList());
-  }
-
-  // 작가 이름들을 추출하여 정렬 후 하나의 문자열로 결합
-  private String getSortedArtistNames(Arts art) {
-    return art.getArtArtistRels().stream()
-        .map(rel -> rel.getArtists().getArtistName())
-        .sorted(String.CASE_INSENSITIVE_ORDER)
-        .collect(Collectors.joining(", "));
-  }
-
-  private Arts getArtById(Long artsNo) {
-    return artsRepository
-        .findByArtsNo(artsNo)
-        .orElseThrow(() -> new CustomException(ArtsExceptionType.ART_NOT_FOUND));
-  }
-
-  private ArtsListResponseDto mapToArtsListResponseDto(Arts arts) {
-    Files file =
-        filesRepository
-            .findById(arts.getFile().getFilesNo())
-            .orElseThrow(() -> new CustomException(FileSystemExceptionType.FILE_NOT_FOUND));
-
-    List<ArtArtistRel> artistRels = artArtistRelRepository.findByArts_ArtsNo(arts.getArtsNo());
-
-    return ArtsListResponseDto.of(arts, file, artistRels);
+      // 4. DTO 매핑
+      return sortedList.stream()
+          .map(
+              arts -> {
+                Files file = fileMap.get(arts.getFile().getFilesNo());
+                List<ArtArtistRel> rels = artistRelMap.getOrDefault(arts.getArtsNo(), List.of());
+                return ArtsListResponseDto.of(arts, file, rels);
+              })
+          .toList();
+    } catch (Exception e) {
+      throw new CustomException(ArtsExceptionType.ART_LOAD_FAILED);
+    }
   }
 
   private List<FileResponseDto> getFileResponseDto(Long filesNo) {

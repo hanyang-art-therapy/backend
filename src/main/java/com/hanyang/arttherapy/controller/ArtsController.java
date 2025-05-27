@@ -1,5 +1,6 @@
 package com.hanyang.arttherapy.controller;
 
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.http.ResponseEntity;
@@ -25,6 +26,19 @@ public class ArtsController {
 
     Map<String, Object> result = artsService.getArtsByFilter(year, cohort, lastId);
     return ResponseEntity.ok(result);
+  }
+
+  @GetMapping("/years")
+  public ResponseEntity<Map<String, Object>> getAvailableYears() {
+    List<Integer> years = artsService.getAvailableYears();
+    return ResponseEntity.ok(Map.of("years", years));
+  }
+
+  @GetMapping("/cohorts")
+  public ResponseEntity<Map<String, Object>> getAvailableCohorts(
+      @RequestParam(required = false) Integer year) {
+    List<Integer> cohorts = artsService.getAvailableCohorts(year);
+    return ResponseEntity.ok(Map.of("cohorts", cohorts));
   }
 
   // 작품 상세 조회

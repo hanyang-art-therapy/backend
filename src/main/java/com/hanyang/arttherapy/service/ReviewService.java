@@ -1,7 +1,6 @@
 package com.hanyang.arttherapy.service;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
@@ -16,7 +15,6 @@ import com.hanyang.arttherapy.common.exception.CustomException;
 import com.hanyang.arttherapy.common.exception.exceptionType.ArtsExceptionType;
 import com.hanyang.arttherapy.common.exception.exceptionType.FileSystemExceptionType;
 import com.hanyang.arttherapy.common.exception.exceptionType.ReviewException;
-import com.hanyang.arttherapy.common.exception.exceptionType.UserException;
 import com.hanyang.arttherapy.domain.Arts;
 import com.hanyang.arttherapy.domain.Files;
 import com.hanyang.arttherapy.domain.Reviews;
@@ -43,36 +41,48 @@ public class ReviewService {
   private final GalleriesRepository galleriesRepository;
 
   // 리뷰 조회
-  public Page<ReviewResponseDto> getReviews(Long artsNo, Pageable pageable) {
+  public Map<String, Object> getReviews(Long artsNo, Pageable pageable) {
+    try {
+      Page<Reviews> reviewsPage = reviewRepository.findAllByArts_ArtsNo(artsNo, pageable);
 
-    Page<Reviews> reviewsPage = reviewRepository.findAllByArts_ArtsNo(artsNo, pageable);
+      List<ReviewResponseDto> content =
+          reviewsPage.stream()
+              .map(
+                  review -> {
+                    Users user = review.getUser();
+                    List<Files> files = new ArrayList<>();
 
-    if (reviewsPage.isEmpty()) {
-      return Page.empty(pageable);
+                    if (review.getFile() != null) {
+                      files =
+                          findFiles(List.of(review.getFile().getFilesNo())).stream()
+                              .filter(Files::isUseYn)
+                              .collect(Collectors.toList());
+                    }
+
+                    List<FileResponseDto> fileResponseDtos = toFileResponseDtos(files);
+
+                    return new ReviewResponseDto(
+                        review.getReviewsNo(),
+                        review.getReviewText(),
+                        user == null ? null : maskUserName(user.getUserName()),
+                        user == null ? null : user.getUserNo(),
+                        fileResponseDtos,
+                        review.getCreatedAt());
+                  })
+              .toList();
+
+      Map<String, Object> result = new LinkedHashMap<>();
+      result.put("content", content);
+      result.put("page", reviewsPage.getNumber());
+      result.put("size", reviewsPage.getSize());
+      result.put("totalElements", reviewsPage.getTotalElements());
+      result.put("totalPages", reviewsPage.getTotalPages());
+      result.put("isLast", reviewsPage.isLast());
+
+      return result;
+    } catch (Exception e) {
+      throw new CustomException(ReviewException.REVIEW_LOAD_FAILED);
     }
-
-    return reviewsPage.map(
-        review -> {
-          Users user = review.getUser();
-          List<Files> files = new ArrayList<>();
-
-          if (review.getFile() != null) {
-
-            files =
-                findFiles(List.of(review.getFile().getFilesNo())).stream()
-                    .filter(Files::isUseYn)
-                    .collect(Collectors.toList());
-          }
-
-          List<FileResponseDto> fileResponseDtos = toFileResponseDtos(files);
-
-          return new ReviewResponseDto(
-              review.getReviewsNo(),
-              review.getReviewText(),
-              user == null ? null : maskUserName(user.getUserName()),
-              user == null ? null : user.getUserNo(),
-              fileResponseDtos);
-        });
   }
 
   // 리뷰 등록
@@ -129,7 +139,8 @@ public class ReviewService {
           review.getReviewText(),
           user == null ? null : maskUserName(user.getUserName()),
           user == null ? null : user.getUserNo(),
-          fileResponseDtos);
+          fileResponseDtos,
+          review.getCreatedAt());
     } catch (Exception e) {
 
       throw new CustomException(ReviewException.SERVER_ERROR);
@@ -138,71 +149,81 @@ public class ReviewService {
 
   // 댓글 수정
   public ReviewResponseDto patchReview(Long reviewNo, String reviewText, List<Long> filesNo) {
+    try {
+      Reviews review =
+          reviewRepository
+              .findById(reviewNo)
+              .orElseThrow(() -> new CustomException(ReviewException.REVIEW_NOT_FOUND));
 
-    Reviews review =
-        reviewRepository
-            .findById(reviewNo)
-            .orElseThrow(() -> new CustomException(ReviewException.REVIEW_NOT_FOUND));
+      Users currentUser = getUserByUserId();
 
-    Users currentUser = getUserByUserId();
-    if (!review.getUser().equals(currentUser)) {
-      throw new CustomException(ReviewException.NOT_REVIEW_OWNER);
-    }
+      Long authorUserNo = review.getUser() != null ? review.getUser().getUserNo() : null;
+      Long currentUserNo = currentUser != null ? currentUser.getUserNo() : null;
 
-    if (reviewText == null || reviewText.isBlank()) {
-      throw new CustomException(ReviewException.REVIEW_TEXT_REQUIRED);
-    }
-    review.updateReviewText(reviewText);
-
-    // 파일 교체 처리
-    if (filesNo != null && !filesNo.isEmpty()) {
-      List<Files> newFiles = filesRepository.findByFilesNoIn(filesNo);
-
-      if (newFiles.isEmpty()) {
-        throw new CustomException(FileSystemExceptionType.FILE_NOT_FOUND);
+      if (authorUserNo == null || currentUserNo == null || !authorUserNo.equals(currentUserNo)) {
+        throw new CustomException(ReviewException.NOT_REVIEW_OWNER);
       }
 
-      // 새로운 파일 활성화
-      newFiles.forEach(Files::activateFile);
-      filesRepository.saveAll(newFiles);
+      if (reviewText == null || reviewText.isBlank()) {
+        throw new CustomException(ReviewException.REVIEW_TEXT_REQUIRED);
+      }
+      review.updateReviewText(reviewText);
 
-      // 기존 파일 비활성화
-      if (review.getFile() != null) {
-        deactivateFile(review.getFile().getFilesNo());
+      // 파일 교체 처리
+      if (filesNo != null && !filesNo.isEmpty()) {
+        List<Files> newFiles = filesRepository.findByFilesNoIn(filesNo);
+
+        if (newFiles.isEmpty()) {
+          throw new CustomException(FileSystemExceptionType.FILE_NOT_FOUND);
+        }
+
+        // 새로운 파일 활성화
+        newFiles.forEach(Files::activateFile);
+        filesRepository.saveAll(newFiles);
+
+        // 기존 파일 비활성화
+        if (review.getFile() != null) {
+          deactivateFile(review.getFile().getFilesNo());
+        }
+
+        // 리뷰에 파일 업데이트
+        review.updateFilesNo(newFiles.get(0));
+        reviewRepository.save(review);
+
+        // 응답 생성
+        List<FileResponseDto> fileResponseDtos = toFileResponseDtos(newFiles);
+        return new ReviewResponseDto(
+            review.getReviewsNo(),
+            review.getReviewText(),
+            maskUserName(review.getUser().getUserName()),
+            review.getUser().getUserNo(),
+            fileResponseDtos,
+            review.getCreatedAt());
       }
 
-      // 리뷰에 파일 업데이트
-      review.updateFilesNo(newFiles.get(0));
-      reviewRepository.save(review);
+      // 기존 파일이 없으면 빈 리스트로 처리
+      if (review.getFile() == null) {
+        return new ReviewResponseDto(
+            review.getReviewsNo(),
+            review.getReviewText(),
+            maskUserName(review.getUser().getUserName()),
+            review.getUser().getUserNo(),
+            List.of(),
+            review.getCreatedAt());
+      }
 
-      // 응답 생성
-      List<FileResponseDto> fileResponseDtos = toFileResponseDtos(newFiles);
+      // 기존 파일이 존재할 때만 조회
+      List<Files> existingFiles = findFiles(List.of(review.getFile().getFilesNo()));
       return new ReviewResponseDto(
           review.getReviewsNo(),
           review.getReviewText(),
           maskUserName(review.getUser().getUserName()),
           review.getUser().getUserNo(),
-          fileResponseDtos);
+          toFileResponseDtos(existingFiles),
+          review.getCreatedAt());
+    } catch (Exception e) {
+      throw new CustomException(ReviewException.REVIEW_UPDATE_FAILED);
     }
-
-    // 기존 파일이 없으면 빈 리스트로 처리
-    if (review.getFile() == null) {
-      return new ReviewResponseDto(
-          review.getReviewsNo(),
-          review.getReviewText(),
-          maskUserName(review.getUser().getUserName()),
-          review.getUser().getUserNo(),
-          List.of());
-    }
-
-    // 기존 파일이 존재할 때만 조회
-    List<Files> existingFiles = findFiles(List.of(review.getFile().getFilesNo()));
-    return new ReviewResponseDto(
-        review.getReviewsNo(),
-        review.getReviewText(),
-        maskUserName(review.getUser().getUserName()),
-        review.getUser().getUserNo(),
-        toFileResponseDtos(existingFiles));
   }
 
   // 댓글 삭제
@@ -213,11 +234,12 @@ public class ReviewService {
             .findById(reviewNo)
             .orElseThrow(() -> new CustomException(ReviewException.REVIEW_NOT_FOUND));
 
-    // 현재 로그인한 사용자 정보 가져오기
+    Users reviewOwner = review.getUser();
     Users currentUser = getUserByUserId();
 
-    // 작성자와 현재 로그인한 사용자가 같은지 검증
-    if (!review.getUser().equals(currentUser)) {
+    if (currentUser == null
+        || reviewOwner == null
+        || !Objects.equals(reviewOwner.getUserNo(), currentUser.getUserNo())) {
       throw new CustomException(ReviewException.NOT_REVIEW_DELETE_FAILED);
     }
 
@@ -257,10 +279,13 @@ public class ReviewService {
   }
 
   private Users getUserByUserId() {
-    String userId = SecurityContextHolder.getContext().getAuthentication().getName();
-    return userRepository
-        .findByUserId(userId)
-        .orElseThrow(() -> new CustomException(UserException.USER_NOT_FOUND));
+    var authentication = SecurityContextHolder.getContext().getAuthentication();
+    if (authentication == null
+        || !authentication.isAuthenticated()
+        || "anonymousUser".equals(authentication.getPrincipal())) {
+      return null;
+    }
+    return (Users) authentication.getPrincipal();
   }
 
   // 파일 조회 메서드
