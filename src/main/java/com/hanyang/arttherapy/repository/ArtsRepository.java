@@ -3,6 +3,7 @@ package com.hanyang.arttherapy.repository;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -42,4 +43,24 @@ public interface ArtsRepository extends JpaRepository<Arts, Long> {
                       """,
       nativeQuery = true)
   List<Arts> findAllByStudentNo(@Param("studentNo") String studentNo);
+
+  // 검색 기능(작품+작가)
+  @Query(
+      "SELECT DISTINCT a FROM Arts a "
+          + "JOIN a.artArtistRels r "
+          + "JOIN r.artists artist "
+          + "WHERE a.artName LIKE %:keyword% OR artist.artistName LIKE %:keyword%")
+  List<Arts> findByArtNameOrArtistNameContaining(@Param("keyword") String keyword);
+
+  @Query(
+      """
+  SELECT DISTINCT a FROM Arts a
+  JOIN a.artArtistRels r
+  JOIN r.artists artist
+  WHERE (:keyword IS NULL OR a.artName LIKE %:keyword% OR artist.artistName LIKE %:keyword%)
+    AND (:lastId IS NULL OR a.artsNo < :lastId)
+  ORDER BY a.artsNo DESC
+""")
+  List<Arts> searchArtsWithCursor(
+      @Param("keyword") String keyword, @Param("lastId") Long lastId, Pageable pageable);
 }

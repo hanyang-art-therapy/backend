@@ -45,10 +45,36 @@ public class Arts extends BaseEntity {
   @Column(name = "art_type", nullable = false, length = 20)
   private ArtType artType;
 
-  public void updateArts(Files file, String artName, String caption, ArtType artType) {
+  public void updateFile(Files file) {
+    this.file = file;
+  }
+
+  public void updateTitle(String artName) {
+    this.artName = artName;
+  }
+
+  public void updateCaption(String caption) {
+    this.caption = caption;
+  }
+
+  public void updateArtType(ArtType artType) {
+    this.artType = artType;
+  }
+
+  public void updateCoDescription(String coDescription) {
+    this.coDescription = coDescription;
+  }
+
+  public void updateGallery(Galleries gallery) {
+    this.galleries = gallery;
+  }
+
+  public void updateArts(
+      Files file, String artName, String caption, ArtType artType, String coDescription) {
     this.file = file;
     this.artName = artName;
     this.caption = caption;
     this.artType = artType;
+    this.coDescription = coDescription;
   }
 }
