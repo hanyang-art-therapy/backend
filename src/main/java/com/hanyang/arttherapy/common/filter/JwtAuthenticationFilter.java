@@ -32,6 +32,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
       HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
       throws ServletException, IOException {
 
+    // CORS preflight 요청은 바로 통과시켜야 함
+    if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
+      filterChain.doFilter(request, response);
+      return;
+    }
+
     // 1. Authorization 헤더에서 토큰 추출
     String authHeader = request.getHeader("Authorization");
     if (authHeader == null || !authHeader.startsWith("Bearer ")) {
@@ -59,7 +65,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     // 4. 인증 객체 생성 및 SecurityContext에 저장
     UsernamePasswordAuthenticationToken authentication =
-        new UsernamePasswordAuthenticationToken(user, null, userDetails.getAuthorities());
+        new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
     authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
     SecurityContextHolder.getContext().setAuthentication(authentication);
 

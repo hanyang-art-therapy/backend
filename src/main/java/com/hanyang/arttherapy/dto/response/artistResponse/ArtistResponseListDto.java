@@ -1,4 +1,4 @@
-package com.hanyang.arttherapy.dto.response;
+package com.hanyang.arttherapy.dto.response.artistResponse;
 
 import java.util.List;
 

@@ -61,7 +61,7 @@ public class UserService {
     // 이메일 발송 및 세션 저장
     sendEmailVerification(request.email(), verificationCode);
 
-    return "이메일이 발송되었습니다.";
+    return "이메일이 발송되었습니다. 인증번호를 확인해주세요";
   }
 
   // 이메일 발송 + 세션 저장
@@ -101,7 +101,7 @@ public class UserService {
         return "인증 번호가 일치하지 않습니다.";
       }
     }
-    return "인증 번호가 존재하지 않습니다.";
+    return "인증되었습니다.";
   }
 
   // 아이디 찾기
@@ -164,7 +164,7 @@ public class UserService {
   }
 
   // 이메일로 임시 비밀번호 보내기
-  private void sendTemporaryPasswordEmail(String email, String temporaryPassword) {
+  private String sendTemporaryPasswordEmail(String email, String temporaryPassword) {
     try {
       SimpleMailMessage message = new SimpleMailMessage();
       message.setTo(email);
@@ -175,6 +175,7 @@ public class UserService {
     } catch (Exception e) {
       throw new CustomException(UserException.EMAIL_SEND_FAIL);
     }
+    return "임시 비밀번호가 이메일로 발송되었습니다.";
   }
 
   public String resetPassword(PasswordResetRequest request) {
@@ -197,7 +198,7 @@ public class UserService {
   }
 
   @Transactional
-  public String signup(SignupRequest request) {
+  public void signup(SignupRequest request) {
     if (userRepository.existsByUserId(request.userId())) {
       throw new CustomException(UserException.USER_ALREADY_EXISTS);
     } else if (userRepository.existsByEmail(request.email())) {
@@ -231,7 +232,6 @@ public class UserService {
 
       usersHistoryRepository.save(history); // UsersHistory 저장
     }
-    return "회원가입 성공";
   }
 
   @Transactional
@@ -266,7 +266,7 @@ public class UserService {
         // 만료되지 않았고 IP/UserAgent가 같으면 기존 토큰 사용
         String accessToken = jwtUtil.createAccessToken(user);
         jwtUtil.addRefreshTokenToCookie(httpResponse, token.getRefreshToken());
-        return new SigninResponse(user.getUserNo(), accessToken);
+        return new SigninResponse(user.getUserNo(), accessToken, user.getRole());
       }
     }
     String accessToken = jwtUtil.createAccessToken(user);
@@ -287,7 +287,7 @@ public class UserService {
     jwtUtil.addRefreshTokenToCookie(httpResponse, tokenEntity.getRefreshToken());
 
     httpResponse.setHeader("Authorization", "Bearer " + accessToken);
-    return new SigninResponse(user.getUserNo(), accessToken);
+    return new SigninResponse(user.getUserNo(), accessToken, user.getRole());
   }
 
   public TokenResponse newAccessToken(String ip, String userAgent) {
@@ -318,6 +318,6 @@ public class UserService {
             .orElseThrow(() -> new CustomException(UserException.INVALID_REFRESH_TOKEN));
     // 로그아웃시 토큰삭제
     refreshTokenRepository.delete(token);
-    return "로그아웃 성공";
+    return "로그아웃 되었습니다.";
   }
 }

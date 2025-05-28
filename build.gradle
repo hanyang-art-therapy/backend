@@ -113,4 +113,17 @@ tasks.named('compileJava') {
 	dependsOn 'makeGitHooksExecutable'
 }
 
+//QueryDSL 생성 디렉토리 경로 설정
+def querydslDir = "$buildDir/generated/querydsl"
 
+sourceSets {
+	main {
+		java {
+			srcDirs += querydslDir
+		}
+	}
+}
+
+tasks.withType(JavaCompile).configureEach {
+	options.annotationProcessorGeneratedSourcesDirectory = file(querydslDir)
+}

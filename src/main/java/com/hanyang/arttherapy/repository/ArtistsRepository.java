@@ -6,7 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import com.hanyang.arttherapy.domain.Artists;
 
-public interface ArtistsRepository extends JpaRepository<Artists, Long> {
+public interface ArtistsRepository extends JpaRepository<Artists, Long>, ArtistRepositoryCustom {
   boolean existsByStudentNo(String studentNo);
 
   Optional<Artists> findByStudentNo(String studentNo);

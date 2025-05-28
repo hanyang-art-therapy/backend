@@ -10,7 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.hanyang.arttherapy.common.exception.*;
 import com.hanyang.arttherapy.domain.*;
 import com.hanyang.arttherapy.dto.request.*;
-import com.hanyang.arttherapy.dto.response.*;
+import com.hanyang.arttherapy.dto.response.artistResponse.ArtistResponseDto;
 import com.hanyang.arttherapy.repository.*;
 
 @SpringBootTest

@@ -7,10 +7,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
-import org.springframework.web.server.ResponseStatusException;
 
 import com.hanyang.arttherapy.common.exception.exceptionType.FileSystemExceptionType;
-import com.hanyang.arttherapy.dto.response.userResponse.CommonMessageResponse;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -32,11 +30,5 @@ public class GlobalExceptionHandler {
       MaxUploadSizeExceededException e) {
     String errorMessage = FileSystemExceptionType.FILE_SIZE_EXCEEDED.getMessage();
     return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", errorMessage));
-  }
-
-  @ExceptionHandler(ResponseStatusException.class)
-  public ResponseEntity<CommonMessageResponse> handleResponseStatusException(
-      ResponseStatusException e) {
-    return ResponseEntity.status(e.getStatusCode()).body(new CommonMessageResponse(e.getReason()));
   }
 }

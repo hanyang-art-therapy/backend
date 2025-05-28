@@ -17,6 +17,8 @@ spring:
           starttls:
             enable: true
 
+  jwt:
+    secret: ${JWT_SECRET}
 
   servlet:
     multipart:
