@@ -71,9 +71,7 @@ public class SecurityConfig {
             "https://frontend-rho-woad.vercel.app",
             "http://localhost:5173"));
     configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
-    configuration.setAllowedHeaders(
-        List.of(
-            "Authorization", "Content-Type", "X-Requested-With", "Accept", "Origin", "Referer"));
+    configuration.setAllowedHeaders(List.of("*"));
     configuration.setAllowCredentials(true);
     UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
     source.registerCorsConfiguration("/**", configuration);
