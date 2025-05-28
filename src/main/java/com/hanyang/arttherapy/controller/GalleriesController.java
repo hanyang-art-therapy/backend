@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 
 import com.hanyang.arttherapy.dto.request.GalleriesRequestDto;
 import com.hanyang.arttherapy.dto.response.GalleriesResponseDto;
+import com.hanyang.arttherapy.dto.response.userResponse.CommonMessageResponse;
 import com.hanyang.arttherapy.service.GalleriesService;
 
 import lombok.RequiredArgsConstructor;
@@ -20,31 +21,36 @@ public class GalleriesController {
 
   private final GalleriesService galleriesService;
 
+  // 전시회 등록
   @PostMapping
-  public ResponseEntity<GalleriesResponseDto> create(
+  public ResponseEntity<CommonMessageResponse> create(
       @RequestBody @Valid GalleriesRequestDto dto, @RequestHeader("userId") Long userId) {
-    return ResponseEntity.status(201).body(galleriesService.save(dto, userId));
+    return ResponseEntity.status(201)
+        .body(new CommonMessageResponse(galleriesService.save(dto, userId)));
   }
 
+  // 전시회 전체 조회
   @GetMapping
   public ResponseEntity<List<GalleriesResponseDto>> getAllGalleries() {
     return ResponseEntity.ok(galleriesService.getAllGalleries());
   }
 
+  // 전시회 상세조회
   @GetMapping("/{id}")
   public ResponseEntity<GalleriesResponseDto> getGalleryById(@PathVariable Long id) {
     return ResponseEntity.ok(galleriesService.getGalleryById(id));
   }
 
-  @PutMapping("/{id}")
-  public ResponseEntity<GalleriesResponseDto> update(
+  // 전시회 수정
+  @PatchMapping("/{id}")
+  public ResponseEntity<CommonMessageResponse> update(
       @PathVariable Long id, @RequestBody @Valid GalleriesRequestDto dto) {
-    return ResponseEntity.ok(galleriesService.update(id, dto));
+    return ResponseEntity.ok(new CommonMessageResponse(galleriesService.update(id, dto)));
   }
 
+  // 전시회 삭제
   @DeleteMapping("/{id}")
-  public ResponseEntity<Void> delete(@PathVariable Long id) {
-    galleriesService.delete(id);
-    return ResponseEntity.noContent().build();
+  public ResponseEntity<CommonMessageResponse> delete(@PathVariable Long id) {
+    return ResponseEntity.ok(new CommonMessageResponse(galleriesService.delete(id)));
   }
 }
