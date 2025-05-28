@@ -5,8 +5,7 @@ import org.springframework.web.bind.annotation.*;
 
 import com.hanyang.arttherapy.dto.request.*;
 import com.hanyang.arttherapy.dto.response.artistResponse.ArtistResponseDto;
-import com.hanyang.arttherapy.dto.response.artistResponse.ArtistResponseListDto;
-import com.hanyang.arttherapy.dto.response.artistResponse.ArtistUpdateResponse;
+import com.hanyang.arttherapy.dto.response.artistResponse.ArtistScrollResponseDto;
 import com.hanyang.arttherapy.dto.response.userResponse.CommonMessageResponse;
 import com.hanyang.arttherapy.service.ArtistsService;
 
@@ -25,21 +24,25 @@ public class ArtistController {
     return ResponseEntity.ok(new CommonMessageResponse(message));
   }
 
+  @GetMapping
+  public ResponseEntity<ArtistScrollResponseDto> getArtists(
+      @RequestParam(required = false) String filter,
+      @RequestParam(required = false) String keyword,
+      @RequestParam(required = false) Long lastNo,
+      @RequestParam(defaultValue = "10") int size) {
+    return ResponseEntity.ok(artistsService.searchArtists(filter, keyword, lastNo, size));
+  }
+
   @GetMapping("{artistsNo}")
   public ResponseEntity<ArtistResponseDto> getArtist(@PathVariable Long artistsNo) {
     return ResponseEntity.ok(artistsService.getArtist(artistsNo));
   }
 
-  @GetMapping
-  public ResponseEntity<ArtistResponseListDto> getArtists() {
-    return ResponseEntity.ok(artistsService.getArtists());
-  }
-
   @PatchMapping("/{artistsNo}")
-  public ResponseEntity<ArtistUpdateResponse<ArtistResponseDto>> updateArtist(
+  public ResponseEntity<CommonMessageResponse> updateArtist(
       @PathVariable Long artistsNo, @RequestBody ArtistRequestDto dto) {
-    ArtistUpdateResponse<ArtistResponseDto> response = artistsService.updateArtist(artistsNo, dto);
-    return ResponseEntity.ok(response);
+    String message = artistsService.updateArtist(artistsNo, dto);
+    return ResponseEntity.ok(new CommonMessageResponse(message));
   }
 
   @DeleteMapping("/{artistsNo}")
