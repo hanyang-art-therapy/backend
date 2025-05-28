@@ -1,6 +1,6 @@
 package com.hanyang.arttherapy.domain;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 import jakarta.persistence.*;
 
@@ -35,9 +35,9 @@ public class Notices extends BaseEntity {
   @Column(nullable = false)
   private Integer viewCount = 0;
 
-  @Column private LocalDateTime periodStart;
+  @Column private LocalDate periodStart;
 
-  @Column private LocalDateTime periodEnd;
+  @Column private LocalDate periodEnd;
 
   @Builder
   public Notices(
@@ -45,8 +45,8 @@ public class Notices extends BaseEntity {
       String content,
       Users user,
       NoticeCategory category,
-      LocalDateTime periodStart,
-      LocalDateTime periodEnd) {
+      LocalDate periodStart,
+      LocalDate periodEnd) {
     this.title = title;
     this.content = content;
     this.user = user;
@@ -54,6 +54,19 @@ public class Notices extends BaseEntity {
     this.periodStart = periodStart;
     this.periodEnd = periodEnd;
     this.viewCount = 0;
+  }
+
+  public void update(
+      String title,
+      String content,
+      NoticeCategory category,
+      LocalDate periodStart,
+      LocalDate periodEnd) {
+    this.title = title;
+    this.content = content;
+    this.category = category;
+    this.periodStart = periodStart;
+    this.periodEnd = periodEnd;
   }
 
   public void increaseViewCount() {

@@ -34,27 +34,22 @@ public class ReviewController {
   @PostMapping
   public ResponseEntity<CommonDataResponse<ReviewResponseDto>> createReview(
       @PathVariable Long artsNo, @RequestBody ReviewRequestDto reviewRequestDto) {
-
-    ReviewResponseDto responseDto = reviewService.createReview(artsNo, reviewRequestDto);
     return ResponseEntity.status(HttpStatus.CREATED)
-        .body(new CommonDataResponse<>("댓글 등록이 완료되었습니다", responseDto));
+        .body(reviewService.createReview(artsNo, reviewRequestDto));
   }
 
   // 리뷰 수정
   @PatchMapping("/{reviewNo}")
   public ResponseEntity<CommonDataResponse<ReviewResponseDto>> updateReview(
       @PathVariable Long reviewNo, @RequestBody ReviewRequestDto reviewRequestDto) {
-
-    ReviewResponseDto responseDto =
+    return ResponseEntity.ok(
         reviewService.patchReview(
-            reviewNo, reviewRequestDto.reviewText(), reviewRequestDto.filesNo());
-    return ResponseEntity.ok(new CommonDataResponse<>("댓글 수정이 완료되었습니다", responseDto));
+            reviewNo, reviewRequestDto.reviewText(), reviewRequestDto.filesNo()));
   }
 
   // 리뷰 삭제
   @DeleteMapping("/{reviewNo}")
   public ResponseEntity<CommonMessageResponse> deleteReview(@PathVariable Long reviewNo) {
-    reviewService.deleteReview(reviewNo);
-    return ResponseEntity.ok(new CommonMessageResponse("댓글 삭제가 완료되었습니다."));
+    return ResponseEntity.ok(reviewService.deleteReview(reviewNo));
   }
 }
