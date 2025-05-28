@@ -41,37 +41,27 @@ public class ArtsService {
    */
   public Map<String, Object> getArtsByFilter(Integer year, Integer cohort, Long lastId) {
     List<ArtsListResponseDto> response;
-    Long totalElements = 0L;
 
     if (year == null && cohort == null) {
       // 최초 페이지 로딩 시 현재 연도로 조회
       year = LocalDate.now().getYear();
       response = getArtsByYear(year, lastId);
-      totalElements =
-          artsRepository.countByGalleries_GalleriesNo(findGalleryByYear(year).getGalleriesNo());
 
     } else if (year != null && cohort != null) {
       // 연도 + 기수 조회
       response = getArtsByYearAndCohort(year, cohort, lastId);
-      totalElements =
-          artsRepository.countByGalleries_GalleriesNoAndArtArtistRels_Artists_Cohort(
-              findGalleryByYear(year).getGalleriesNo(), cohort);
     } else if (year != null) {
       // 연도만 조회
       response = getArtsBySelectedYear(year, lastId);
-      totalElements =
-          artsRepository.countByGalleries_GalleriesNo(findGalleryByYear(year).getGalleriesNo());
     } else {
       // 기수만 조회
       response = getArtsByCohort(cohort, lastId);
-      totalElements = artsRepository.countByArtArtistRels_Artists_Cohort(cohort);
     }
 
     // 응답 포맷 통일
     Map<String, Object> result = new LinkedHashMap<>();
     result.put("content", response);
     result.put("lastId", response.isEmpty() ? null : response.get(response.size() - 1).artsNo());
-    result.put("totalElements", totalElements);
     result.put("hasNext", !response.isEmpty() && response.size() == 9);
 
     return result;
@@ -166,8 +156,7 @@ public class ArtsService {
   // 연도에 해당하는 전시회 조회
   private Galleries findGalleryByYear(int year) {
     return galleriesRepository
-        .findByStartDateBetween(
-            LocalDateTime.of(year, 1, 1, 0, 0), LocalDateTime.of(year, 12, 31, 23, 59))
+        .findByStartDateBetween(LocalDate.of(year, 1, 1), LocalDate.of(year, 12, 31))
         .stream()
         .findFirst()
         .orElse(null);

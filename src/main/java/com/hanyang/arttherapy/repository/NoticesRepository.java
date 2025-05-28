@@ -10,22 +10,15 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import com.hanyang.arttherapy.domain.Notices;
-import com.hanyang.arttherapy.domain.enums.NoticeCategory;
 
 public interface NoticesRepository extends JpaRepository<Notices, Long> {
 
-  // 카테고리, 검색, 카테고리 + 검색
+  // 제목 또는 내용에 keyword가 포함된 공지 검색
   @Query(
       "SELECT n FROM Notices n "
-          + "WHERE (:category IS NULL OR n.category = :category) "
-          + "AND (:keyword IS NULL OR n.title LIKE %:keyword% OR n.content LIKE %:keyword%)")
-  Page<Notices> findAllBySearch(
-      @Param("category") NoticeCategory category,
-      @Param("keyword") String keyword,
-      Pageable pageable);
-
-  // 단건 조회
-  boolean existsByNoticesNo(Long noticesNo);
+          + "WHERE LOWER(n.title) LIKE LOWER(CONCAT('%', :keyword, '%')) "
+          + "OR LOWER(n.content) LIKE LOWER(CONCAT('%', :keyword, '%'))")
+  Page<Notices> findAllByKeyword(@Param("keyword") String keyword, Pageable pageable);
 
   Optional<Notices> findByNoticesNo(Long noticesNo);
 

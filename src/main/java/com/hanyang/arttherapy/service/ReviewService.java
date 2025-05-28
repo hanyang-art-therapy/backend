@@ -22,6 +22,8 @@ import com.hanyang.arttherapy.domain.Users;
 import com.hanyang.arttherapy.dto.request.ReviewRequestDto;
 import com.hanyang.arttherapy.dto.response.FileResponseDto;
 import com.hanyang.arttherapy.dto.response.ReviewResponseDto;
+import com.hanyang.arttherapy.dto.response.noticeResponse.CommonDataResponse;
+import com.hanyang.arttherapy.dto.response.userResponse.CommonMessageResponse;
 import com.hanyang.arttherapy.repository.*;
 
 import lombok.RequiredArgsConstructor;
@@ -86,7 +88,8 @@ public class ReviewService {
   }
 
   // 리뷰 등록
-  public ReviewResponseDto createReview(Long artsNo, ReviewRequestDto reviewRequestDto) {
+  public CommonDataResponse<ReviewResponseDto> createReview(
+      Long artsNo, ReviewRequestDto reviewRequestDto) {
     try {
       // 유저 정보 가져오기 (로그인하지 않은 경우 null 처리)
       Users user = null;
@@ -134,21 +137,26 @@ public class ReviewService {
       reviewRepository.save(review);
 
       List<FileResponseDto> fileResponseDtos = toFileResponseDtos(files);
-      return new ReviewResponseDto(
-          review.getReviewsNo(),
-          review.getReviewText(),
-          user == null ? null : maskUserName(user.getUserName()),
-          user == null ? null : user.getUserNo(),
-          fileResponseDtos,
-          review.getCreatedAt());
-    } catch (Exception e) {
+      ReviewResponseDto responseDto =
+          new ReviewResponseDto(
+              review.getReviewsNo(),
+              review.getReviewText(),
+              user == null ? null : maskUserName(user.getUserName()),
+              user == null ? null : user.getUserNo(),
+              fileResponseDtos,
+              review.getCreatedAt());
 
+      return new CommonDataResponse<>("댓글 등록이 완료되었습니다", responseDto);
+    } catch (ResponseStatusException e) {
+      throw e; // 그대로 통과시켜서 GlobalExceptionHandler가 처리하게 함
+    } catch (Exception e) {
       throw new CustomException(ReviewException.SERVER_ERROR);
     }
   }
 
   // 댓글 수정
-  public ReviewResponseDto patchReview(Long reviewNo, String reviewText, List<Long> filesNo) {
+  public CommonDataResponse<ReviewResponseDto> patchReview(
+      Long reviewNo, String reviewText, List<Long> filesNo) {
     try {
       Reviews review =
           reviewRepository
@@ -156,7 +164,6 @@ public class ReviewService {
               .orElseThrow(() -> new CustomException(ReviewException.REVIEW_NOT_FOUND));
 
       Users currentUser = getUserByUserId();
-
       Long authorUserNo = review.getUser() != null ? review.getUser().getUserNo() : null;
       Long currentUserNo = currentUser != null ? currentUser.getUserNo() : null;
 
@@ -167,68 +174,53 @@ public class ReviewService {
       if (reviewText == null || reviewText.isBlank()) {
         throw new CustomException(ReviewException.REVIEW_TEXT_REQUIRED);
       }
+
       review.updateReviewText(reviewText);
 
-      // 파일 교체 처리
+      List<FileResponseDto> fileResponseDtos;
       if (filesNo != null && !filesNo.isEmpty()) {
         List<Files> newFiles = filesRepository.findByFilesNoIn(filesNo);
-
         if (newFiles.isEmpty()) {
           throw new CustomException(FileSystemExceptionType.FILE_NOT_FOUND);
         }
 
-        // 새로운 파일 활성화
         newFiles.forEach(Files::activateFile);
         filesRepository.saveAll(newFiles);
 
-        // 기존 파일 비활성화
         if (review.getFile() != null) {
           deactivateFile(review.getFile().getFilesNo());
         }
 
-        // 리뷰에 파일 업데이트
         review.updateFilesNo(newFiles.get(0));
         reviewRepository.save(review);
 
-        // 응답 생성
-        List<FileResponseDto> fileResponseDtos = toFileResponseDtos(newFiles);
-        return new ReviewResponseDto(
-            review.getReviewsNo(),
-            review.getReviewText(),
-            maskUserName(review.getUser().getUserName()),
-            review.getUser().getUserNo(),
-            fileResponseDtos,
-            review.getCreatedAt());
+        fileResponseDtos = toFileResponseDtos(newFiles);
+      } else {
+        fileResponseDtos =
+            review.getFile() != null
+                ? toFileResponseDtos(findFiles(List.of(review.getFile().getFilesNo())))
+                : List.of();
       }
 
-      // 기존 파일이 없으면 빈 리스트로 처리
-      if (review.getFile() == null) {
-        return new ReviewResponseDto(
-            review.getReviewsNo(),
-            review.getReviewText(),
-            maskUserName(review.getUser().getUserName()),
-            review.getUser().getUserNo(),
-            List.of(),
-            review.getCreatedAt());
-      }
+      ReviewResponseDto responseDto =
+          new ReviewResponseDto(
+              review.getReviewsNo(),
+              review.getReviewText(),
+              maskUserName(review.getUser().getUserName()),
+              review.getUser().getUserNo(),
+              fileResponseDtos,
+              review.getCreatedAt());
 
-      // 기존 파일이 존재할 때만 조회
-      List<Files> existingFiles = findFiles(List.of(review.getFile().getFilesNo()));
-      return new ReviewResponseDto(
-          review.getReviewsNo(),
-          review.getReviewText(),
-          maskUserName(review.getUser().getUserName()),
-          review.getUser().getUserNo(),
-          toFileResponseDtos(existingFiles),
-          review.getCreatedAt());
+      return new CommonDataResponse<>("댓글 수정이 완료되었습니다", responseDto);
+    } catch (CustomException e) {
+      throw e;
     } catch (Exception e) {
       throw new CustomException(ReviewException.REVIEW_UPDATE_FAILED);
     }
   }
 
   // 댓글 삭제
-  public void deleteReview(Long reviewNo) {
-    // 리뷰 조회
+  public CommonMessageResponse deleteReview(Long reviewNo) {
     Reviews review =
         reviewRepository
             .findById(reviewNo)
@@ -243,24 +235,19 @@ public class ReviewService {
       throw new CustomException(ReviewException.NOT_REVIEW_DELETE_FAILED);
     }
 
-    // 연결된 파일이 있을 때만 Soft Delete 처리
     if (review.getFile() != null) {
       Long fileNo = review.getFile().getFilesNo();
       filesRepository
           .findById(fileNo)
           .ifPresent(
               file -> {
-                try {
-                  // 실제 물리적 삭제는 하지 않고, Soft Delete만 처리
-                  file.markAsDeleted(); // useYn = false, delYn = true
-                  filesRepository.save(file);
-                } catch (Exception e) {
-                  throw new CustomException(ReviewException.REVIEW_DELETE_FAILED);
-                }
+                file.markAsDeleted();
+                filesRepository.save(file);
               });
     }
-    // 리뷰 삭제
+
     reviewRepository.delete(review);
+    return new CommonMessageResponse("댓글 삭제가 완료되었습니다.");
   }
 
   // 리뷰 작성자의 이름 마스킹 처리

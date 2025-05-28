@@ -19,8 +19,7 @@ public enum UserException implements ExceptionType {
   EMAIL_SEND_FAIL(HttpStatus.INTERNAL_SERVER_ERROR, "이메일 전송 실패"),
   INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "서버 오류로 등록이 실패했습니다."),
   INVALID_ACCESS_TOKEN(HttpStatus.UNAUTHORIZED, "유효하지 않은 ACCESSTOKEN입니다."),
-  INVALID_REFRESH_TOKEN(HttpStatus.FORBIDDEN, "유효하지 않은 REFRESHTOKEN입니다."),
-  NOT_ADMIN(HttpStatus.UNAUTHORIZED, "관리자만 게시글 등록이 가능합니다.");
+  INVALID_REFRESH_TOKEN(HttpStatus.FORBIDDEN, "유효하지 않은 REFRESHTOKEN입니다.");
 
   private final HttpStatus status;
   private final String message;

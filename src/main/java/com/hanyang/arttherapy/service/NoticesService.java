@@ -1,5 +1,6 @@
 package com.hanyang.arttherapy.service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.data.domain.Page;
@@ -13,19 +14,15 @@ import org.springframework.transaction.annotation.Transactional;
 import com.hanyang.arttherapy.common.exception.CustomException;
 import com.hanyang.arttherapy.common.exception.exceptionType.FileSystemExceptionType;
 import com.hanyang.arttherapy.common.exception.exceptionType.NoticeException;
-import com.hanyang.arttherapy.common.exception.exceptionType.UserException;
 import com.hanyang.arttherapy.domain.Files;
 import com.hanyang.arttherapy.domain.NoticeFiles;
 import com.hanyang.arttherapy.domain.Notices;
 import com.hanyang.arttherapy.domain.Users;
-import com.hanyang.arttherapy.domain.enums.NoticeCategory;
 import com.hanyang.arttherapy.domain.enums.Role;
 import com.hanyang.arttherapy.dto.request.NoticeRequestDto;
 import com.hanyang.arttherapy.dto.response.FileResponseDto;
-import com.hanyang.arttherapy.dto.response.noticeResponse.AdjacentNoticeDto;
-import com.hanyang.arttherapy.dto.response.noticeResponse.NoticeDetailResponseDto;
-import com.hanyang.arttherapy.dto.response.noticeResponse.NoticeListResponseDto;
-import com.hanyang.arttherapy.dto.response.noticeResponse.NoticeResponseDto;
+import com.hanyang.arttherapy.dto.response.noticeResponse.*;
+import com.hanyang.arttherapy.dto.response.userResponse.CommonMessageResponse;
 import com.hanyang.arttherapy.repository.FilesRepository;
 import com.hanyang.arttherapy.repository.NoticeFilesRepository;
 import com.hanyang.arttherapy.repository.NoticesRepository;
@@ -44,25 +41,27 @@ public class NoticesService {
   private final UserRepository userRepository;
   private final FilesRepository filesRepository;
 
-  // 전체 조회
-  public NoticeListResponseDto getNotices(String keyword, NoticeCategory category, int page) {
+  // 게시판 전체 조회 (keyword가 없으면 전체 조회)
+  public NoticeListResponseDto getNotices(String keyword, int page) {
+    String trimmedKeyword = keyword != null ? keyword.trim() : null;
     Pageable pageable = PageRequest.of(page, 10, Sort.by(Sort.Direction.DESC, "createdAt"));
 
-    Page<Notices> noticesPage = noticesRepository.findAllBySearch(category, keyword, pageable);
+    Page<Notices> noticesPage =
+        (trimmedKeyword != null && !trimmedKeyword.isBlank())
+            ? noticesRepository.findAllByKeyword(trimmedKeyword, pageable)
+            : noticesRepository.findAll(pageable);
 
     List<NoticeResponseDto> content =
         noticesPage.getContent().stream()
             .map(
-                notice -> {
-                  boolean hasFile = noticeFilesRepository.existsByNotice(notice);
-                  return new NoticeResponseDto(
-                      notice.getNoticesNo(),
-                      notice.getCategory().name(),
-                      notice.getTitle(),
-                      hasFile,
-                      notice.getViewCount(),
-                      notice.getCreatedAt());
-                })
+                notice ->
+                    new NoticeResponseDto(
+                        notice.getNoticesNo(),
+                        notice.getCategory().name(),
+                        notice.getTitle(),
+                        noticeFilesRepository.existsByNotice(notice),
+                        notice.getViewCount(),
+                        notice.getCreatedAt()))
             .toList();
 
     return new NoticeListResponseDto(
@@ -74,134 +73,172 @@ public class NoticesService {
         noticesPage.isLast());
   }
 
-  // 상세 조회
+  // 게시글 상세 조회 + 조회수 증가 + 파일 + 이전글,다음글
   public NoticeDetailResponseDto getNoticeDetail(Long noticeNo) {
-    // 1. 공지 단건 조회
-    Notices notice =
-        noticesRepository
-            .findByNoticesNo(noticeNo)
-            .orElseThrow(() -> new CustomException(NoticeException.NOTICE_NOT_FOUND));
-
-    // 2. 조회수 증가
+    Notices notice = findNoticeOrThrow(noticeNo);
     notice.increaseViewCount();
-    // 별도 save() 불필요 (JPA 더티 체킹)
 
-    // 3. 첨부파일 조회
-    List<FileResponseDto> files =
-        noticeFilesRepository.findAllByNotice(notice).stream()
-            .map(
-                nf -> {
-                  Files file = nf.getFile();
-                  return FileResponseDto.of(file, file.getUrl());
-                })
-            .toList();
+    List<FileResponseDto> files = getFileResponses(notice);
+    AdjacentNoticeDto previous = getPreviousNotice(notice.getCreatedAt());
+    AdjacentNoticeDto next = getNextNotice(notice.getCreatedAt());
 
-    // 4. 이전글 조회
-    Page<Notices> prevPage =
-        noticesRepository.findPreviousNotice(notice.getCreatedAt(), PageRequest.of(0, 1));
-    AdjacentNoticeDto previous =
-        prevPage.isEmpty() ? null : mapToAdjacent(prevPage.getContent().get(0));
-
-    // 5. 다음글 조회
-    Page<Notices> nextPage =
-        noticesRepository.findNextNotice(notice.getCreatedAt(), PageRequest.of(0, 1));
-    AdjacentNoticeDto next =
-        nextPage.isEmpty() ? null : mapToAdjacent(nextPage.getContent().get(0));
-
-    // 6. 응답 조립
-    return new NoticeDetailResponseDto(
-        notice.getNoticesNo(),
-        notice.getTitle(),
-        notice.getCategory().name(),
-        notice.getCreatedAt(),
-        notice.getPeriodStart().toLocalDate(),
-        notice.getPeriodEnd().toLocalDate(),
-        notice.getViewCount(),
-        notice.getContent(),
-        files,
-        previous,
-        next);
+    return buildDetailResponse(notice, files, previous, next);
   }
 
   // 게시글 등록
-  public NoticeDetailResponseDto createNotice(NoticeRequestDto dto) {
-    // 1. 로그인 유저 조회
-    Users currentUser = getCurrentUser();
-    if (!currentUser.getRole().equals(Role.ADMIN)) {
-      throw new CustomException(UserException.NOT_ADMIN);
-    }
+  public CommonDataResponse<NoticeDetailResponseDto> createNotice(NoticeRequestDto dto) {
+    validateNoticeRequest(dto);
+    Users currentUser = getAdminUserOrThrow();
 
-    // 2. 공지 저장
     Notices notice =
         Notices.builder()
             .title(dto.title())
             .category(dto.category())
-            .periodStart(dto.periodStart() != null ? dto.periodStart().atStartOfDay() : null)
-            .periodEnd(dto.periodEnd() != null ? dto.periodEnd().atStartOfDay() : null)
+            .periodStart(dto.periodStart())
+            .periodEnd(dto.periodEnd())
             .content(dto.content())
             .user(currentUser)
             .build();
     noticesRepository.save(notice);
 
-    // 3. 첨부파일 처리
-    List<FileResponseDto> fileResponses = List.of();
-    if (dto.filesNo() != null) {
-      fileResponses =
-          dto.filesNo().stream()
-              .map(
-                  fileNo -> {
-                    Files file =
-                        filesRepository
-                            .findById(fileNo)
-                            .orElseThrow(
-                                () -> new CustomException(FileSystemExceptionType.FILE_NOT_FOUND));
-                    file.activateFile();
-                    filesRepository.save(file);
+    List<FileResponseDto> files = saveAndMapFiles(dto.filesNo(), notice);
+    AdjacentNoticeDto previous = getPreviousNotice(notice.getCreatedAt());
+    AdjacentNoticeDto next = getNextNotice(notice.getCreatedAt());
 
-                    NoticeFiles mapping = NoticeFiles.builder().notice(notice).file(file).build();
-                    noticeFilesRepository.save(mapping);
+    NoticeDetailResponseDto response = buildDetailResponse(notice, files, previous, next);
+    return new CommonDataResponse<>("게시글 등록이 완료되었습니다.", response);
+  }
 
-                    return FileResponseDto.of(file, file.getUrl());
-                  })
-              .toList();
+  // 게시글 수정
+  public CommonDataResponse<NoticeDetailResponseDto> updateNotice(
+      Long noticeNo, NoticeRequestDto dto) {
+    Users currentUser = getAdminUserOrThrow();
+    Notices notice = findNoticeOrThrow(noticeNo);
+
+    notice.update(dto.title(), dto.content(), dto.category(), dto.periodStart(), dto.periodEnd());
+
+    deleteOldFiles(notice);
+    List<FileResponseDto> files = saveAndMapFiles(dto.filesNo(), notice);
+    AdjacentNoticeDto previous = getPreviousNotice(notice.getCreatedAt());
+    AdjacentNoticeDto next = getNextNotice(notice.getCreatedAt());
+
+    NoticeDetailResponseDto response = buildDetailResponse(notice, files, previous, next);
+    return new CommonDataResponse<>("게시글 수정이 완료되었습니다.", response);
+  }
+
+  // 게시글 삭제
+  public CommonMessageResponse deleteNotice(Long noticeNo) {
+    Users currentUser = getAdminUserOrThrow();
+    Notices notice = findNoticeOrThrow(noticeNo);
+
+    deleteOldFiles(notice);
+    noticesRepository.delete(notice);
+
+    return new CommonMessageResponse("게시글 삭제가 완료되었습니다.");
+  }
+
+  private Notices findNoticeOrThrow(Long noticeNo) {
+    return noticesRepository
+        .findByNoticesNo(noticeNo)
+        .orElseThrow(() -> new CustomException(NoticeException.NOTICE_NOT_FOUND));
+  }
+
+  // 관리자 권한 확인
+  private Users getAdminUserOrThrow() {
+    Users user = getCurrentUser();
+    if (!user.getRole().equals(Role.ADMIN)) {
+      throw new CustomException(NoticeException.NOT_ADMIN);
     }
+    return user;
+  }
 
-    // 4. 이전글/다음글 조회 (createdAt 기준)
-    Page<Notices> prevPage =
-        noticesRepository.findPreviousNotice(notice.getCreatedAt(), PageRequest.of(0, 1));
-    AdjacentNoticeDto previous =
-        prevPage.isEmpty() ? null : mapToAdjacent(prevPage.getContent().get(0));
+  private Users getCurrentUser() {
+    var auth = SecurityContextHolder.getContext().getAuthentication();
+    if (auth == null || !auth.isAuthenticated() || "anonymousUser".equals(auth.getPrincipal())) {
+      throw new CustomException(NoticeException.UNAUTHENTICATED);
+    }
+    Object principal = auth.getPrincipal();
+    if (!(principal instanceof Users user)) {
+      throw new CustomException(NoticeException.UNAUTHENTICATED);
+    }
+    return user;
+  }
 
-    Page<Notices> nextPage =
-        noticesRepository.findNextNotice(notice.getCreatedAt(), PageRequest.of(0, 1));
-    AdjacentNoticeDto next =
-        nextPage.isEmpty() ? null : mapToAdjacent(nextPage.getContent().get(0));
+  // 등록/수정 필수값 검증
+  private void validateNoticeRequest(NoticeRequestDto dto) {
+    if (dto.title() == null
+        || dto.title().isBlank()
+        || dto.content() == null
+        || dto.content().isBlank()
+        || dto.category() == null) {
+      throw new CustomException(NoticeException.NOTICE_REQUIRED_FIELD_MISSING);
+    }
+  }
 
-    // 5. 최종 응답 조립
+  // 파일 저장
+  private List<FileResponseDto> saveAndMapFiles(List<Long> filesNo, Notices notice) {
+    if (filesNo == null) return List.of();
+    return filesNo.stream()
+        .map(
+            fileNo -> {
+              Files file =
+                  filesRepository
+                      .findById(fileNo)
+                      .orElseThrow(
+                          () -> new CustomException(FileSystemExceptionType.FILE_NOT_FOUND));
+              file.activateFile();
+              filesRepository.save(file);
+              noticeFilesRepository.save(NoticeFiles.builder().notice(notice).file(file).build());
+              return FileResponseDto.of(file, file.getUrl());
+            })
+        .toList();
+  }
+
+  private void deleteOldFiles(Notices notice) {
+    List<NoticeFiles> mappings = noticeFilesRepository.findAllByNotice(notice);
+    mappings.forEach(
+        mapping -> {
+          Files file = mapping.getFile();
+          file.markAsDeleted();
+          filesRepository.save(file);
+        });
+    noticeFilesRepository.deleteAll(mappings);
+  }
+
+  private List<FileResponseDto> getFileResponses(Notices notice) {
+    return noticeFilesRepository.findAllByNotice(notice).stream()
+        .map(nf -> FileResponseDto.of(nf.getFile(), nf.getFile().getUrl()))
+        .toList();
+  }
+
+  // 이전글 조회
+  private AdjacentNoticeDto getPreviousNotice(LocalDateTime createdAt) {
+    Page<Notices> page = noticesRepository.findPreviousNotice(createdAt, PageRequest.of(0, 1));
+    return page.isEmpty() ? null : mapToAdjacent(page.getContent().get(0));
+  }
+
+  // 다음글 조회
+  private AdjacentNoticeDto getNextNotice(LocalDateTime createdAt) {
+    Page<Notices> page = noticesRepository.findNextNotice(createdAt, PageRequest.of(0, 1));
+    return page.isEmpty() ? null : mapToAdjacent(page.getContent().get(0));
+  }
+
+  private NoticeDetailResponseDto buildDetailResponse(
+      Notices notice, List<FileResponseDto> files, AdjacentNoticeDto prev, AdjacentNoticeDto next) {
     return new NoticeDetailResponseDto(
         notice.getNoticesNo(),
         notice.getTitle(),
         notice.getCategory().name(),
         notice.getCreatedAt(),
-        notice.getPeriodStart() != null ? notice.getPeriodStart().toLocalDate() : null,
-        notice.getPeriodEnd() != null ? notice.getPeriodEnd().toLocalDate() : null,
+        notice.getPeriodStart(),
+        notice.getPeriodEnd(),
         notice.getViewCount(),
         notice.getContent(),
-        fileResponses,
-        previous,
+        files,
+        prev,
         next);
   }
 
-  private Users getCurrentUser() {
-    Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-
-    if (!(principal instanceof Users user)) {
-      throw new CustomException(UserException.USER_NOT_FOUND);
-    }
-    return user;
-  }
-
-  // 내부 변환 함수
   private AdjacentNoticeDto mapToAdjacent(Notices n) {
     return new AdjacentNoticeDto(n.getNoticesNo(), n.getTitle(), n.getCreatedAt().toString());
   }
