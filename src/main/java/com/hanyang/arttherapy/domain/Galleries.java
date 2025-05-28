@@ -1,6 +1,6 @@
 package com.hanyang.arttherapy.domain;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 import jakarta.persistence.*;
 
@@ -22,12 +22,16 @@ public class Galleries {
   private String title;
 
   @Column(nullable = false)
-  private LocalDateTime startDate;
+  private LocalDate startDate;
 
   @Column(nullable = false)
-  private LocalDateTime endDate;
+  private LocalDate endDate;
 
-  public void update(String title, LocalDateTime startDate, LocalDateTime endDate) {
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "user_no")
+  private Users user;
+
+  public void update(String title, LocalDate startDate, LocalDate endDate) {
     this.title = title;
     this.startDate = startDate;
     this.endDate = endDate;

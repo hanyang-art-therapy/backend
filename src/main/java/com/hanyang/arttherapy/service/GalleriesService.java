@@ -17,38 +17,49 @@ import com.hanyang.arttherapy.repository.GalleriesRepository;
 import com.hanyang.arttherapy.repository.UserRepository;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @RequiredArgsConstructor
 @Transactional
+@Slf4j
 public class GalleriesService {
 
   private final GalleriesRepository galleriesRepository;
   private final UserRepository userRepository;
 
-  public GalleriesResponseDto save(GalleriesRequestDto dto, Long userId) {
+  public String save(GalleriesRequestDto dto, Long userId) {
     Users user =
         userRepository
             .findById(userId)
             .orElseThrow(() -> new CustomException(UserException.USER_NOT_FOUND));
 
-    Galleries gallery =
-        Galleries.builder()
-            .title(dto.getTitle())
-            .startDate(dto.getStartDate())
-            .endDate(dto.getEndDate())
-            .build();
+    try {
+      Galleries gallery =
+          Galleries.builder()
+              .title(dto.getTitle())
+              .startDate(dto.getStartDate())
+              .endDate(dto.getEndDate())
+              .user(user)
+              .build();
 
-    Galleries saved = galleriesRepository.save(gallery);
-    return GalleriesResponseDto.from(saved);
+      galleriesRepository.save(gallery);
+      return "전시회 등록이 완료되었습니다.";
+
+    } catch (Exception e) {
+      log.error("전시회 등록 실패: {}", e.getMessage());
+      throw new CustomException(GalleryExceptionType.GALLERY_CREATE_FAIL);
+    }
   }
 
+  @Transactional(readOnly = true)
   public List<GalleriesResponseDto> getAllGalleries() {
     return galleriesRepository.findAll().stream()
         .map(GalleriesResponseDto::from)
         .collect(Collectors.toList());
   }
 
+  @Transactional(readOnly = true)
   public GalleriesResponseDto getGalleryById(Long id) {
     Galleries gallery =
         galleriesRepository
@@ -57,20 +68,38 @@ public class GalleriesService {
     return GalleriesResponseDto.from(gallery);
   }
 
-  public GalleriesResponseDto update(Long id, GalleriesRequestDto dto) {
+  public String update(Long id, GalleriesRequestDto dto) {
     Galleries gallery =
         galleriesRepository
             .findById(id)
             .orElseThrow(() -> new CustomException(GalleryExceptionType.GALLERY_NOT_FOUND));
-    gallery.update(dto.getTitle(), dto.getStartDate(), dto.getEndDate());
-    return GalleriesResponseDto.from(gallery);
+
+    try {
+      gallery.update(
+          dto.getTitle() != null ? dto.getTitle() : gallery.getTitle(),
+          dto.getStartDate() != null ? dto.getStartDate() : gallery.getStartDate(),
+          dto.getEndDate() != null ? dto.getEndDate() : gallery.getEndDate());
+      return "전시회 정보수정이 완료되었습니다.";
+
+    } catch (Exception e) {
+      log.error("전시회 수정 실패: {}", e.getMessage());
+      throw new CustomException(GalleryExceptionType.GALLERY_UPDATE_FAIL);
+    }
   }
 
-  public void delete(Long id) {
+  public String delete(Long id) {
     Galleries gallery =
         galleriesRepository
             .findById(id)
             .orElseThrow(() -> new CustomException(GalleryExceptionType.GALLERY_NOT_FOUND));
-    galleriesRepository.delete(gallery);
+
+    try {
+      galleriesRepository.delete(gallery);
+      return "전시회 삭제가 완료되었습니다.";
+
+    } catch (Exception e) {
+      log.error("전시회 삭제 실패: {}", e.getMessage());
+      throw new CustomException(GalleryExceptionType.GALLERY_DELETE_FAIL);
+    }
   }
 }
