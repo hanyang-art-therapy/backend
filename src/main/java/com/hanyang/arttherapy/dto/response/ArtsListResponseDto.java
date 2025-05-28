@@ -31,11 +31,11 @@ public record ArtsListResponseDto(
         arts.getArtsNo(),
         arts.getArtName(),
         coDescription,
-        new FileResponseDto(file.getUrl()),
+        new FileResponseDto(file.getName(), file.getUrl()),
         artistDtos);
   }
 
-  public record FileResponseDto(String url) {}
+  public record FileResponseDto(String name, String url) {}
 
   public record ArtistResponseDto(String artistName, int cohort, String description) {}
 }

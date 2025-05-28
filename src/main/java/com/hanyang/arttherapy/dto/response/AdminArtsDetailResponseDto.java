@@ -13,6 +13,7 @@ public class AdminArtsDetailResponseDto {
   private String caption;
   private String artType;
   private String fileUrl;
+  private String coDescription;
 
   private Long galleriesNo;
   private String galleriesTitle;

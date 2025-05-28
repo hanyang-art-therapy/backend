@@ -1,6 +1,6 @@
 package com.hanyang.arttherapy.dto.response;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 import com.hanyang.arttherapy.domain.Galleries;
 
@@ -13,8 +13,8 @@ public class GalleriesResponseDto {
 
   private final Long galleriesNo;
   private final String title;
-  private final LocalDateTime startDate;
-  private final LocalDateTime endDate;
+  private final LocalDate startDate;
+  private final LocalDate endDate;
 
   public static GalleriesResponseDto from(Galleries gallery) {
     return GalleriesResponseDto.builder()

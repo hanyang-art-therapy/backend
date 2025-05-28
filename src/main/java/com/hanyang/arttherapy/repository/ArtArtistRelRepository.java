@@ -18,13 +18,22 @@ public interface ArtArtistRelRepository extends JpaRepository<ArtArtistRel, Long
 
   @Query(
       """
-  SELECT ar
-  FROM ArtArtistRel ar
-  JOIN FETCH ar.artists
-  WHERE ar.arts.artsNo IN :artsNos
-""")
+      SELECT ar
+      FROM ArtArtistRel ar
+      JOIN FETCH ar.artists
+      WHERE ar.arts.artsNo IN :artsNos
+    """)
   List<ArtArtistRel> findWithArtistsByArtsNoIn(@Param("artsNos") List<Long> artsNos);
 
   // 관리자 작품
   void deleteByArts(Arts arts);
+
+  @Query(
+      """
+  SELECT DISTINCT r.artists.cohort
+  FROM ArtArtistRel r
+  WHERE r.arts.galleries.galleriesNo = :galleriesNo
+  ORDER BY r.artists.cohort ASC
+""")
+  List<Integer> findDistinctCohortsByGalleriesNo(@Param("galleriesNo") Long galleriesNo);
 }
