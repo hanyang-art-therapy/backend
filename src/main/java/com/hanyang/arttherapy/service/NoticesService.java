@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.hanyang.arttherapy.common.exception.CustomException;
 import com.hanyang.arttherapy.common.exception.exceptionType.FileSystemExceptionType;
 import com.hanyang.arttherapy.common.exception.exceptionType.NoticeException;
+import com.hanyang.arttherapy.common.filter.CustomUserDetail;
 import com.hanyang.arttherapy.domain.Files;
 import com.hanyang.arttherapy.domain.NoticeFiles;
 import com.hanyang.arttherapy.domain.Notices;
@@ -44,7 +45,8 @@ public class NoticesService {
   // 게시판 전체 조회 (keyword가 없으면 전체 조회)
   public NoticeListResponseDto getNotices(String keyword, int page) {
     String trimmedKeyword = keyword != null ? keyword.trim() : null;
-    Pageable pageable = PageRequest.of(page, 10, Sort.by(Sort.Direction.DESC, "createdAt"));
+    Pageable pageable =
+        PageRequest.of(page, 10, Sort.by(Sort.Order.desc("isFixed"), Sort.Order.desc("createdAt")));
 
     Page<Notices> noticesPage =
         (trimmedKeyword != null && !trimmedKeyword.isBlank())
@@ -61,7 +63,8 @@ public class NoticesService {
                         notice.getTitle(),
                         noticeFilesRepository.existsByNotice(notice),
                         notice.getViewCount(),
-                        notice.getCreatedAt()))
+                        notice.getCreatedAt(),
+                        notice.isFixed()))
             .toList();
 
     return new NoticeListResponseDto(
@@ -98,7 +101,9 @@ public class NoticesService {
             .periodEnd(dto.periodEnd())
             .content(dto.content())
             .user(currentUser)
+            .isFixed(Boolean.TRUE.equals(dto.isFixed()))
             .build();
+
     noticesRepository.save(notice);
 
     List<FileResponseDto> files = saveAndMapFiles(dto.filesNo(), notice);
@@ -115,7 +120,13 @@ public class NoticesService {
     Users currentUser = getAdminUserOrThrow();
     Notices notice = findNoticeOrThrow(noticeNo);
 
-    notice.update(dto.title(), dto.content(), dto.category(), dto.periodStart(), dto.periodEnd());
+    notice.update(
+        dto.title(),
+        dto.content(),
+        dto.category(),
+        dto.periodStart(),
+        dto.periodEnd(),
+        Boolean.TRUE.equals(dto.isFixed()));
 
     deleteOldFiles(notice);
     List<FileResponseDto> files = saveAndMapFiles(dto.filesNo(), notice);
@@ -154,14 +165,16 @@ public class NoticesService {
 
   private Users getCurrentUser() {
     var auth = SecurityContextHolder.getContext().getAuthentication();
-    if (auth == null || !auth.isAuthenticated() || "anonymousUser".equals(auth.getPrincipal())) {
+    if (auth == null || !auth.isAuthenticated()) {
       throw new CustomException(NoticeException.UNAUTHENTICATED);
     }
+
     Object principal = auth.getPrincipal();
-    if (!(principal instanceof Users user)) {
-      throw new CustomException(NoticeException.UNAUTHENTICATED);
+    if (principal instanceof CustomUserDetail customUserDetail) {
+      return customUserDetail.getUser();
     }
-    return user;
+
+    throw new CustomException(NoticeException.UNAUTHENTICATED);
   }
 
   // 등록/수정 필수값 검증
@@ -236,7 +249,8 @@ public class NoticesService {
         notice.getContent(),
         files,
         prev,
-        next);
+        next,
+        notice.isFixed());
   }
 
   private AdjacentNoticeDto mapToAdjacent(Notices n) {

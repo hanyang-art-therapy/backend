@@ -8,4 +8,5 @@ public record NoticeResponseDto(
     String title,
     boolean hasFile,
     int viewCount,
-    LocalDateTime createdAt) {}
+    LocalDateTime createdAt,
+    Boolean isFixed) {}

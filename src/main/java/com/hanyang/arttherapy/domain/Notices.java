@@ -39,6 +39,9 @@ public class Notices extends BaseEntity {
 
   @Column private LocalDate periodEnd;
 
+  @Column(nullable = false)
+  private boolean isFixed;
+
   @Builder
   public Notices(
       String title,
@@ -46,7 +49,8 @@ public class Notices extends BaseEntity {
       Users user,
       NoticeCategory category,
       LocalDate periodStart,
-      LocalDate periodEnd) {
+      LocalDate periodEnd,
+      boolean isFixed) {
     this.title = title;
     this.content = content;
     this.user = user;
@@ -54,6 +58,7 @@ public class Notices extends BaseEntity {
     this.periodStart = periodStart;
     this.periodEnd = periodEnd;
     this.viewCount = 0;
+    this.isFixed = isFixed;
   }
 
   public void update(
@@ -61,12 +66,14 @@ public class Notices extends BaseEntity {
       String content,
       NoticeCategory category,
       LocalDate periodStart,
-      LocalDate periodEnd) {
+      LocalDate periodEnd,
+      boolean isFixed) {
     this.title = title;
     this.content = content;
     this.category = category;
     this.periodStart = periodStart;
     this.periodEnd = periodEnd;
+    this.isFixed = isFixed;
   }
 
   public void increaseViewCount() {

@@ -17,4 +17,5 @@ public record NoticeDetailResponseDto(
     String content,
     List<FileResponseDto> files,
     AdjacentNoticeDto previous,
-    AdjacentNoticeDto next) {}
+    AdjacentNoticeDto next,
+    Boolean isFixed) {}
