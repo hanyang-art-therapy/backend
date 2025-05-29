@@ -12,6 +12,7 @@ import com.hanyang.arttherapy.domain.Users;
 import com.hanyang.arttherapy.dto.response.MyInfoResponseDto;
 import com.hanyang.arttherapy.dto.response.MyPostResponseDto;
 import com.hanyang.arttherapy.dto.response.MyReviewResponseDto;
+import com.hanyang.arttherapy.dto.response.userResponse.CommonMessageResponse;
 import com.hanyang.arttherapy.repository.ArtsRepository;
 import com.hanyang.arttherapy.repository.UserRepository;
 import com.hanyang.arttherapy.service.MyPageService;
@@ -49,5 +50,12 @@ public class MyPageController {
             .orElseThrow(() -> new CustomException(UserException.USER_NOT_FOUND));
 
     return ResponseEntity.ok(myPageService.getMyReviews(user.getUserNo()));
+  }
+
+  // 회원탈퇴
+  @PatchMapping("/withdraw")
+  public ResponseEntity<CommonMessageResponse> withdraw(@RequestHeader("userId") Long userNo) {
+    String message = myPageService.withdrawByUserNo(userNo);
+    return ResponseEntity.ok(new CommonMessageResponse(message)); // 204 No Content
   }
 }
