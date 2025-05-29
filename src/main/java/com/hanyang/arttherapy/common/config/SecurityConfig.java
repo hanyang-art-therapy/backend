@@ -32,30 +32,18 @@ public class SecurityConfig {
             auth ->
                 auth.requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**")
                     .permitAll()
-                    //                                          .requestMatchers("/admin/**")
-                    //                                          .hasRole("ADMIN")
-                    //                                          .requestMatchers(
-                    //                                                  "/api/user/**",
-                    //                                                  "/api/files",
-                    //
-                    // "/api/galleries/arts/{artsNo}/reviews",
-                    //                                                  "/css/**",
-                    //                                                  "/js/**",
-                    //
-                    // "/images/**").requestMatchers("/admin/**")
-                    //                                          .hasRole("ADMIN")
-                    //                                          .requestMatchers(
-                    //                                                  "/api/user/**",
-                    //                                                  "/api/files",
-                    //
-                    // "/api/galleries/arts/{artsNo}/reviews",
-                    //                                                  "/css/**",
-                    //                                                  "/js/**",
-                    //                                                  "/images/**")
-                    .anyRequest()
+                    .requestMatchers("/admin/**")
+                    .hasRole("ADMIN")
+                    .requestMatchers(
+                        "/api/user/**",
+                        "/api/files",
+                        "/api/galleries/arts/**",
+                        "/css/**",
+                        "/js/**",
+                        "/images/**")
                     .permitAll()
-            //                                          .authenticated()
-            )
+                    .anyRequest()
+                    .authenticated())
         .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
     //        .requiresChannel(channel -> channel.anyRequest().requiresSecure());
 

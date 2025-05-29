@@ -17,7 +17,8 @@ public interface NoticesRepository extends JpaRepository<Notices, Long> {
   @Query(
       "SELECT n FROM Notices n "
           + "WHERE LOWER(n.title) LIKE LOWER(CONCAT('%', :keyword, '%')) "
-          + "OR LOWER(n.content) LIKE LOWER(CONCAT('%', :keyword, '%'))")
+          + "OR LOWER(n.content) LIKE LOWER(CONCAT('%', :keyword, '%')) "
+          + "ORDER BY n.isFixed DESC, n.createdAt DESC")
   Page<Notices> findAllByKeyword(@Param("keyword") String keyword, Pageable pageable);
 
   Optional<Notices> findByNoticesNo(Long noticesNo);

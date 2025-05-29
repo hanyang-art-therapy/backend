@@ -11,4 +11,5 @@ public record NoticeRequestDto(
     LocalDate periodStart,
     LocalDate periodEnd,
     String content,
-    List<Long> filesNo) {}
+    List<Long> filesNo,
+    Boolean isFixed) {}
