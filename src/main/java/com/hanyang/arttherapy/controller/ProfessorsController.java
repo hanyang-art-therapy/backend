@@ -24,9 +24,8 @@ public class ProfessorsController {
 
   // 교수진 전체 조회 + 이름 검색
   @GetMapping
-  public ResponseEntity<List<ProfessorsResponseDto>> getAllProfessors(
-      @RequestParam(required = false) String name) {
-    return ResponseEntity.ok(professorsService.searchProfessors(name));
+  public ResponseEntity<List<ProfessorsResponseDto>> getAllProfessors() {
+    return ResponseEntity.ok(professorsService.getAllProfessors());
   }
 
   // 교수진 상세조회
