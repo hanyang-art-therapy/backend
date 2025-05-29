@@ -15,6 +15,7 @@ import com.hanyang.arttherapy.common.exception.CustomException;
 import com.hanyang.arttherapy.common.exception.exceptionType.ArtsExceptionType;
 import com.hanyang.arttherapy.common.exception.exceptionType.FileSystemExceptionType;
 import com.hanyang.arttherapy.common.exception.exceptionType.ReviewException;
+import com.hanyang.arttherapy.common.filter.CustomUserDetail;
 import com.hanyang.arttherapy.domain.Arts;
 import com.hanyang.arttherapy.domain.Files;
 import com.hanyang.arttherapy.domain.Reviews;
@@ -267,12 +268,17 @@ public class ReviewService {
 
   private Users getUserByUserId() {
     var authentication = SecurityContextHolder.getContext().getAuthentication();
-    if (authentication == null
-        || !authentication.isAuthenticated()
-        || "anonymousUser".equals(authentication.getPrincipal())) {
+
+    if (authentication == null || !authentication.isAuthenticated()) {
       return null;
     }
-    return (Users) authentication.getPrincipal();
+
+    Object principal = authentication.getPrincipal();
+    if (principal instanceof CustomUserDetail customUserDetail) {
+      return customUserDetail.getUser();
+    }
+
+    return null;
   }
 
   // 파일 조회 메서드
