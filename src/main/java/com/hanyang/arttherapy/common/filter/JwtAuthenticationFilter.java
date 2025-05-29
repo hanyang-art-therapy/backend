@@ -16,6 +16,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import com.hanyang.arttherapy.common.util.JwtUtil;
 import com.hanyang.arttherapy.domain.Users;
+import com.hanyang.arttherapy.domain.enums.Role;
 import com.hanyang.arttherapy.repository.UserRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -54,6 +55,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     // 3. 사용자 정보 조회
     Long userId = jwtUtil.getUserIdFromToken(token);
+    Role role = jwtUtil.getRoleFromToken(token);
+
     Optional<Users> userOptional = userRepository.findById(userId);
     if (userOptional.isEmpty()) {
       filterChain.doFilter(request, response);
@@ -61,6 +64,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     }
 
     Users user = userOptional.get();
+
+    // 토큰의 역할과 실제 유저 역할이 다를 경우 거부 (선택적 보안 강화)
+    if (user.getRole() != role) {
+      filterChain.doFilter(request, response);
+      return;
+    }
+
     CustomUserDetail userDetails = new CustomUserDetail(user);
 
     // 4. 인증 객체 생성 및 SecurityContext에 저장
