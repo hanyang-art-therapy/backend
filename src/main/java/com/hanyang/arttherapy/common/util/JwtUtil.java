@@ -11,6 +11,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.stereotype.Component;
 
 import com.hanyang.arttherapy.domain.Users;
+import com.hanyang.arttherapy.domain.enums.Role;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
@@ -29,7 +30,7 @@ public class JwtUtil {
   private final long accessTokenValidity = 1000L * 60 * 70; // 70분
 
   public String createAccessToken(Users user) {
-    return createToken(user.getUserNo(), accessTokenValidity);
+    return createToken(user.getUserNo(), user.getRole().name(), accessTokenValidity);
   }
 
   public String createRefreshToken(Users user) {
@@ -49,8 +50,10 @@ public class JwtUtil {
   }
 
   // access토큰 생성 로직
-  private String createToken(Long userId, long expirationTime) {
+  private String createToken(Long userId, String role, long expirationTime) {
     Claims claims = Jwts.claims().setSubject(userId.toString());
+    claims.put("role", role);
+
     Date now = new Date();
     return Jwts.builder()
         .setClaims(claims)
@@ -74,6 +77,13 @@ public class JwtUtil {
   public Long getUserIdFromToken(String token) {
     Claims claims = Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token).getBody();
     return Long.parseLong(claims.getSubject());
+  }
+
+  // 토큰에서 Role 추출
+  public Role getRoleFromToken(String token) {
+    Claims claims = Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token).getBody();
+    String roleStr = (String) claims.get("role");
+    return Role.valueOf(roleStr);
   }
 
   public static String refreshTokenFromCookie(HttpServletRequest httpRequest) {
