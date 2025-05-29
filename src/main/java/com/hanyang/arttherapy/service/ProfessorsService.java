@@ -38,22 +38,6 @@ public class ProfessorsService {
     return ProfessorsResponseDto.from(professor);
   }
 
-  // 교수진 검색
-
-  public List<ProfessorsResponseDto> searchProfessors(String name) {
-    System.out.println(">>> [서비스 진입] 검색 파라미터 name = '" + name + "'");
-
-    List<Professors> result;
-
-    if (name != null && !name.trim().isEmpty()) {
-      result = professorsRepository.searchByName(name);
-    } else {
-      result = professorsRepository.findAll();
-    }
-
-    return result.stream().map(ProfessorsResponseDto::from).toList();
-  }
-
   // 교수진 등록
   @Transactional
   public String saveProfessor(ProfessorsRequestDto requestDto) {
