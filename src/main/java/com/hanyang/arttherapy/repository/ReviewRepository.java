@@ -16,4 +16,11 @@ public interface ReviewRepository extends JpaRepository<Reviews, Long> {
 
   @Query("SELECT r FROM Reviews r WHERE r.user.userNo = :userNo")
   List<Reviews> findAllByUserNo(@Param("userNo") Long userNo);
+
+  @Query(
+      "SELECT r FROM Reviews r JOIN r.arts a "
+          + "WHERE r.user.userNo = :userNo "
+          + "AND (a.artName LIKE %:keyword% OR r.reviewText LIKE %:keyword%)")
+  List<Reviews> findByUserNoAndKeyword(
+      @Param("userNo") Long userNo, @Param("keyword") String keyword);
 }

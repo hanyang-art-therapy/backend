@@ -29,6 +29,7 @@ public class MyPageService {
   private final ArtsRepository artsRepository;
   private final ReviewRepository reviewRepository;
 
+  // 나의 정보 조회
   @Transactional(readOnly = true)
   public MyInfoResponseDto getMyInfo(Long userId) {
     Users user =
@@ -38,6 +39,7 @@ public class MyPageService {
     return MyInfoResponseDto.from(user);
   }
 
+  // 나의 게시글 조회
   @Transactional(readOnly = true)
   public List<MyPostResponseDto> getMyPosts(Long userId) {
     Users user =
@@ -53,9 +55,16 @@ public class MyPageService {
     return arts.stream().map(MyPostResponseDto::from).toList();
   }
 
+  // 나의 댓글 조회
   @Transactional(readOnly = true)
-  public List<MyReviewResponseDto> getMyReviews(Long userNo) {
-    List<Reviews> reviews = reviewRepository.findAllByUserNo(userNo);
+  public List<MyReviewResponseDto> getMyReviews(Long userId, String keyword) {
+    List<Reviews> reviews;
+
+    if (keyword == null || keyword.trim().isEmpty()) {
+      reviews = reviewRepository.findAllByUserNo(userId);
+    } else {
+      reviews = reviewRepository.findByUserNoAndKeyword(userId, keyword);
+    }
 
     return reviews.stream()
         .map(
