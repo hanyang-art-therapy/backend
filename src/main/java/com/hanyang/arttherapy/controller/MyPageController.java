@@ -2,6 +2,7 @@ package com.hanyang.arttherapy.controller;
 
 // import com.hanyang.arttherapy.dto.response.MyCommentResponseDto;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -10,7 +11,6 @@ import org.springframework.web.bind.annotation.*;
 import com.hanyang.arttherapy.common.filter.CustomUserDetail;
 import com.hanyang.arttherapy.dto.response.MyInfoResponseDto;
 import com.hanyang.arttherapy.dto.response.MyPostResponseDto;
-import com.hanyang.arttherapy.dto.response.MyReviewResponseDto;
 import com.hanyang.arttherapy.repository.ArtsRepository;
 import com.hanyang.arttherapy.repository.UserRepository;
 import com.hanyang.arttherapy.service.MyPageService;
@@ -44,10 +44,12 @@ public class MyPageController {
 
   // 내 댓글 조회
   @GetMapping("/my-reviews")
-  public ResponseEntity<List<MyReviewResponseDto>> getMyReviews(
+  public ResponseEntity<Map<String, Object>> getMyReviews(
       @AuthenticationPrincipal CustomUserDetail userDetails,
+      @RequestParam(defaultValue = "1") int page,
+      @RequestParam(defaultValue = "5") int size,
       @RequestParam(required = false) String keyword) {
     Long userId = userDetails.getUser().getUserNo();
-    return ResponseEntity.ok(myPageService.getMyReviews(userId, keyword));
+    return ResponseEntity.ok(myPageService.getMyReviews(userId, keyword, page, size));
   }
 }

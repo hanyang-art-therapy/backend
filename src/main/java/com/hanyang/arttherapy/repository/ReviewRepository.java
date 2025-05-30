@@ -20,7 +20,7 @@ public interface ReviewRepository extends JpaRepository<Reviews, Long> {
   @Query(
       "SELECT r FROM Reviews r JOIN r.arts a "
           + "WHERE r.user.userNo = :userNo "
-          + "AND (a.artName LIKE %:keyword% OR r.reviewText LIKE %:keyword%)")
-  List<Reviews> findByUserNoAndKeyword(
-      @Param("userNo") Long userNo, @Param("keyword") String keyword);
+          + "AND (:keyword IS NULL OR a.artName LIKE %:keyword% OR r.reviewText LIKE %:keyword%)")
+  Page<Reviews> findByUserAndKeyword(
+      @Param("userNo") Long userNo, @Param("keyword") String keyword, Pageable pageable);
 }

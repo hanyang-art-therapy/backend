@@ -1,8 +1,14 @@
 package com.hanyang.arttherapy.service;
 
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -57,25 +63,30 @@ public class MyPageService {
 
   // 나의 댓글 조회
   @Transactional(readOnly = true)
-  public List<MyReviewResponseDto> getMyReviews(Long userId, String keyword) {
-    List<Reviews> reviews;
+  public Map<String, Object> getMyReviews(Long userId, String keyword, int page, int size) {
+    Pageable pageable = PageRequest.of(page - 1, size, Sort.by("createdAt").descending());
+    Page<Reviews> pageResult = reviewRepository.findByUserAndKeyword(userId, keyword, pageable);
 
-    if (keyword == null || keyword.trim().isEmpty()) {
-      reviews = reviewRepository.findAllByUserNo(userId);
-    } else {
-      reviews = reviewRepository.findByUserNoAndKeyword(userId, keyword);
-    }
+    List<MyReviewResponseDto> content =
+        pageResult.stream()
+            .map(
+                r ->
+                    MyReviewResponseDto.builder()
+                        .reviewNo(r.getReviewsNo())
+                        .artsNo(r.getArts() != null ? r.getArts().getArtsNo() : null)
+                        .artName(r.getArts() != null ? r.getArts().getArtName() : null)
+                        .reviewText(r.getReviewText())
+                        .createdAt(r.getCreatedAt())
+                        .build())
+            .toList();
 
-    return reviews.stream()
-        .map(
-            r ->
-                MyReviewResponseDto.builder()
-                    .reviewNo(r.getReviewsNo())
-                    .artsNo(r.getArts() != null ? r.getArts().getArtsNo() : null)
-                    .artName(r.getArts() != null ? r.getArts().getArtName() : null)
-                    .reviewText(r.getReviewText())
-                    .createdAt(r.getCreatedAt())
-                    .build())
-        .toList();
+    Map<String, Object> result = new LinkedHashMap<>();
+    result.put("content", content);
+    result.put("page", page); // 요청받은 page 그대로 반환 (1-based)
+    result.put("size", size);
+    result.put("totalElements", pageResult.getTotalElements());
+    result.put("totalPages", pageResult.getTotalPages());
+
+    return result;
   }
 }
