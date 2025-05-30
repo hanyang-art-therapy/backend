@@ -28,13 +28,13 @@ public class AdminUserService {
   private final UsersHistoryRepository usersHistoryRepository;
 
   // 전체 조회 또는 이름 검색 조회 (무한스크롤)
-  public Map<String, Object> getUsers(String name, Long lastId) {
+  public Map<String, Object> getUsers(String userName, Long lastId) {
     Long cursor = (lastId == null) ? Long.MAX_VALUE : lastId;
 
     List<Users> users =
-        (name != null && !name.isBlank())
+        (userName != null && !userName.isBlank())
             ? userRepository.findTop10ByUserNameContainingAndUserNoLessThanOrderByUserNoDesc(
-                name, cursor)
+                userName, cursor)
             : userRepository.findTop10ByUserNoLessThanOrderByUserNoDesc(cursor);
 
     List<UserDto> content = users.stream().map(this::convertToDto).toList();
