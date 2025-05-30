@@ -1,5 +1,6 @@
 package com.hanyang.arttherapy.repository;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -22,4 +23,9 @@ public interface UserRepository
   Optional<Users> findByUserId(String userId);
 
   Optional<Users> findByUserNo(Long userNo);
+
+  List<Users> findTop10ByUserNoLessThanOrderByUserNoDesc(Long lastId);
+
+  List<Users> findTop10ByUserNameContainingAndUserNoLessThanOrderByUserNoDesc(
+      String name, Long lastId);
 }

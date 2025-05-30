@@ -54,4 +54,13 @@ public class Users {
 
     this.userStatus = UserStatus.ACTIVE; // userState를 기본값 ACTIVE로 설정
   }
+
+  public void updateInfo(
+      String email, String userName, String studentNo, Role role, UserStatus userStatus) {
+    this.email = email;
+    this.userName = userName;
+    this.studentNo = studentNo;
+    this.role = role;
+    this.userStatus = userStatus;
+  }
 }
