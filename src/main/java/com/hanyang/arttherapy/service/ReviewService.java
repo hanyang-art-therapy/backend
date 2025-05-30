@@ -20,6 +20,7 @@ import com.hanyang.arttherapy.domain.Arts;
 import com.hanyang.arttherapy.domain.Files;
 import com.hanyang.arttherapy.domain.Reviews;
 import com.hanyang.arttherapy.domain.Users;
+import com.hanyang.arttherapy.domain.enums.Role;
 import com.hanyang.arttherapy.dto.request.ReviewRequestDto;
 import com.hanyang.arttherapy.dto.response.FileResponseDto;
 import com.hanyang.arttherapy.dto.response.ReviewResponseDto;
@@ -230,9 +231,14 @@ public class ReviewService {
     Users reviewOwner = review.getUser();
     Users currentUser = getUserByUserId();
 
-    if (currentUser == null
-        || reviewOwner == null
-        || !Objects.equals(reviewOwner.getUserNo(), currentUser.getUserNo())) {
+    if (currentUser == null || reviewOwner == null) {
+      throw new CustomException(ReviewException.NOT_REVIEW_DELETE_FAILED);
+    }
+
+    boolean isOwner = Objects.equals(reviewOwner.getUserNo(), currentUser.getUserNo());
+    boolean isAdmin = currentUser.getRole() == Role.ADMIN;
+
+    if (!isOwner && !isAdmin) {
       throw new CustomException(ReviewException.NOT_REVIEW_DELETE_FAILED);
     }
 
