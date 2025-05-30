@@ -2,16 +2,15 @@ package com.hanyang.arttherapy.controller;
 
 // import com.hanyang.arttherapy.dto.response.MyCommentResponseDto;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
-import com.hanyang.arttherapy.common.exception.CustomException;
-import com.hanyang.arttherapy.common.exception.exceptionType.UserException;
-import com.hanyang.arttherapy.domain.Users;
+import com.hanyang.arttherapy.common.filter.CustomUserDetail;
 import com.hanyang.arttherapy.dto.response.MyInfoResponseDto;
 import com.hanyang.arttherapy.dto.response.MyPostResponseDto;
-import com.hanyang.arttherapy.dto.response.MyReviewResponseDto;
 import com.hanyang.arttherapy.repository.ArtsRepository;
 import com.hanyang.arttherapy.repository.UserRepository;
 import com.hanyang.arttherapy.service.MyPageService;
@@ -20,7 +19,7 @@ import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/my-page")
+@RequestMapping("/api/my-page")
 public class MyPageController {
 
   private final MyPageService myPageService;
@@ -29,25 +28,28 @@ public class MyPageController {
 
   // 내 정보 조회
   @GetMapping("/profile")
-  public ResponseEntity<MyInfoResponseDto> getMyInfo(@RequestHeader("userId") Long userId) {
+  public ResponseEntity<MyInfoResponseDto> getMyInfo(
+      @AuthenticationPrincipal CustomUserDetail userDetails) {
+    Long userId = userDetails.getUser().getUserNo();
     return ResponseEntity.ok(myPageService.getMyInfo(userId));
   }
 
   // 내 작품 조회
   @GetMapping("/my-posts")
-  public ResponseEntity<List<MyPostResponseDto>> getMyPosts(@RequestHeader("userId") Long userId) {
+  public ResponseEntity<List<MyPostResponseDto>> getMyPosts(
+      @AuthenticationPrincipal CustomUserDetail userDetails) {
+    Long userId = userDetails.getUser().getUserNo();
     return ResponseEntity.ok(myPageService.getMyPosts(userId));
   }
 
   // 내 댓글 조회
   @GetMapping("/my-reviews")
-  public ResponseEntity<List<MyReviewResponseDto>> getMyReviews(
-      @RequestHeader("userId") Long userId) {
-    Users user =
-        userRepository
-            .findById(userId)
-            .orElseThrow(() -> new CustomException(UserException.USER_NOT_FOUND));
-
-    return ResponseEntity.ok(myPageService.getMyReviews(user.getUserNo()));
+  public ResponseEntity<Map<String, Object>> getMyReviews(
+      @AuthenticationPrincipal CustomUserDetail userDetails,
+      @RequestParam(defaultValue = "1") int page,
+      @RequestParam(defaultValue = "5") int size,
+      @RequestParam(required = false) String keyword) {
+    Long userId = userDetails.getUser().getUserNo();
+    return ResponseEntity.ok(myPageService.getMyReviews(userId, keyword, page, size));
   }
 }
