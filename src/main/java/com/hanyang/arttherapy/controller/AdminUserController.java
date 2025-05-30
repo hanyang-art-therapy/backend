@@ -24,8 +24,8 @@ public class AdminUserController {
   // 전체 조회 또는 이름 검색 조회
   @GetMapping
   public ResponseEntity<Map<String, Object>> getUsers(
-      @RequestParam(value = "name", required = false) String name, Long lastId) {
-    return ResponseEntity.ok(adminUserService.getUsers(name, lastId));
+      @RequestParam(value = "userName", required = false) String userName, Long lastId) {
+    return ResponseEntity.ok(adminUserService.getUsers(userName, lastId));
   }
 
   // 회원 상세 조회
