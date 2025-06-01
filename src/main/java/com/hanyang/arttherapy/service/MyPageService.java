@@ -1,5 +1,6 @@
 package com.hanyang.arttherapy.service;
 
+import java.sql.Timestamp;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -17,13 +18,16 @@ import com.hanyang.arttherapy.common.exception.exceptionType.UserException;
 import com.hanyang.arttherapy.domain.Arts;
 import com.hanyang.arttherapy.domain.Reviews;
 import com.hanyang.arttherapy.domain.Users;
+import com.hanyang.arttherapy.domain.UsersHistory;
 import com.hanyang.arttherapy.domain.enums.Role;
+import com.hanyang.arttherapy.domain.enums.UserStatus;
 import com.hanyang.arttherapy.dto.response.MyInfoResponseDto;
 import com.hanyang.arttherapy.dto.response.MyPostResponseDto;
 import com.hanyang.arttherapy.dto.response.MyReviewResponseDto;
 import com.hanyang.arttherapy.repository.ArtsRepository;
 import com.hanyang.arttherapy.repository.ReviewRepository;
 import com.hanyang.arttherapy.repository.UserRepository;
+import com.hanyang.arttherapy.repository.UsersHistoryRepository;
 
 import lombok.RequiredArgsConstructor;
 
@@ -32,6 +36,7 @@ import lombok.RequiredArgsConstructor;
 public class MyPageService {
 
   private final UserRepository userRepository;
+  private final UsersHistoryRepository usersHistoryRepository;
   private final ArtsRepository artsRepository;
   private final ReviewRepository reviewRepository;
 
@@ -88,5 +93,26 @@ public class MyPageService {
     result.put("totalPages", pageResult.getTotalPages());
 
     return result;
+  }
+
+  @Transactional
+  public String withdrawByUserNo(Long userNo) {
+    Users user =
+        userRepository
+            .findById(userNo)
+            .orElseThrow(() -> new CustomException(UserException.USER_NOT_FOUND));
+
+    // 상태 변경
+    user.setUserStatus(UserStatus.UNACTIVE);
+
+    // 기존 이력 조회 후 탈회 및 상태 변경
+    UsersHistory history =
+        usersHistoryRepository
+            .findByUser_UserNo(userNo)
+            .orElseThrow(() -> new IllegalArgumentException("회원이력이 없습니다"));
+
+    history.setSignoutTimestamp(new Timestamp(System.currentTimeMillis()));
+    history.setUserStatus(UserStatus.UNACTIVE);
+    return "회원탈퇴 되었습니다.";
   }
 }

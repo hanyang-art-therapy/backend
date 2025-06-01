@@ -1,6 +1,5 @@
 package com.hanyang.arttherapy.controller;
 
-// import com.hanyang.arttherapy.dto.response.MyCommentResponseDto;
 import java.util.List;
 import java.util.Map;
 
@@ -11,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import com.hanyang.arttherapy.common.filter.CustomUserDetail;
 import com.hanyang.arttherapy.dto.response.MyInfoResponseDto;
 import com.hanyang.arttherapy.dto.response.MyPostResponseDto;
+import com.hanyang.arttherapy.dto.response.userResponse.CommonMessageResponse;
 import com.hanyang.arttherapy.repository.ArtsRepository;
 import com.hanyang.arttherapy.repository.UserRepository;
 import com.hanyang.arttherapy.service.MyPageService;
@@ -51,5 +51,12 @@ public class MyPageController {
       @RequestParam(required = false) String keyword) {
     Long userId = userDetails.getUser().getUserNo();
     return ResponseEntity.ok(myPageService.getMyReviews(userId, keyword, page, size));
+  }
+
+  // 회원탈퇴
+  @PatchMapping("/withdraw")
+  public ResponseEntity<CommonMessageResponse> withdraw(@RequestHeader("userId") Long userNo) {
+    String message = myPageService.withdrawByUserNo(userNo);
+    return ResponseEntity.ok(new CommonMessageResponse(message)); // 204 No Content
   }
 }
