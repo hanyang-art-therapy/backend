@@ -1,18 +1,20 @@
 package com.hanyang.arttherapy.service;
 
-import java.util.*;
+import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.hanyang.arttherapy.common.exception.*;
-import com.hanyang.arttherapy.common.exception.exceptionType.*;
-import com.hanyang.arttherapy.domain.*;
-import com.hanyang.arttherapy.dto.request.*;
+import com.hanyang.arttherapy.common.exception.CustomException;
+import com.hanyang.arttherapy.common.exception.exceptionType.ArtistsException;
+import com.hanyang.arttherapy.common.exception.exceptionType.FilteringException;
+import com.hanyang.arttherapy.domain.Artists;
+import com.hanyang.arttherapy.dto.request.ArtistRequestDto;
 import com.hanyang.arttherapy.dto.response.artistResponse.ArtistResponseDto;
 import com.hanyang.arttherapy.dto.response.artistResponse.ArtistScrollResponseDto;
-import com.hanyang.arttherapy.repository.*;
+import com.hanyang.arttherapy.repository.ArtistsRepository;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

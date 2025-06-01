@@ -2,8 +2,14 @@ package com.hanyang.arttherapy.service;
 
 import java.sql.Timestamp;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -34,6 +40,7 @@ public class MyPageService {
   private final ArtsRepository artsRepository;
   private final ReviewRepository reviewRepository;
 
+  // 나의 정보 조회
   @Transactional(readOnly = true)
   public MyInfoResponseDto getMyInfo(Long userId) {
     Users user =
@@ -43,6 +50,7 @@ public class MyPageService {
     return MyInfoResponseDto.from(user);
   }
 
+  // 나의 게시글 조회
   @Transactional(readOnly = true)
   public List<MyPostResponseDto> getMyPosts(Long userId) {
     Users user =
@@ -58,21 +66,33 @@ public class MyPageService {
     return arts.stream().map(MyPostResponseDto::from).toList();
   }
 
+  // 나의 댓글 조회
   @Transactional(readOnly = true)
-  public List<MyReviewResponseDto> getMyReviews(Long userNo) {
-    List<Reviews> reviews = reviewRepository.findAllByUserNo(userNo);
+  public Map<String, Object> getMyReviews(Long userId, String keyword, int page, int size) {
+    Pageable pageable = PageRequest.of(page - 1, size, Sort.by("createdAt").descending());
+    Page<Reviews> pageResult = reviewRepository.findByUserAndKeyword(userId, keyword, pageable);
 
-    return reviews.stream()
-        .map(
-            r ->
-                MyReviewResponseDto.builder()
-                    .reviewNo(r.getReviewsNo())
-                    .artsNo(r.getArts() != null ? r.getArts().getArtsNo() : null)
-                    .artName(r.getArts() != null ? r.getArts().getArtName() : null)
-                    .reviewText(r.getReviewText())
-                    .createdAt(r.getCreatedAt())
-                    .build())
-        .toList();
+    List<MyReviewResponseDto> content =
+        pageResult.stream()
+            .map(
+                r ->
+                    MyReviewResponseDto.builder()
+                        .reviewNo(r.getReviewsNo())
+                        .artsNo(r.getArts() != null ? r.getArts().getArtsNo() : null)
+                        .artName(r.getArts() != null ? r.getArts().getArtName() : null)
+                        .reviewText(r.getReviewText())
+                        .createdAt(r.getCreatedAt())
+                        .build())
+            .toList();
+
+    Map<String, Object> result = new LinkedHashMap<>();
+    result.put("content", content);
+    result.put("page", page); // 요청받은 page 그대로 반환 (1-based)
+    result.put("size", size);
+    result.put("totalElements", pageResult.getTotalElements());
+    result.put("totalPages", pageResult.getTotalPages());
+
+    return result;
   }
 
   @Transactional

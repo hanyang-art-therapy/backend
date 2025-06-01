@@ -33,6 +33,7 @@ public interface ArtsRepository extends JpaRepository<Arts, Long> {
 
   Long countByArtArtistRels_Artists_Cohort(int cohort);
 
+  // 마이페이지 나의 게시글
   @Query(
       value =
           """
@@ -46,21 +47,33 @@ public interface ArtsRepository extends JpaRepository<Arts, Long> {
 
   // 검색 기능(작품+작가)
   @Query(
-      "SELECT DISTINCT a FROM Arts a "
-          + "JOIN a.artArtistRels r "
-          + "JOIN r.artists artist "
-          + "WHERE a.artName LIKE %:keyword% OR artist.artistName LIKE %:keyword%")
+      """
+          SELECT DISTINCT a FROM Arts a
+          JOIN a.artArtistRels r
+          JOIN r.artists artist
+          WHERE a.artName LIKE CONCAT('%', :keyword, '%') OR artist.artistName LIKE CONCAT('%', :keyword, '%')
+          """)
   List<Arts> findByArtNameOrArtistNameContaining(@Param("keyword") String keyword);
 
+  // 무한스크롤 + 키워드 검색 (작품명 or 작가명)
   @Query(
       """
-  SELECT DISTINCT a FROM Arts a
-  JOIN a.artArtistRels r
-  JOIN r.artists artist
-  WHERE (:keyword IS NULL OR a.artName LIKE %:keyword% OR artist.artistName LIKE %:keyword%)
-    AND (:lastId IS NULL OR a.artsNo < :lastId)
-  ORDER BY a.artsNo DESC
-""")
+          SELECT DISTINCT a FROM Arts a
+          JOIN a.artArtistRels r
+          JOIN r.artists artist
+          WHERE (:keyword IS NULL OR a.artName LIKE CONCAT('%', :keyword, '%') OR artist.artistName LIKE CONCAT('%', :keyword, '%'))
+            AND (:lastId IS NULL OR a.artsNo < :lastId)
+          ORDER BY a.artsNo DESC
+          """)
   List<Arts> searchArtsWithCursor(
       @Param("keyword") String keyword, @Param("lastId") Long lastId, Pageable pageable);
+
+  // 무한스크롤 전체 조회용
+  @Query(
+      """
+  SELECT a FROM Arts a
+  WHERE (:lastId IS NULL OR a.artsNo > :lastId)
+  ORDER BY a.artsNo ASC
+""")
+  List<Arts> findAllArtsWithCursor(@Param("lastId") Long lastId, Pageable pageable);
 }
