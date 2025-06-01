@@ -43,7 +43,7 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-validation'
 
 	// MySQL
-	runtimeOnly 'com.mysql:mysql-connector-j'
+	runtimeOnly 'com.mysql:mysql-connector-j:8.0.33'
 
 	// Test
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
@@ -94,6 +94,12 @@ spotless {
 		trimTrailingWhitespace()
 		// 파일 끝에 새로운 라인 추가
 		endWithNewline()
+		// 상대경로지정
+		target 'src/main/java/**/*.java', 'src/test/java/**/*.java'
+		//자동 생성된 디렉토리를 Spotless 검사 대상에서 제외`
+		targetExclude 'build/generated/**'
+		//테스트경로 제외
+		targetExclude 'src/test/java/**/*.java'
 	}
 }
 // Git hooks 업데이트 작업
@@ -125,5 +131,5 @@ sourceSets {
 }
 
 tasks.withType(JavaCompile).configureEach {
-	options.annotationProcessorGeneratedSourcesDirectory = file(querydslDir)
+	options.generatedSourceOutputDirectory = file(querydslDir)
 }

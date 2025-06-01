@@ -4,6 +4,9 @@ import java.util.Base64;
 import java.util.Date;
 import java.util.UUID;
 
+import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
+
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -23,11 +26,12 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class JwtUtil {
 
-  private final String secretKey =
-      Base64.getEncoder()
-          .encodeToString("yoursecretlongandsecuresecretkeymustbeatleast32bywcg".getBytes());
+  private final SecretKey secretKey =
+      new SecretKeySpec(
+          Base64.getDecoder().decode("yoursecretlongandsecuresecretkeymustbeatleast32bywcg"),
+          SignatureAlgorithm.HS256.getJcaName());
 
-  private final long accessTokenValidity = 1000L * 60 * 70; // 70분
+  private final long accessTokenValidity = 1000L * 60; // 1분
 
   public String createAccessToken(Users user) {
     return createToken(user.getUserNo(), user.getRole().name(), accessTokenValidity);
@@ -59,7 +63,7 @@ public class JwtUtil {
         .setClaims(claims)
         .setIssuedAt(now)
         .setExpiration(new Date(now.getTime() + expirationTime))
-        .signWith(SignatureAlgorithm.HS256, secretKey)
+        .signWith(secretKey, SignatureAlgorithm.HS256)
         .compact();
   }
 
