@@ -5,8 +5,10 @@ import java.util.List;
 import jakarta.validation.Valid;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import com.hanyang.arttherapy.common.filter.CustomUserDetail;
 import com.hanyang.arttherapy.dto.request.GalleriesRequestDto;
 import com.hanyang.arttherapy.dto.response.GalleriesResponseDto;
 import com.hanyang.arttherapy.dto.response.userResponse.CommonMessageResponse;
@@ -24,9 +26,10 @@ public class GalleriesController {
   // 전시회 등록
   @PostMapping
   public ResponseEntity<CommonMessageResponse> create(
-      @RequestBody @Valid GalleriesRequestDto dto, @RequestHeader("userId") Long userId) {
+      @RequestBody @Valid GalleriesRequestDto dto,
+      @AuthenticationPrincipal CustomUserDetail userDetail) {
     return ResponseEntity.status(201)
-        .body(new CommonMessageResponse(galleriesService.save(dto, userId)));
+        .body(new CommonMessageResponse(galleriesService.save(dto, userDetail)));
   }
 
   // 전시회 전체 조회
@@ -44,13 +47,17 @@ public class GalleriesController {
   // 전시회 수정
   @PatchMapping("/{id}")
   public ResponseEntity<CommonMessageResponse> update(
-      @PathVariable Long id, @RequestBody @Valid GalleriesRequestDto dto) {
-    return ResponseEntity.ok(new CommonMessageResponse(galleriesService.update(id, dto)));
+      @PathVariable Long id,
+      @RequestBody @Valid GalleriesRequestDto dto,
+      @AuthenticationPrincipal CustomUserDetail userDetail) {
+    return ResponseEntity.ok(
+        new CommonMessageResponse(galleriesService.update(id, dto, userDetail)));
   }
 
   // 전시회 삭제
   @DeleteMapping("/{id}")
-  public ResponseEntity<CommonMessageResponse> delete(@PathVariable Long id) {
-    return ResponseEntity.ok(new CommonMessageResponse(galleriesService.delete(id)));
+  public ResponseEntity<CommonMessageResponse> delete(
+      @PathVariable Long id, @AuthenticationPrincipal CustomUserDetail userDetail) {
+    return ResponseEntity.ok(new CommonMessageResponse(galleriesService.delete(id, userDetail)));
   }
 }

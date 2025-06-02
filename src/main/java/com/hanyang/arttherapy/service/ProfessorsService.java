@@ -7,8 +7,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.hanyang.arttherapy.common.exception.CustomException;
 import com.hanyang.arttherapy.common.exception.exceptionType.ProfessorExceptionType;
+import com.hanyang.arttherapy.common.filter.CustomUserDetail;
 import com.hanyang.arttherapy.domain.Files;
 import com.hanyang.arttherapy.domain.Professors;
+import com.hanyang.arttherapy.domain.enums.Role;
 import com.hanyang.arttherapy.dto.request.ProfessorsRequestDto;
 import com.hanyang.arttherapy.dto.response.ProfessorsResponseDto;
 import com.hanyang.arttherapy.repository.FilesRepository;
@@ -23,12 +25,12 @@ public class ProfessorsService {
   private final ProfessorsRepository professorsRepository;
   private final FilesRepository filesRepository;
 
-  // 교수진 전체조회
+  // 교수진 전체조회 (누구나 가능)
   public List<ProfessorsResponseDto> getAllProfessors() {
     return professorsRepository.findAll().stream().map(ProfessorsResponseDto::from).toList();
   }
 
-  // 교수진 상세조회
+  // 교수진 상세조회 (누구나 가능)
   public ProfessorsResponseDto getProfessorDetail(Long professorNo) {
     Professors professor =
         professorsRepository
@@ -38,11 +40,12 @@ public class ProfessorsService {
     return ProfessorsResponseDto.from(professor);
   }
 
-  // 교수진 등록
+  // 교수진 등록 (관리자만)
   @Transactional
-  public String saveProfessor(ProfessorsRequestDto requestDto) {
-    Files file = null;
+  public String saveProfessor(ProfessorsRequestDto requestDto, CustomUserDetail userDetail) {
+    checkAdmin(userDetail);
 
+    Files file = null;
     if (requestDto.getFilesNo() != null) {
       file =
           filesRepository
@@ -64,9 +67,12 @@ public class ProfessorsService {
     return "교수 등록에 성공했습니다";
   }
 
-  // 교수진 수정
+  // 교수진 수정 (관리자만)
   @Transactional
-  public String updateProfessor(Long professorNo, ProfessorsRequestDto requestDto) {
+  public String updateProfessor(
+      Long professorNo, ProfessorsRequestDto requestDto, CustomUserDetail userDetail) {
+    checkAdmin(userDetail);
+
     Professors professor =
         professorsRepository
             .findById(professorNo)
@@ -91,9 +97,11 @@ public class ProfessorsService {
     return "교수 정보가 수정되었습니다";
   }
 
-  // 교수진 삭제
+  // 교수진 삭제 (관리자만)
   @Transactional
-  public String deleteProfessor(Long professorNo) {
+  public String deleteProfessor(Long professorNo, CustomUserDetail userDetail) {
+    checkAdmin(userDetail);
+
     Professors professor =
         professorsRepository
             .findById(professorNo)
@@ -101,5 +109,12 @@ public class ProfessorsService {
 
     professorsRepository.delete(professor);
     return "교수 정보가 삭제되었습니다";
+  }
+
+  // ✅ 관리자 권한 검사 메서드
+  private void checkAdmin(CustomUserDetail userDetail) {
+    if (userDetail.getUser().getRole() != Role.ADMIN) {
+      throw new CustomException(ProfessorExceptionType.UNAUTHORIZED);
+    }
   }
 }

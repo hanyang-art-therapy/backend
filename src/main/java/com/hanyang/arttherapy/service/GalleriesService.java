@@ -9,8 +9,10 @@ import org.springframework.transaction.annotation.Transactional;
 import com.hanyang.arttherapy.common.exception.CustomException;
 import com.hanyang.arttherapy.common.exception.exceptionType.GalleryExceptionType;
 import com.hanyang.arttherapy.common.exception.exceptionType.UserException;
+import com.hanyang.arttherapy.common.filter.CustomUserDetail;
 import com.hanyang.arttherapy.domain.Galleries;
 import com.hanyang.arttherapy.domain.Users;
+import com.hanyang.arttherapy.domain.enums.Role;
 import com.hanyang.arttherapy.dto.request.GalleriesRequestDto;
 import com.hanyang.arttherapy.dto.response.GalleriesResponseDto;
 import com.hanyang.arttherapy.repository.GalleriesRepository;
@@ -28,11 +30,15 @@ public class GalleriesService {
   private final GalleriesRepository galleriesRepository;
   private final UserRepository userRepository;
 
-  public String save(GalleriesRequestDto dto, Long userId) {
+  public String save(GalleriesRequestDto dto, CustomUserDetail userDetail) {
     Users user =
         userRepository
-            .findById(userId)
+            .findById(userDetail.getUser().getUserNo())
             .orElseThrow(() -> new CustomException(UserException.USER_NOT_FOUND));
+
+    if (user.getRole() != Role.ADMIN) {
+      throw new CustomException(GalleryExceptionType.UNAUTHORIZED);
+    }
 
     try {
       Galleries gallery =
@@ -68,7 +74,11 @@ public class GalleriesService {
     return GalleriesResponseDto.from(gallery);
   }
 
-  public String update(Long id, GalleriesRequestDto dto) {
+  public String update(Long id, GalleriesRequestDto dto, CustomUserDetail userDetail) {
+    if (userDetail.getUser().getRole() != Role.ADMIN) {
+      throw new CustomException(GalleryExceptionType.UNAUTHORIZED);
+    }
+
     Galleries gallery =
         galleriesRepository
             .findById(id)
@@ -87,7 +97,11 @@ public class GalleriesService {
     }
   }
 
-  public String delete(Long id) {
+  public String delete(Long id, CustomUserDetail userDetail) {
+    if (userDetail.getUser().getRole() != Role.ADMIN) {
+      throw new CustomException(GalleryExceptionType.UNAUTHORIZED);
+    }
+
     Galleries gallery =
         galleriesRepository
             .findById(id)
