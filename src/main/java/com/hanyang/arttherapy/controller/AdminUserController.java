@@ -38,7 +38,7 @@ public class AdminUserController {
   @PatchMapping("/{userNo}")
   public ResponseEntity<CommonMessageResponse> updateUser(
       @PathVariable Long userNo, @RequestBody UserRequestDto requestDto) {
-    adminUserService.updateUser(userNo, requestDto);
-    return ResponseEntity.ok(new CommonMessageResponse("회원 정보가 수정되었습니다."));
+    String message = adminUserService.updateUser(userNo, requestDto);
+    return ResponseEntity.ok(new CommonMessageResponse(message));
   }
 }
