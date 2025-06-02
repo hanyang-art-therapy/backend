@@ -20,7 +20,9 @@ public enum UserException implements ExceptionType {
   INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "서버 오류로 등록이 실패했습니다."),
   INVALID_ACCESS_TOKEN(HttpStatus.UNAUTHORIZED, "유효하지 않은 ACCESSTOKEN입니다."),
   INVALID_REFRESH_TOKEN(HttpStatus.FORBIDDEN, "유효하지 않은 REFRESHTOKEN입니다."),
-  USER_HISTORY_NOT_FOUND(HttpStatus.BAD_REQUEST, "해당 회원의 가입 이력을 찾을 수 없습니다.");
+  USER_HISTORY_NOT_FOUND(HttpStatus.BAD_REQUEST, "해당 회원의 가입 이력을 찾을 수 없습니다."),
+  NOT_ADMIN(HttpStatus.FORBIDDEN, "관리자 권한이 필요합니다."),
+  UNAUTHENTICATED(HttpStatus.UNAUTHORIZED, "로그인이 필요합니다.");
 
   private final HttpStatus status;
   private final String message;
