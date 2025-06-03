@@ -16,6 +16,8 @@ public interface UserRepository
 
   boolean existsByStudentNo(String studentNo);
 
+  Optional<Users> findByEmail(String email);
+
   Optional<Users> findByEmailAndUserName(String email, String userName);
 
   Optional<Users> findByUserIdAndEmail(String userId, String email);

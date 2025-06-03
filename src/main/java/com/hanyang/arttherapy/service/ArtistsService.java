@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.hanyang.arttherapy.common.exception.CustomException;
 import com.hanyang.arttherapy.common.exception.exceptionType.ArtistsException;
 import com.hanyang.arttherapy.common.exception.exceptionType.FilteringException;
+import com.hanyang.arttherapy.common.exception.exceptionType.UserException;
 import com.hanyang.arttherapy.domain.Artists;
 import com.hanyang.arttherapy.dto.request.ArtistRequestDto;
 import com.hanyang.arttherapy.dto.response.artistResponse.ArtistResponseDto;
@@ -28,6 +29,16 @@ public class ArtistsService {
   private final ArtistsRepository artistsRepository;
 
   public String registerArtist(ArtistRequestDto dto) {
+
+    // 필수 입력값 검증
+    if (dto.artistName() == null || dto.artistName().isBlank()) {
+      throw new CustomException(UserException.BLANK_REQUIRED);
+    }
+
+    if (dto.studentNo() == null || dto.studentNo().isBlank()) {
+      throw new CustomException(UserException.BLANK_REQUIRED);
+    }
+
     validateDuplicateStudentNo(dto.studentNo(), null);
     Artists artist = convertToEntity(dto);
     artistsRepository.save(artist);

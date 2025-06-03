@@ -8,10 +8,12 @@ import org.springframework.web.bind.annotation.*;
 
 import com.hanyang.arttherapy.common.util.JwtUtil;
 import com.hanyang.arttherapy.dto.request.userRequest.*;
-import com.hanyang.arttherapy.dto.response.userResponse.*;
+import com.hanyang.arttherapy.dto.response.userResponse.CommonMessageResponse;
+import com.hanyang.arttherapy.dto.response.userResponse.SigninResponse;
+import com.hanyang.arttherapy.dto.response.userResponse.TokenResponse;
 import com.hanyang.arttherapy.service.UserService;
 
-import lombok.*;
+import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("api/user")
