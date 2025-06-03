@@ -1,26 +1,20 @@
 package com.hanyang.arttherapy.service;
 
 import java.sql.Timestamp;
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+import jakarta.servlet.http.HttpSession;
+
+import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.hanyang.arttherapy.common.exception.CustomException;
 import com.hanyang.arttherapy.common.exception.exceptionType.UserException;
-import com.hanyang.arttherapy.domain.Arts;
-import com.hanyang.arttherapy.domain.Reviews;
-import com.hanyang.arttherapy.domain.Users;
-import com.hanyang.arttherapy.domain.UsersHistory;
+import com.hanyang.arttherapy.domain.*;
 import com.hanyang.arttherapy.domain.enums.Role;
 import com.hanyang.arttherapy.domain.enums.UserStatus;
+import com.hanyang.arttherapy.dto.request.MypageUpdateRequest;
 import com.hanyang.arttherapy.dto.response.MyInfoResponseDto;
 import com.hanyang.arttherapy.dto.response.MyPostResponseDto;
 import com.hanyang.arttherapy.dto.response.MyReviewResponseDto;
@@ -39,8 +33,9 @@ public class MyPageService {
   private final UsersHistoryRepository usersHistoryRepository;
   private final ArtsRepository artsRepository;
   private final ReviewRepository reviewRepository;
+  private final HttpSession session;
+  private final UserService userService;
 
-  // 나의 정보 조회
   @Transactional(readOnly = true)
   public MyInfoResponseDto getMyInfo(Long userId) {
     Users user =
@@ -50,7 +45,56 @@ public class MyPageService {
     return MyInfoResponseDto.from(user);
   }
 
-  // 나의 게시글 조회
+  @Transactional
+  public MyInfoResponseDto updateUserInfo(Long userId, MypageUpdateRequest request) {
+    Users user =
+        userRepository
+            .findById(userId)
+            .orElseThrow(() -> new CustomException(UserException.USER_NOT_FOUND));
+
+    // 학번 중복 체크
+    if (request.studentNo() != null && !request.studentNo().trim().isEmpty()) {
+      boolean studentNoExists =
+          userRepository.existsByStudentNoAndUserNoNot(request.studentNo(), userId);
+      if (studentNoExists) {
+        throw new CustomException(UserException.STUDENT_ALREADY_EXISTS);
+      }
+    }
+
+    // 이메일 중복 및 인증 확인
+    if (request.email() != null && !request.email().trim().isEmpty()) {
+      boolean emailExists = userRepository.existsByEmailAndUserNoNot(request.email(), userId);
+      if (emailExists) {
+        throw new CustomException(UserException.EMAIL_ALREADY_EXISTS);
+      }
+
+      if (request.verificationCode() == null
+          || !isVerifiedEmail(request.email(), request.verificationCode())) {
+        throw new CustomException(UserException.EMAIL_VERIFICATION_FAILED);
+      }
+    }
+
+    // 변경 반영
+    user.updateInfo(
+        request.email() != null ? request.email() : user.getEmail(),
+        request.userName() != null ? request.userName() : user.getUserName(),
+        request.studentNo() != null ? request.studentNo() : user.getStudentNo(),
+        user.getRole(),
+        user.getUserStatus());
+
+    return MyInfoResponseDto.from(user);
+  }
+
+  private boolean isVerifiedEmail(String email, String code) {
+    String storedCode = (String) session.getAttribute("verificationCode");
+    Long expirationTime = (Long) session.getAttribute("verificationCodeExpirationTime");
+
+    if (storedCode == null || expirationTime == null) return false;
+    if (System.currentTimeMillis() > expirationTime) return false;
+
+    return storedCode.equals(code);
+  }
+
   @Transactional(readOnly = true)
   public List<MyPostResponseDto> getMyPosts(Long userId) {
     Users user =
@@ -58,15 +102,12 @@ public class MyPageService {
             .findById(userId)
             .orElseThrow(() -> new CustomException(UserException.USER_NOT_FOUND));
 
-    if (user.getRole() != Role.ARTIST) {
-      return Collections.emptyList();
-    }
+    if (user.getRole() != Role.ARTIST) return Collections.emptyList();
 
     List<Arts> arts = artsRepository.findAllByStudentNo(user.getStudentNo());
     return arts.stream().map(MyPostResponseDto::from).toList();
   }
 
-  // 나의 댓글 조회
   @Transactional(readOnly = true)
   public Map<String, Object> getMyReviews(Long userId, String keyword, int page, int size) {
     Pageable pageable = PageRequest.of(page - 1, size, Sort.by("createdAt").descending());
@@ -87,7 +128,7 @@ public class MyPageService {
 
     Map<String, Object> result = new LinkedHashMap<>();
     result.put("content", content);
-    result.put("page", page); // 요청받은 page 그대로 반환 (1-based)
+    result.put("page", page);
     result.put("size", size);
     result.put("totalElements", pageResult.getTotalElements());
     result.put("totalPages", pageResult.getTotalPages());
@@ -102,14 +143,8 @@ public class MyPageService {
             .findById(userNo)
             .orElseThrow(() -> new CustomException(UserException.USER_NOT_FOUND));
 
-    // 이메일, 비밀번호, 학번 초기화 (삭제)
-    user.setEmail("");
-    user.setPassword("");
-    user.setStudentNo("");
-    // 상태 변경
     user.setUserStatus(UserStatus.UNACTIVE);
 
-    // 기존 이력 조회 후 탈회 및 상태 변경
     UsersHistory history =
         usersHistoryRepository
             .findByUser_UserNo(userNo)
@@ -117,6 +152,7 @@ public class MyPageService {
 
     history.setSignoutTimestamp(new Timestamp(System.currentTimeMillis()));
     history.setUserStatus(UserStatus.UNACTIVE);
+
     return "회원탈퇴 되었습니다.";
   }
 }

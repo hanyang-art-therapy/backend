@@ -30,4 +30,8 @@ public interface UserRepository
 
   List<Users> findTop10ByUserNameContainingAndUserNoLessThanOrderByUserNoDesc(
       String name, Long lastId);
+
+  boolean existsByEmailAndUserNoNot(String email, Long userNo);
+
+  boolean existsByStudentNoAndUserNoNot(String studentNo, Long userNo);
 }
