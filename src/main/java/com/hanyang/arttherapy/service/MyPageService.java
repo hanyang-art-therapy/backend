@@ -102,6 +102,10 @@ public class MyPageService {
             .findById(userNo)
             .orElseThrow(() -> new CustomException(UserException.USER_NOT_FOUND));
 
+    // 이메일, 비밀번호, 학번 초기화 (삭제)
+    user.setEmail("");
+    user.setPassword("");
+    user.setStudentNo("");
     // 상태 변경
     user.setUserStatus(UserStatus.UNACTIVE);
 

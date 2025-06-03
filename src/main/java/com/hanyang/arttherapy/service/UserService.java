@@ -21,8 +21,10 @@ import com.hanyang.arttherapy.common.util.JwtUtil;
 import com.hanyang.arttherapy.domain.RefreshToken;
 import com.hanyang.arttherapy.domain.Users;
 import com.hanyang.arttherapy.domain.UsersHistory;
+import com.hanyang.arttherapy.dto.request.MypageEmailRequest;
 import com.hanyang.arttherapy.dto.request.userRequest.*;
-import com.hanyang.arttherapy.dto.response.userResponse.*;
+import com.hanyang.arttherapy.dto.response.userResponse.SigninResponse;
+import com.hanyang.arttherapy.dto.response.userResponse.TokenResponse;
 import com.hanyang.arttherapy.repository.RefreshTokenRepository;
 import com.hanyang.arttherapy.repository.UserRepository;
 import com.hanyang.arttherapy.repository.UsersHistoryRepository;
@@ -32,15 +34,14 @@ import lombok.RequiredArgsConstructor;
 @Service
 @RequiredArgsConstructor
 public class UserService {
-  @Autowired private HttpSession session;
-  @Autowired private JavaMailSender mailSender;
+  private static final long VERIFICATION_CODE_EXPIRATION_TIME = 3 * 60 * 1000; // 3분
   private final UserRepository userRepository;
   private final UsersHistoryRepository usersHistoryRepository;
   private final RefreshTokenRepository refreshTokenRepository;
   private final JwtUtil jwtUtil;
   private final BCryptPasswordEncoder bCryptpasswordEncoder;
-
-  private static final long VERIFICATION_CODE_EXPIRATION_TIME = 3 * 60 * 1000;
+  @Autowired private HttpSession session;
+  @Autowired private JavaMailSender mailSender;
 
   public boolean existsByUserId(String userId) {
     return userRepository.existsByUserId(userId);
@@ -51,6 +52,7 @@ public class UserService {
   }
 
   public String checkEmail(EmailRequest request) {
+
     // 이메일이 이미 존재하는지 확인
     if (userRepository.existsByEmail(request.email())) {
       return "이미 사용 중인 이메일입니다.";
@@ -64,14 +66,30 @@ public class UserService {
     return "이메일이 발송되었습니다. 인증번호를 확인해주세요";
   }
 
+  // 마이페이지 이메일변경용 체크
+  public String checkEmailForChange(MypageEmailRequest request) {
+    Optional<Users> existingUser = userRepository.findByEmail(request.email());
+
+    // 이미 존재하는데, 내 계정이 아니라면 중복
+    if (existingUser.isPresent() && !existingUser.get().getUserNo().equals(request.userNo())) {
+      return "이미 다른 사용자가 사용 중인 이메일입니다.";
+    }
+
+    // 본인이 사용 중이거나 새로운 이메일인 경우 인증 절차 진행
+    String verificationCode = generateTemporaryPassword();
+    sendEmailVerification(request.email(), verificationCode);
+
+    return "이메일이 발송되었습니다. 인증번호를 확인해주세요";
+  }
+
   // 이메일 발송 + 세션 저장
   private void sendEmailVerification(String email, String verificationCode) {
     // 이메일 발송
     try {
       SimpleMailMessage message = new SimpleMailMessage();
       message.setTo(email);
-      message.setSubject("회원가입 이메일 인증");
-      message.setText("인증 번호: " + verificationCode);
+      message.setSubject("이메일 설정 인증번호");
+      message.setText("안녕하세요. 인증 번호 : " + verificationCode);
       message.setFrom("mingke48@gmail.com");
       mailSender.send(message);
     } catch (Exception e) {
@@ -89,19 +107,19 @@ public class UserService {
     String storedCode = (String) session.getAttribute("verificationCode");
     Long expirationTime = (Long) session.getAttribute("verificationCodeExpirationTime");
 
-    if (storedCode != null && expirationTime != null) {
-      // 인증 번호의 만료 시간 확인
-      if (System.currentTimeMillis() > expirationTime) {
-        return "인증 번호가 만료되었습니다.";
-      }
-      // 인증 번호 비교
-      if (storedCode.equals(request.verificationCode())) {
-        return "이메일 인증이 완료되었습니다.";
-      } else {
-        return "인증 번호가 일치하지 않습니다.";
-      }
+    if (storedCode == null || expirationTime == null) {
+      return "인증 번호가 존재하지 않거나 세션이 만료되었습니다.";
     }
-    return "인증되었습니다.";
+
+    if (System.currentTimeMillis() > expirationTime) {
+      return "인증 번호가 만료되었습니다.";
+    }
+
+    if (!storedCode.equals(request.verificationCode())) {
+      return "인증 번호가 일치하지 않습니다.";
+    }
+
+    return "이메일 인증이 완료되었습니다.";
   }
 
   // 아이디 찾기
@@ -119,10 +137,25 @@ public class UserService {
 
   // 아이디 *처리
   private String maskUserId(String originalId) {
-    if (originalId.length() <= 4) {
+    if (originalId == null || originalId.length() <= 3) {
       return originalId;
     }
-    return originalId.substring(0, 4) + "*".repeat(originalId.length() - 4);
+
+    if (originalId.contains("@")) {
+      // 이메일 형식 처리
+      int atIndex = originalId.indexOf("@");
+      String localPart = originalId.substring(0, atIndex);
+      String domainPart = originalId.substring(atIndex); // @부터 끝까지
+
+      if (localPart.length() <= 3) {
+        return localPart + domainPart; // 3자리 이하는 그대로
+      }
+
+      return localPart.substring(0, 3) + "*".repeat(localPart.length() - 3) + domainPart;
+    } else {
+      // 일반 아이디 처리
+      return originalId.substring(0, 3) + "*".repeat(originalId.length() - 3);
+    }
   }
 
   // 비밀번호 찾기
@@ -169,7 +202,7 @@ public class UserService {
       SimpleMailMessage message = new SimpleMailMessage();
       message.setTo(email);
       message.setSubject("임시 비밀번호 안내");
-      message.setText("안녕하세요.\n\n임시 비밀번호는 " + temporaryPassword + " 입니다.");
+      message.setText("안녕하세요.\n\n임시 비밀번호 : " + temporaryPassword + " 입니다.");
       message.setFrom("mingke48@gmail.com");
       mailSender.send(message);
     } catch (Exception e) {
@@ -199,6 +232,19 @@ public class UserService {
 
   @Transactional
   public void signup(SignupRequest request) {
+    // 필수 입력값 검증
+    if (request.userId() == null || request.userId().isBlank()) {
+      throw new CustomException(UserException.BLANK_REQUIRED);
+    }
+
+    if (request.password() == null || request.password().isBlank()) {
+      throw new CustomException(UserException.BLANK_REQUIRED);
+    }
+
+    if (request.email() == null || request.email().isBlank()) {
+      throw new CustomException(UserException.BLANK_REQUIRED);
+    }
+
     if (userRepository.existsByUserId(request.userId())) {
       throw new CustomException(UserException.USER_ALREADY_EXISTS);
     } else if (userRepository.existsByEmail(request.email())) {
@@ -241,6 +287,11 @@ public class UserService {
         userRepository
             .findByUserId(request.userId())
             .orElseThrow(() -> new CustomException(UserException.USER_NOT_FOUND));
+
+    // 사용자 상태가 ACTIVE가 아니면 로그인 불가
+    if (!"ACTIVE".equals(user.getUserStatus())) {
+      throw new CustomException(UserException.USER_NOT_ACTIVE); // 탈퇴회원
+    }
 
     if (!bCryptpasswordEncoder.matches(request.password(), user.getPassword())) {
       throw new CustomException(UserException.ERROR_PASSWORD);
