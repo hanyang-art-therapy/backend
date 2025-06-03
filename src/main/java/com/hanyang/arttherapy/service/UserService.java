@@ -21,6 +21,7 @@ import com.hanyang.arttherapy.common.util.JwtUtil;
 import com.hanyang.arttherapy.domain.RefreshToken;
 import com.hanyang.arttherapy.domain.Users;
 import com.hanyang.arttherapy.domain.UsersHistory;
+import com.hanyang.arttherapy.domain.enums.UserStatus;
 import com.hanyang.arttherapy.dto.request.MypageEmailRequest;
 import com.hanyang.arttherapy.dto.request.userRequest.*;
 import com.hanyang.arttherapy.dto.response.userResponse.SigninResponse;
@@ -287,6 +288,11 @@ public class UserService {
         userRepository
             .findByUserId(request.userId())
             .orElseThrow(() -> new CustomException(UserException.USER_NOT_FOUND));
+
+    // 사용자 상태가 ACTIVE가 아니면 로그인 불가
+    if (user.getUserStatus() != UserStatus.ACTIVE) {
+      throw new CustomException(UserException.USER_NOT_ACTIVE); // 탈퇴회원
+    }
 
     if (!bCryptpasswordEncoder.matches(request.password(), user.getPassword())) {
       throw new CustomException(UserException.ERROR_PASSWORD);
