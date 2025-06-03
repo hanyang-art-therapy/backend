@@ -8,11 +8,13 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import com.hanyang.arttherapy.common.filter.CustomUserDetail;
-import com.hanyang.arttherapy.dto.request.MypageEmailRequest;
+import com.hanyang.arttherapy.dto.request.MypageUpdateRequest;
+import com.hanyang.arttherapy.dto.request.userRequest.EmailRequest;
 import com.hanyang.arttherapy.dto.response.MyInfoResponseDto;
 import com.hanyang.arttherapy.dto.response.MyPostResponseDto;
 import com.hanyang.arttherapy.dto.response.userResponse.CommonMessageResponse;
 import com.hanyang.arttherapy.service.MyPageService;
+import com.hanyang.arttherapy.service.UserService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -22,6 +24,7 @@ import lombok.RequiredArgsConstructor;
 public class MyPageController {
 
   private final MyPageService myPageService;
+  private final UserService userService;
 
   // 내 정보 조회
   @GetMapping("/profile")
@@ -33,23 +36,28 @@ public class MyPageController {
 
   // 내 정보 수정 (이름 + 학번 + 이메일)
   @PatchMapping("/profile")
-  public ResponseEntity<CommonMessageResponse> updateMyInfo(
+  public ResponseEntity<MyInfoResponseDto> updateMyInfo(
       @AuthenticationPrincipal CustomUserDetail userDetails,
-      @RequestBody MypageEmailRequest request,
-      @RequestParam(required = false) String name,
-      @RequestParam(required = false) String studentNo) {
+      @RequestBody MypageUpdateRequest request) {
     Long userId = userDetails.getUser().getUserNo();
-    String message = myPageService.updateUserInfo(userId, request, name, studentNo);
-    return ResponseEntity.ok(new CommonMessageResponse(message));
+    MyInfoResponseDto updatedInfo = myPageService.updateUserInfo(userId, request);
+    return ResponseEntity.ok(updatedInfo);
   }
 
   // 이메일 인증 요청 (이메일 변경용)
+  //  @PostMapping("/email-verification")
+  //  public ResponseEntity<CommonMessageResponse> verifyEmailForChange(
+  //      @RequestBody MypageEmailRequest request,
+  //      @AuthenticationPrincipal CustomUserDetail userDetails) {
+  //    Long userNo = userDetails.getUser().getUserNo();
+  //    String message = myPageService.checkEmailForChange(request.email(), userNo);
+  //    return ResponseEntity.ok(new CommonMessageResponse(message));
+  //  }
+
   @PostMapping("/email-verification")
   public ResponseEntity<CommonMessageResponse> verifyEmailForChange(
-      @RequestBody MypageEmailRequest request,
-      @AuthenticationPrincipal CustomUserDetail userDetails) {
-    Long userNo = userDetails.getUser().getUserNo();
-    String message = myPageService.checkEmailForChange(request.email(), userNo);
+      @RequestBody MypageUpdateRequest request) {
+    String message = userService.checkEmail(new EmailRequest(request.email()));
     return ResponseEntity.ok(new CommonMessageResponse(message));
   }
 

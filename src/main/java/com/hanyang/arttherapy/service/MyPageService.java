@@ -1,4 +1,3 @@
-// MyPageService.java
 package com.hanyang.arttherapy.service;
 
 import java.sql.Timestamp;
@@ -15,8 +14,7 @@ import com.hanyang.arttherapy.common.exception.exceptionType.UserException;
 import com.hanyang.arttherapy.domain.*;
 import com.hanyang.arttherapy.domain.enums.Role;
 import com.hanyang.arttherapy.domain.enums.UserStatus;
-import com.hanyang.arttherapy.dto.request.MypageEmailRequest;
-import com.hanyang.arttherapy.dto.request.userRequest.EmailRequest;
+import com.hanyang.arttherapy.dto.request.MypageUpdateRequest;
 import com.hanyang.arttherapy.dto.response.MyInfoResponseDto;
 import com.hanyang.arttherapy.dto.response.MyPostResponseDto;
 import com.hanyang.arttherapy.dto.response.MyReviewResponseDto;
@@ -48,25 +46,22 @@ public class MyPageService {
   }
 
   @Transactional
-  public String updateUserInfo(
-      Long userId, MypageEmailRequest request, String name, String studentNo) {
+  public MyInfoResponseDto updateUserInfo(Long userId, MypageUpdateRequest request) {
     Users user =
         userRepository
             .findById(userId)
             .orElseThrow(() -> new CustomException(UserException.USER_NOT_FOUND));
 
-    if (name != null && !name.trim().isEmpty()) {
-      user.setUserName(name);
-    }
-
-    if (studentNo != null && !studentNo.trim().isEmpty()) {
-      boolean studentNoExists = userRepository.existsByStudentNoAndUserNoNot(studentNo, userId);
+    // 학번 중복 체크
+    if (request.studentNo() != null && !request.studentNo().trim().isEmpty()) {
+      boolean studentNoExists =
+          userRepository.existsByStudentNoAndUserNoNot(request.studentNo(), userId);
       if (studentNoExists) {
         throw new CustomException(UserException.STUDENT_ALREADY_EXISTS);
       }
-      user.setStudentNo(studentNo);
     }
 
+    // 이메일 중복 및 인증 확인
     if (request.email() != null && !request.email().trim().isEmpty()) {
       boolean emailExists = userRepository.existsByEmailAndUserNoNot(request.email(), userId);
       if (emailExists) {
@@ -77,11 +72,17 @@ public class MyPageService {
           || !isVerifiedEmail(request.email(), request.verificationCode())) {
         throw new CustomException(UserException.EMAIL_VERIFICATION_FAILED);
       }
-
-      user.setEmail(request.email());
     }
 
-    return "회원 정보가 성공적으로 수정되었습니다.";
+    // 변경 반영
+    user.updateInfo(
+        request.email() != null ? request.email() : user.getEmail(),
+        request.userName() != null ? request.userName() : user.getUserName(),
+        request.studentNo() != null ? request.studentNo() : user.getStudentNo(),
+        user.getRole(),
+        user.getUserStatus());
+
+    return MyInfoResponseDto.from(user);
   }
 
   private boolean isVerifiedEmail(String email, String code) {
@@ -153,16 +154,5 @@ public class MyPageService {
     history.setUserStatus(UserStatus.UNACTIVE);
 
     return "회원탈퇴 되었습니다.";
-  }
-
-  public String checkEmailForChange(String email, Long userNo) {
-    Optional<Users> existingUser = userRepository.findByEmail(email);
-
-    if (existingUser.isPresent() && !existingUser.get().getUserNo().equals(userNo)) {
-      return "이미 다른 사용자가 사용 중인 이메일입니다.";
-    }
-
-    // 🔽 UserService의 public 메서드만 호출
-    return userService.checkEmail(new EmailRequest(email));
   }
 }
