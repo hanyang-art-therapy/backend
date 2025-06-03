@@ -1,3 +1,3 @@
-package com.hanyang.arttherapy.dto.request.userRequest;
+package com.hanyang.arttherapy.dto.request.users;
 
 public record VerificationRequest(String verificationCode) {}

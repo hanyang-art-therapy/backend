@@ -1,4 +1,4 @@
-package com.hanyang.arttherapy.dto.request.userRequest;
+package com.hanyang.arttherapy.dto.request.users;
 
 import com.hanyang.arttherapy.domain.enums.Role;
 import com.hanyang.arttherapy.domain.enums.UserStatus;

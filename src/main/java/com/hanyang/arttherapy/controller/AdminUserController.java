@@ -6,7 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import com.hanyang.arttherapy.dto.request.userRequest.UserRequestDto;
+import com.hanyang.arttherapy.dto.request.users.UserRequestDto;
 import com.hanyang.arttherapy.dto.response.userResponse.CommonMessageResponse;
 import com.hanyang.arttherapy.dto.response.userResponse.UserDetailDto;
 import com.hanyang.arttherapy.service.AdminUserService;

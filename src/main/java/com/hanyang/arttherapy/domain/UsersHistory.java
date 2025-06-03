@@ -38,7 +38,15 @@ public class UsersHistory {
 
   @PrePersist
   public void setDefaults() {
-    this.userStatus = UserStatus.ACTIVE; // 기본 상태를 ACTIVE로 설정
-    this.signinTimestamp = Timestamp.valueOf(LocalDateTime.now());
+    this.userStatus = UserStatus.ACTIVE;
+    this.signinTimestamp = Timestamp.valueOf(LocalDateTime.now().withNano(0)); // 밀리초 제거
+  }
+
+  public void setBannedNow() {
+    this.bannedTimestamp = Timestamp.valueOf(LocalDateTime.now().withNano(0)); // 밀리초 제거
+  }
+
+  public void setSignoutNow() {
+    this.signoutTimestamp = Timestamp.valueOf(LocalDateTime.now().withNano(0)); // 밀리초 제거
   }
 }
