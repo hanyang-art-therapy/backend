@@ -8,11 +8,10 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import com.hanyang.arttherapy.common.filter.CustomUserDetail;
+import com.hanyang.arttherapy.dto.request.MypageEmailRequest;
 import com.hanyang.arttherapy.dto.response.MyInfoResponseDto;
 import com.hanyang.arttherapy.dto.response.MyPostResponseDto;
 import com.hanyang.arttherapy.dto.response.userResponse.CommonMessageResponse;
-import com.hanyang.arttherapy.repository.ArtsRepository;
-import com.hanyang.arttherapy.repository.UserRepository;
 import com.hanyang.arttherapy.service.MyPageService;
 
 import lombok.RequiredArgsConstructor;
@@ -23,8 +22,6 @@ import lombok.RequiredArgsConstructor;
 public class MyPageController {
 
   private final MyPageService myPageService;
-  private final ArtsRepository artsRepository;
-  private final UserRepository userRepository;
 
   // 내 정보 조회
   @GetMapping("/profile")
@@ -32,6 +29,28 @@ public class MyPageController {
       @AuthenticationPrincipal CustomUserDetail userDetails) {
     Long userId = userDetails.getUser().getUserNo();
     return ResponseEntity.ok(myPageService.getMyInfo(userId));
+  }
+
+  // 내 정보 수정 (이름 + 학번 + 이메일)
+  @PatchMapping("/profile")
+  public ResponseEntity<CommonMessageResponse> updateMyInfo(
+      @AuthenticationPrincipal CustomUserDetail userDetails,
+      @RequestBody MypageEmailRequest request,
+      @RequestParam(required = false) String name,
+      @RequestParam(required = false) String studentNo) {
+    Long userId = userDetails.getUser().getUserNo();
+    String message = myPageService.updateUserInfo(userId, request, name, studentNo);
+    return ResponseEntity.ok(new CommonMessageResponse(message));
+  }
+
+  // 이메일 인증 요청 (이메일 변경용)
+  @PostMapping("/email-verification")
+  public ResponseEntity<CommonMessageResponse> verifyEmailForChange(
+      @RequestBody MypageEmailRequest request,
+      @AuthenticationPrincipal CustomUserDetail userDetails) {
+    Long userNo = userDetails.getUser().getUserNo();
+    String message = myPageService.checkEmailForChange(request.email(), userNo);
+    return ResponseEntity.ok(new CommonMessageResponse(message));
   }
 
   // 내 작품 조회
@@ -55,8 +74,10 @@ public class MyPageController {
 
   // 회원탈퇴
   @PatchMapping("/withdraw")
-  public ResponseEntity<CommonMessageResponse> withdraw(@RequestHeader("userId") Long userNo) {
-    String message = myPageService.withdrawByUserNo(userNo);
-    return ResponseEntity.ok(new CommonMessageResponse(message)); // 204 No Content
+  public ResponseEntity<CommonMessageResponse> withdraw(
+      @AuthenticationPrincipal CustomUserDetail userDetails) {
+    Long userId = userDetails.getUser().getUserNo();
+    String message = myPageService.withdrawByUserNo(userId);
+    return ResponseEntity.ok(new CommonMessageResponse(message));
   }
 }
