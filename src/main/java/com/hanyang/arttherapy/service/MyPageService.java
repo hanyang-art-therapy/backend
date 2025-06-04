@@ -89,7 +89,7 @@ public class MyPageService {
         user.getRole(),
         user.getUserStatus());
 
-    return MyInfoResponseDto.from(user);
+    return MyInfoResponseDto.from(user, user.getUserId());
   }
 
   private boolean isVerifiedEmail(String email, String code) {
