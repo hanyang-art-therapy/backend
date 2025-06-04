@@ -101,7 +101,6 @@ public class ReviewService {
       } catch (Exception e) {
         log.info("비로그인 사용자입니다.");
       }
-
       //      // BANNED회원 댓글등록 불가
       //      try {
       //        user = getUserByUserId(); // 로그인 시도
