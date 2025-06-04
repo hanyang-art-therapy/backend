@@ -290,8 +290,8 @@ public class UserService {
             .findByUserId(request.userId())
             .orElseThrow(() -> new CustomException(UserException.USER_NOT_FOUND));
 
-    // 사용자 상태가 ACTIVE가 아니면 로그인 불가
-    if (user.getUserStatus() != UserStatus.ACTIVE) {
+    // 사용자 상태 UNACTIVE 로그인 불가
+    if (user.getUserStatus() == UserStatus.UNACTIVE) {
       throw new CustomException(UserException.USER_STATUS_UNACTIVE); // 탈퇴회원
     }
 

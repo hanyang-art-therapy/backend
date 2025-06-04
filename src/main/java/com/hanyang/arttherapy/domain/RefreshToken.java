@@ -19,8 +19,8 @@ public class RefreshToken {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long refreshTokenNo;
 
-  @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "user_no", nullable = false, unique = true)
+  @ManyToOne(fetch = FetchType.EAGER)
+  @JoinColumn(name = "user_no", nullable = false)
   private Users users;
 
   @Column(nullable = false, unique = true)
@@ -36,7 +36,9 @@ public class RefreshToken {
   private String ip;
 
   @PrePersist
-  public void setExpiredAt() {
-    this.expiredAt = LocalDateTime.now().plusDays(7);
+  public void updateExpiredAt() {
+    if (this.expiredAt == null) {
+      this.expiredAt = LocalDateTime.now().plusDays(7);
+    }
   }
 }
