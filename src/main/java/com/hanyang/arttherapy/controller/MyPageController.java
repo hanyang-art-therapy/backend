@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.*;
 
 import com.hanyang.arttherapy.common.filter.CustomUserDetail;
 import com.hanyang.arttherapy.dto.request.MypageUpdateRequest;
-import com.hanyang.arttherapy.dto.request.userRequest.EmailRequest;
+import com.hanyang.arttherapy.dto.request.users.EmailRequest;
 import com.hanyang.arttherapy.dto.response.MyInfoResponseDto;
 import com.hanyang.arttherapy.dto.response.MyPostResponseDto;
 import com.hanyang.arttherapy.dto.response.userResponse.CommonMessageResponse;

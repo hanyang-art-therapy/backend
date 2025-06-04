@@ -31,7 +31,21 @@ public class JwtUtil {
           Base64.getDecoder().decode("yoursecretlongandsecuresecretkeymustbeatleast32bywcg"),
           SignatureAlgorithm.HS256.getJcaName());
 
-  private final long accessTokenValidity = 1000L * 60; // 1분
+  private final long accessTokenValidity = 1000L * 60 * 70; // 1분
+
+  public static String refreshTokenFromCookie(HttpServletRequest httpRequest) {
+    // 쿠키가 없거나 빈 배열인 경우
+    if (httpRequest.getCookies() == null || httpRequest.getCookies().length == 0) {
+      return null; // 쿠키가 없을 경우 null 반환
+    }
+
+    for (Cookie cookie : httpRequest.getCookies()) {
+      if ("refreshToken".equals(cookie.getName())) {
+        return cookie.getValue(); // 리프레시 토큰 값 리턴
+      }
+    }
+    return null; // 리프레시 토큰이 없을 경우 null 반환
+  }
 
   public String createAccessToken(Users user) {
     return createToken(user.getUserNo(), user.getRole().name(), accessTokenValidity);
@@ -88,20 +102,6 @@ public class JwtUtil {
     Claims claims = Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token).getBody();
     String roleStr = (String) claims.get("role");
     return Role.valueOf(roleStr);
-  }
-
-  public static String refreshTokenFromCookie(HttpServletRequest httpRequest) {
-    // 쿠키가 없거나 빈 배열인 경우
-    if (httpRequest.getCookies() == null || httpRequest.getCookies().length == 0) {
-      return null; // 쿠키가 없을 경우 null 반환
-    }
-
-    for (Cookie cookie : httpRequest.getCookies()) {
-      if ("refreshToken".equals(cookie.getName())) {
-        return cookie.getValue(); // 리프레시 토큰 값 리턴
-      }
-    }
-    return null; // 리프레시 토큰이 없을 경우 null 반환
   }
 
   public void deleteRefreshTokenCookie(HttpServletResponse response) {
