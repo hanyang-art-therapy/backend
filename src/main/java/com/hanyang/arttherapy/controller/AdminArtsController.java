@@ -5,8 +5,8 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import com.hanyang.arttherapy.common.filter.CustomUserDetail;
-import com.hanyang.arttherapy.dto.request.AdminArtsPatchRequestDto;
-import com.hanyang.arttherapy.dto.request.AdminArtsRequestDto;
+import com.hanyang.arttherapy.dto.request.admin.AdminArtsPatchRequestDto;
+import com.hanyang.arttherapy.dto.request.admin.AdminArtsRequestDto;
 import com.hanyang.arttherapy.dto.response.AdminArtsDetailResponseDto;
 import com.hanyang.arttherapy.dto.response.AdminArtsListResponseDto;
 import com.hanyang.arttherapy.dto.response.CommonScrollResponse;

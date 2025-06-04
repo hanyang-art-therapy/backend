@@ -7,7 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import com.hanyang.arttherapy.common.util.JwtUtil;
-import com.hanyang.arttherapy.dto.request.userRequest.*;
+import com.hanyang.arttherapy.dto.request.users.*;
 import com.hanyang.arttherapy.dto.response.userResponse.CommonMessageResponse;
 import com.hanyang.arttherapy.dto.response.userResponse.SigninResponse;
 import com.hanyang.arttherapy.dto.response.userResponse.TokenResponse;

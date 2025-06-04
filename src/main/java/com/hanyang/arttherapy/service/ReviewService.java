@@ -101,6 +101,20 @@ public class ReviewService {
       } catch (Exception e) {
         log.info("비로그인 사용자입니다.");
       }
+      //      // BANNED회원 댓글등록 불가
+      //      try {
+      //        user = getUserByUserId(); // 로그인 시도
+      //
+      //        // 유저가 정지 상태일 경우 예외 발생
+      //        if (user != null && user.getUserStatus() == UserStatus.BANNED) {
+      //          throw new CustomException(ReviewException.USER_STATUS_BANNED);
+      //        }
+      //
+      //      } catch (CustomException e) {
+      //        throw e; // BANNED 예외 그대로 던짐
+      //      } catch (Exception e) {
+      //        log.info("비로그인 사용자입니다.");
+      //      }
 
       Arts arts =
           artsRepository

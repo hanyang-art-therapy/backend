@@ -1,4 +1,4 @@
-package com.hanyang.arttherapy.dto.request;
+package com.hanyang.arttherapy.dto.request.admin;
 
 import java.util.List;
 

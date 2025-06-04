@@ -6,12 +6,15 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import com.hanyang.arttherapy.dto.request.ReviewRequestDto;
+import com.hanyang.arttherapy.dto.request.admin.AdminBanRequest;
 import com.hanyang.arttherapy.dto.response.ReviewResponseDto;
 import com.hanyang.arttherapy.dto.response.noticeResponse.CommonDataResponse;
 import com.hanyang.arttherapy.dto.response.userResponse.CommonMessageResponse;
+import com.hanyang.arttherapy.service.AdminUserService;
 import com.hanyang.arttherapy.service.ReviewService;
 
 import lombok.RequiredArgsConstructor;
@@ -22,6 +25,7 @@ import lombok.RequiredArgsConstructor;
 public class ReviewController {
 
   private final ReviewService reviewService;
+  private final AdminUserService adminUserService;
 
   // 리뷰 조회
   @GetMapping
@@ -51,5 +55,13 @@ public class ReviewController {
   @DeleteMapping("/{reviewNo}")
   public ResponseEntity<CommonMessageResponse> deleteReview(@PathVariable Long reviewNo) {
     return ResponseEntity.ok(reviewService.deleteReview(reviewNo));
+  }
+
+  // 리뷰 정지
+  @PreAuthorize("hasRole('ADMIN')")
+  @PostMapping("/{reviewNo}/ban")
+  public ResponseEntity<CommonMessageResponse> bannedReview(@RequestBody AdminBanRequest request) {
+    String message = adminUserService.bannedReview(request);
+    return ResponseEntity.ok(new CommonMessageResponse(message));
   }
 }
