@@ -67,7 +67,6 @@ public class AdminUserService {
     return new UserDetailDto(
         user.getUserNo(),
         user.getUserId(),
-        user.getPassword(),
         user.getEmail(),
         user.getUserName(),
         user.getStudentNo(),

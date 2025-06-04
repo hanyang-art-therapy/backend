@@ -8,7 +8,6 @@ import com.hanyang.arttherapy.domain.enums.UserStatus;
 public record UserDetailDto(
     Long userNo,
     String userId,
-    String passWord,
     String email,
     String userName,
     String studentNo,

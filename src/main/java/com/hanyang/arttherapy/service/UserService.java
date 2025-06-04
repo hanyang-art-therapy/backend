@@ -21,6 +21,7 @@ import com.hanyang.arttherapy.common.util.JwtUtil;
 import com.hanyang.arttherapy.domain.RefreshToken;
 import com.hanyang.arttherapy.domain.Users;
 import com.hanyang.arttherapy.domain.UsersHistory;
+import com.hanyang.arttherapy.domain.enums.UserStatus;
 import com.hanyang.arttherapy.dto.request.MypageEmailRequest;
 import com.hanyang.arttherapy.dto.request.userRequest.*;
 import com.hanyang.arttherapy.dto.response.userResponse.SigninResponse;
