@@ -31,7 +31,7 @@ public class JwtUtil {
           Base64.getDecoder().decode("yoursecretlongandsecuresecretkeymustbeatleast32bywcg"),
           SignatureAlgorithm.HS256.getJcaName());
 
-  private final long accessTokenValidity = 1000L * 60 * 70; // 1분
+  private final long accessTokenValidity = 1000L * 60 * 3; // 3분
 
   public static String refreshTokenFromCookie(HttpServletRequest httpRequest) {
     // 쿠키가 없거나 빈 배열인 경우
@@ -84,7 +84,7 @@ public class JwtUtil {
   // 토큰 유효성 검사
   public boolean validateToken(String token) {
     try {
-      Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token);
+      Jwts.parserBuilder().setSigningKey(secretKey).build().parseClaimsJws(token);
       return true;
     } catch (JwtException | IllegalArgumentException e) {
       return false;
