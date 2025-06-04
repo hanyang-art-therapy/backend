@@ -37,12 +37,19 @@ public class MyPageService {
   private final UserService userService;
 
   @Transactional(readOnly = true)
-  public MyInfoResponseDto getMyInfo(Long userId) {
+  public MyInfoResponseDto getMyInfo(Long userNo, String userId) {
     Users user =
         userRepository
-            .findById(userId)
+            .findById(userNo)
             .orElseThrow(() -> new CustomException(UserException.USER_NOT_FOUND));
-    return MyInfoResponseDto.from(user);
+
+    return MyInfoResponseDto.builder()
+        .userId(userId)
+        .email(user.getEmail())
+        .userName(user.getUserName())
+        .role(user.getRole())
+        .studentNo(user.getStudentNo())
+        .build();
   }
 
   @Transactional
