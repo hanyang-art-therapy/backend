@@ -30,8 +30,11 @@ public class MyPageController {
   @GetMapping("/profile")
   public ResponseEntity<MyInfoResponseDto> getMyInfo(
       @AuthenticationPrincipal CustomUserDetail userDetails) {
-    Long userId = userDetails.getUser().getUserNo();
-    return ResponseEntity.ok(myPageService.getMyInfo(userId));
+
+    Long userNo = userDetails.getUser().getUserNo();
+    String userId = userDetails.getUsername();
+
+    return ResponseEntity.ok(myPageService.getMyInfo(userNo, userId));
   }
 
   // 내 정보 수정 (이름 + 학번 + 이메일)
@@ -43,16 +46,6 @@ public class MyPageController {
     MyInfoResponseDto updatedInfo = myPageService.updateUserInfo(userId, request);
     return ResponseEntity.ok(updatedInfo);
   }
-
-  // 이메일 인증 요청 (이메일 변경용)
-  //  @PostMapping("/email-verification")
-  //  public ResponseEntity<CommonMessageResponse> verifyEmailForChange(
-  //      @RequestBody MypageEmailRequest request,
-  //      @AuthenticationPrincipal CustomUserDetail userDetails) {
-  //    Long userNo = userDetails.getUser().getUserNo();
-  //    String message = myPageService.checkEmailForChange(request.email(), userNo);
-  //    return ResponseEntity.ok(new CommonMessageResponse(message));
-  //  }
 
   @PostMapping("/email-verification")
   public ResponseEntity<CommonMessageResponse> verifyEmailForChange(
