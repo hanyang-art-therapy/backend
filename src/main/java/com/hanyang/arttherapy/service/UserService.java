@@ -36,6 +36,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class UserService {
   private static final long VERIFICATION_CODE_EXPIRATION_TIME = 3 * 60 * 1000; // 3분
+  private static final int MAX_RETRY = 10;
   private final UserRepository userRepository;
   private final UsersHistoryRepository usersHistoryRepository;
   private final RefreshTokenRepository refreshTokenRepository;
@@ -56,7 +57,7 @@ public class UserService {
 
     // 이메일이 이미 존재하는지 확인
     if (userRepository.existsByEmail(request.email())) {
-      return "이미 사용 중인 이메일입니다.";
+      throw new CustomException(UserException.EMAIL_ALREADY_EXISTS);
     }
     // 인증번호 생성
     String verificationCode = generateTemporaryPassword();
@@ -73,7 +74,7 @@ public class UserService {
 
     // 이미 존재하는데, 내 계정이 아니라면 중복
     if (existingUser.isPresent() && !existingUser.get().getUserNo().equals(request.userNo())) {
-      return "이미 다른 사용자가 사용 중인 이메일입니다.";
+      throw new CustomException(UserException.EMAIL_ALREADY_EXISTS);
     }
 
     // 본인이 사용 중이거나 새로운 이메일인 경우 인증 절차 진행
@@ -109,15 +110,15 @@ public class UserService {
     Long expirationTime = (Long) session.getAttribute("verificationCodeExpirationTime");
 
     if (storedCode == null || expirationTime == null) {
-      return "인증 번호가 존재하지 않거나 세션이 만료되었습니다.";
+      throw new CustomException(UserException.VERIFICATION_CODE_NOT_FOUND);
     }
 
     if (System.currentTimeMillis() > expirationTime) {
-      return "인증 번호가 만료되었습니다.";
+      throw new CustomException(UserException.VERIFICATION_CODE_EXPIRED);
     }
 
     if (!storedCode.equals(request.verificationCode())) {
-      return "인증 번호가 일치하지 않습니다.";
+      throw new CustomException(UserException.VERIFICATION_CODE_MISMATCH);
     }
 
     return "이메일 인증이 완료되었습니다.";
@@ -256,11 +257,15 @@ public class UserService {
       throw new CustomException(UserException.STUDENT_ALREADY_EXISTS);
     } else {
 
+      // 중복되지 않는 랜덤 userNo 생성
+      Long userNo = (long) generateUniqueUserNo();
+
       // 비밀번호를 BCrypt로 인코딩
       String encodedPassword = bCryptpasswordEncoder.encode(request.password());
 
       Users user =
           Users.builder()
+              .userNo(userNo)
               .userId(request.userId())
               .password(encodedPassword)
               .email(request.email())
@@ -280,6 +285,20 @@ public class UserService {
 
       usersHistoryRepository.save(history); // UsersHistory 저장
     }
+  }
+
+  private int generateUniqueUserNo() {
+    Random random = new Random();
+    int attempts = 0;
+    Long userNo;
+    do {
+      userNo = random.nextLong() & Long.MAX_VALUE; // 양수만 생성
+      attempts++;
+      if (attempts > MAX_RETRY) {
+        throw new CustomException(UserException.USER_NO_FAILED);
+      }
+    } while (userRepository.existsByUserNo(userNo));
+    return Math.toIntExact(userNo);
   }
 
   @Transactional

@@ -1,5 +1,8 @@
 package com.hanyang.arttherapy.domain;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import jakarta.persistence.*;
 
 import com.hanyang.arttherapy.domain.enums.Role;
@@ -16,9 +19,7 @@ import lombok.*;
 @Table(name = "users")
 public class Users {
 
-  @Id
-  @GeneratedValue(strategy = GenerationType.IDENTITY)
-  private Long userNo;
+  @Id private Long userNo;
 
   @Column(nullable = false, unique = true)
   private String userId;
@@ -42,6 +43,11 @@ public class Users {
   @Enumerated(EnumType.STRING)
   @Column(nullable = false)
   private UserStatus userStatus;
+
+  // 하나의 userNo이 여러개의 리프레시 토큰을 가짐
+  @Builder.Default
+  @OneToMany(mappedBy = "users", cascade = CascadeType.ALL, orphanRemoval = true)
+  private List<RefreshToken> refreshTokens = new ArrayList<>();
 
   @PrePersist
   public void setDefaults() {
