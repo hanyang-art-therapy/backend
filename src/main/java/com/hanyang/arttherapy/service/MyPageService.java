@@ -81,12 +81,19 @@ public class MyPageService {
       }
     }
 
-    // 변경 반영
+    // role 변경
+    Role updatedRole;
+    if (request.studentNo() != null && !request.studentNo().trim().isEmpty()) {
+      updatedRole = Role.ARTIST;
+    } else {
+      updatedRole = Role.USER;
+    }
+
     user.updateInfo(
         request.email() != null ? request.email() : user.getEmail(),
         request.userName() != null ? request.userName() : user.getUserName(),
-        request.studentNo() != null ? request.studentNo() : user.getStudentNo(),
-        user.getRole(),
+        request.studentNo() != null ? request.studentNo() : null,
+        updatedRole,
         user.getUserStatus());
 
     return MyInfoResponseDto.from(user, user.getUserId());
