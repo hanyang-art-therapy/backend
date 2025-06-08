@@ -163,7 +163,7 @@ public class MyPageService {
     UsersHistory history =
         usersHistoryRepository
             .findByUser_UserNo(userNo)
-            .orElseThrow(() -> new CustomException(UserException.USER_NOT_FOUND));
+            .orElseThrow(() -> new CustomException(UserException.USER_HISTORY_NOT_FOUND));
 
     history.setSignoutTimestamp();
     history.setUserStatus(UserStatus.UNACTIVE);
