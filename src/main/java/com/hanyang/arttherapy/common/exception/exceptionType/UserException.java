@@ -26,7 +26,11 @@ public enum UserException implements ExceptionType {
   INVALID_REFRESH_TOKEN(HttpStatus.FORBIDDEN, "유효하지 않은 REFRESHTOKEN입니다."),
   USER_HISTORY_NOT_FOUND(HttpStatus.BAD_REQUEST, "해당 회원의 가입 이력을 찾을 수 없습니다."),
   NOT_ADMIN(HttpStatus.FORBIDDEN, "관리자 권한이 필요합니다."),
-  UNAUTHENTICATED(HttpStatus.UNAUTHORIZED, "로그인이 필요합니다.");
+  UNAUTHENTICATED(HttpStatus.UNAUTHORIZED, "로그인이 필요합니다."),
+  VERIFICATION_CODE_NOT_FOUND(HttpStatus.NOT_FOUND, "인증 번호가 존재하지 않거나 세션이 만료되었습니다."),
+  VERIFICATION_CODE_EXPIRED(HttpStatus.GONE, "인증 번호가 만료되었습니다."),
+  VERIFICATION_CODE_MISMATCH(HttpStatus.BAD_REQUEST, "인증 번호가 일치하지 않습니다."),
+  USER_NO_FAILED(HttpStatus.BAD_REQUEST, "회원가입 실패하였습니다.");
 
   private final HttpStatus status;
   private final String message;

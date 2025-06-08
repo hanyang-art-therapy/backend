@@ -79,7 +79,7 @@ public class AdminUserService {
         user.getStudentNo(),
         user.getRole(),
         user.getUserStatus(),
-        history.getSigninTimestamp(),
+        history.getSignupTimestamp(),
         history.getSignoutTimestamp(),
         history.getBannedTimestamp(),
         history.getCause());

@@ -34,4 +34,6 @@ public interface UserRepository
   boolean existsByEmailAndUserNoNot(String email, Long userNo);
 
   boolean existsByStudentNoAndUserNoNot(String studentNo, Long userNo);
+
+  boolean existsByUserNo(Long userNo);
 }

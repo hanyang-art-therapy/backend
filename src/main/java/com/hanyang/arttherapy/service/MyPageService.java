@@ -1,27 +1,32 @@
 package com.hanyang.arttherapy.service;
 
-import java.sql.Timestamp;
-import java.util.*;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 import jakarta.servlet.http.HttpSession;
 
-import org.springframework.data.domain.*;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.hanyang.arttherapy.common.exception.CustomException;
 import com.hanyang.arttherapy.common.exception.exceptionType.UserException;
-import com.hanyang.arttherapy.domain.*;
+import com.hanyang.arttherapy.domain.Arts;
+import com.hanyang.arttherapy.domain.Reviews;
+import com.hanyang.arttherapy.domain.Users;
+import com.hanyang.arttherapy.domain.UsersHistory;
 import com.hanyang.arttherapy.domain.enums.Role;
 import com.hanyang.arttherapy.domain.enums.UserStatus;
 import com.hanyang.arttherapy.dto.request.MypageUpdateRequest;
 import com.hanyang.arttherapy.dto.response.MyInfoResponseDto;
 import com.hanyang.arttherapy.dto.response.MyPostResponseDto;
 import com.hanyang.arttherapy.dto.response.MyReviewResponseDto;
-import com.hanyang.arttherapy.repository.ArtsRepository;
-import com.hanyang.arttherapy.repository.ReviewRepository;
-import com.hanyang.arttherapy.repository.UserRepository;
-import com.hanyang.arttherapy.repository.UsersHistoryRepository;
+import com.hanyang.arttherapy.repository.*;
 
 import lombok.RequiredArgsConstructor;
 
@@ -35,6 +40,7 @@ public class MyPageService {
   private final ReviewRepository reviewRepository;
   private final HttpSession session;
   private final UserService userService;
+  private final RefreshTokenRepository refreshTokenRepository;
 
   @Transactional(readOnly = true)
   public MyInfoResponseDto getMyInfo(Long userNo, String userId) {
@@ -158,14 +164,18 @@ public class MyPageService {
             .orElseThrow(() -> new CustomException(UserException.USER_NOT_FOUND));
 
     user.setUserStatus(UserStatus.UNACTIVE);
+    user.setEmail("");
+    user.setPassword("");
 
     UsersHistory history =
         usersHistoryRepository
             .findByUser_UserNo(userNo)
-            .orElseThrow(() -> new IllegalArgumentException("회원이력이 없습니다"));
+            .orElseThrow(() -> new CustomException(UserException.USER_HISTORY_NOT_FOUND));
 
-    history.setSignoutTimestamp(new Timestamp(System.currentTimeMillis()));
+    history.setSignoutTimestamp();
     history.setUserStatus(UserStatus.UNACTIVE);
+
+    refreshTokenRepository.findByUsers_UserNo(userNo).ifPresent(refreshTokenRepository::delete);
 
     return "회원탈퇴 되었습니다.";
   }

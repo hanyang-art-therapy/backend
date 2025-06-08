@@ -12,8 +12,8 @@ import lombok.*;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@Table(name = "refresh_token")
-public class RefreshToken {
+@Table(name = "refresh_tokens")
+public class RefreshTokens {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -23,7 +23,7 @@ public class RefreshToken {
   @JoinColumn(name = "user_no", nullable = false)
   private Users users;
 
-  @Column(nullable = false, unique = true)
+  @Column(unique = true)
   private String refreshToken;
 
   @Column(nullable = false)
