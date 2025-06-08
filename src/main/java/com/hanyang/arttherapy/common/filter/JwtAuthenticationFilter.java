@@ -16,7 +16,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import com.hanyang.arttherapy.common.util.JwtUtil;
-import com.hanyang.arttherapy.domain.RefreshToken;
+import com.hanyang.arttherapy.domain.RefreshTokens;
 import com.hanyang.arttherapy.domain.Users;
 import com.hanyang.arttherapy.domain.enums.Role;
 import com.hanyang.arttherapy.repository.RefreshTokenRepository;
@@ -59,11 +59,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
       String refreshToken = JwtUtil.refreshTokenFromCookie(request);
 
       if (refreshToken != null) {
-        Optional<RefreshToken> existingTokenOpt =
+        Optional<RefreshTokens> existingTokenOpt =
             refreshTokenRepository.findByRefreshToken(refreshToken);
 
         if (existingTokenOpt.isPresent()) {
-          RefreshToken existingToken = existingTokenOpt.get();
+          RefreshTokens existingToken = existingTokenOpt.get();
 
           String ip = request.getRemoteAddr();
           String userAgent = request.getHeader("User-Agent");

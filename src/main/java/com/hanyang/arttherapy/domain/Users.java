@@ -47,7 +47,7 @@ public class Users {
   // 하나의 userNo이 여러개의 리프레시 토큰을 가짐
   @Builder.Default
   @OneToMany(mappedBy = "users", cascade = CascadeType.ALL, orphanRemoval = true)
-  private List<RefreshToken> refreshTokens = new ArrayList<>();
+  private List<RefreshTokens> refreshTokens = new ArrayList<>();
 
   @PrePersist
   public void setDefaults() {

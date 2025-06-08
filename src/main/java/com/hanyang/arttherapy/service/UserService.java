@@ -1,5 +1,6 @@
 package com.hanyang.arttherapy.service;
 
+import java.security.SecureRandom;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.Optional;
@@ -18,7 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.hanyang.arttherapy.common.exception.CustomException;
 import com.hanyang.arttherapy.common.exception.exceptionType.UserException;
 import com.hanyang.arttherapy.common.util.JwtUtil;
-import com.hanyang.arttherapy.domain.RefreshToken;
+import com.hanyang.arttherapy.domain.RefreshTokens;
 import com.hanyang.arttherapy.domain.Users;
 import com.hanyang.arttherapy.domain.UsersHistory;
 import com.hanyang.arttherapy.domain.enums.UserStatus;
@@ -281,24 +282,23 @@ public class UserService {
       UsersHistory history = new UsersHistory();
       history.setUser(user);
       Timestamp now = new Timestamp(System.currentTimeMillis());
-      history.setSigninTimestamp(now);
+      history.setSignupTimestamp(now);
 
       usersHistoryRepository.save(history); // UsersHistory 저장
     }
   }
 
-  private int generateUniqueUserNo() {
-    Random random = new Random();
-    int attempts = 0;
-    Long userNo;
+  public long generateUniqueUserNo() {
+    SecureRandom random = new SecureRandom();
+    int max = Integer.MAX_VALUE; // 2,147,483,647
+    int min = 1; // 0 제외
+
+    long userNo;
     do {
-      userNo = random.nextLong() & Long.MAX_VALUE; // 양수만 생성
-      attempts++;
-      if (attempts > MAX_RETRY) {
-        throw new CustomException(UserException.USER_NO_FAILED);
-      }
-    } while (userRepository.existsByUserNo(userNo));
-    return Math.toIntExact(userNo);
+      userNo = random.nextInt(max - min) + min;
+    } while (userRepository.existsById(userNo)); // 중복 확인
+
+    return userNo; // long 타입이지만 실제 값은 int 범위
   }
 
   @Transactional
@@ -319,18 +319,29 @@ public class UserService {
     }
 
     // 기존 리프레시 토큰 확인
-    Optional<RefreshToken> existingTokenOpt = refreshTokenRepository.findByUsers(user);
-    RefreshToken token = null;
+    Optional<RefreshTokens> existingTokenOpt = refreshTokenRepository.findByUsers(user);
+    RefreshTokens token = null;
     if (existingTokenOpt.isPresent()) {
       token = existingTokenOpt.get();
 
       boolean isExpired = token.getExpiredAt().isBefore(LocalDateTime.now());
       boolean isDifferentIpOrAgent =
           !token.getIp().equals(ip) || !token.getUserAgent().equals(userAgent);
+      boolean isEmptyToken = token.getRefreshToken() == null || token.getRefreshToken().isBlank();
 
-      if (isExpired) {
-        // 만료되면 삭제하고 새로 발급
-        refreshTokenRepository.delete(token);
+      if (isExpired || isEmptyToken) {
+        // 만료되었거나 비어있으면 리프레시토큰만 새로 발급
+        String newRefreshToken = jwtUtil.createRefreshToken(user);
+        token.setRefreshToken(newRefreshToken);
+        token.setExpiredAt(LocalDateTime.now().plusDays(7));
+
+        refreshTokenRepository.save(token); // 업데이트
+        jwtUtil.addRefreshTokenToCookie(httpResponse, newRefreshToken);
+
+        String accessToken = jwtUtil.createAccessToken(user);
+        httpResponse.setHeader("Authorization", "Bearer " + accessToken);
+        return new SigninResponse(user.getUserNo(), accessToken, user.getRole());
+
       } else if (isDifferentIpOrAgent) {
         // IP 또는 UserAgent가 다르면 새로 발급
         // 기존 토큰 삭제하지 않음 (필요시 정책적으로 삭제 가능)
@@ -345,8 +356,8 @@ public class UserService {
     String refreshToken = jwtUtil.createRefreshToken(user);
 
     // RefreshToken 엔티티 저장
-    RefreshToken tokenEntity =
-        RefreshToken.builder()
+    RefreshTokens tokenEntity =
+        RefreshTokens.builder()
             .users(user)
             .refreshToken(refreshToken)
             .expiredAt(LocalDateTime.now().plusDays(7))
@@ -363,7 +374,7 @@ public class UserService {
   }
 
   public TokenResponse newAccessToken(String ip, String userAgent) {
-    RefreshToken savedToken =
+    RefreshTokens savedToken =
         refreshTokenRepository
             .findByIpAndUserAgent(ip, userAgent)
             .orElseThrow(() -> new CustomException(UserException.INVALID_REFRESH_TOKEN));
@@ -382,14 +393,16 @@ public class UserService {
     return new TokenResponse(newAccessToken);
   }
 
+  @Transactional
   public String logout(String ip, String userAgent, String refreshToken) {
     // 토큰으로 엔티티 조회
-    RefreshToken token =
+    RefreshTokens token =
         refreshTokenRepository
             .findByIpAndUserAgentAndRefreshToken(ip, userAgent, refreshToken)
             .orElseThrow(() -> new CustomException(UserException.INVALID_REFRESH_TOKEN));
-    // 로그아웃시 토큰삭제
-    refreshTokenRepository.delete(token);
+
+    // 리프레시토큰 컬럼만 비우기
+    refreshTokenRepository.clearRefreshToken(ip, userAgent, token.getUsers().getUserNo());
     return "로그아웃 되었습니다.";
   }
 }

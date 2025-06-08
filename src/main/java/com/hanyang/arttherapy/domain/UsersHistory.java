@@ -24,7 +24,7 @@ public class UsersHistory {
   private UserStatus userStatus;
 
   @Column(nullable = false)
-  private Timestamp signinTimestamp;
+  private Timestamp signupTimestamp;
 
   @Column private Timestamp signoutTimestamp;
 
@@ -39,14 +39,14 @@ public class UsersHistory {
   @PrePersist
   public void setDefaults() {
     this.userStatus = UserStatus.ACTIVE;
-    this.signinTimestamp = Timestamp.valueOf(LocalDateTime.now().withNano(0)); // 밀리초 제거
+    this.signupTimestamp = Timestamp.valueOf(LocalDateTime.now().withNano(0)); // 밀리초 제거
   }
 
   public void setBannedNow() {
     this.bannedTimestamp = Timestamp.valueOf(LocalDateTime.now().withNano(0)); // 밀리초 제거
   }
 
-  public void setSignoutNow() {
+  public void setSignoutTimestamp() {
     this.signoutTimestamp = Timestamp.valueOf(LocalDateTime.now().withNano(0)); // 밀리초 제거
   }
 }
