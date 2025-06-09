@@ -2,6 +2,7 @@ package com.hanyang.arttherapy.service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -27,7 +28,6 @@ import com.hanyang.arttherapy.dto.response.userResponse.CommonMessageResponse;
 import com.hanyang.arttherapy.repository.FilesRepository;
 import com.hanyang.arttherapy.repository.NoticeFilesRepository;
 import com.hanyang.arttherapy.repository.NoticesRepository;
-import com.hanyang.arttherapy.repository.UserRepository;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -39,8 +39,8 @@ import lombok.extern.slf4j.Slf4j;
 public class NoticesService {
   private final NoticesRepository noticesRepository;
   private final NoticeFilesRepository noticeFilesRepository;
-  private final UserRepository userRepository;
   private final FilesRepository filesRepository;
+  private final FileStorageService fileStorageService;
 
   // 게시판 전체 조회 (keyword가 없으면 전체 조회)
   public NoticeListResponseDto getNotices(String keyword, int page) {
@@ -190,7 +190,8 @@ public class NoticesService {
 
   // 파일 저장
   private List<FileResponseDto> saveAndMapFiles(List<Long> filesNo, Notices notice) {
-    if (filesNo == null) return List.of();
+    if (filesNo == null || filesNo.isEmpty()) return List.of(); // filesNo가 null이거나 비어있으면 빈 리스트 반환
+
     return filesNo.stream()
         .map(
             fileNo -> {
@@ -199,12 +200,17 @@ public class NoticesService {
                       .findById(fileNo)
                       .orElseThrow(
                           () -> new CustomException(FileSystemExceptionType.FILE_NOT_FOUND));
-              file.activateFile();
-              filesRepository.save(file);
+              file.activateFile(); // 파일 활성화
+              filesRepository.save(file); // DB 상태 저장
+
+              // NoticeFiles 매핑 저장
               noticeFilesRepository.save(NoticeFiles.builder().notice(notice).file(file).build());
-              return FileResponseDto.of(file, file.getUrl());
+
+              // FileStorageService를 통해 완전한 URL을 가져와서 DTO에 포함
+              return FileResponseDto.of(file, fileStorageService.getFileUrl(file.getFilesNo()));
             })
-        .toList();
+        .collect(
+            Collectors.toList()); // toList() 대신 collect(Collectors.toList()) 사용 (Java 16 이전 호환성)
   }
 
   private void deleteOldFiles(Notices notice) {
@@ -220,7 +226,12 @@ public class NoticesService {
 
   private List<FileResponseDto> getFileResponses(Notices notice) {
     return noticeFilesRepository.findAllByNotice(notice).stream()
-        .map(nf -> FileResponseDto.of(nf.getFile(), nf.getFile().getUrl()))
+        .map(
+            nf -> {
+              Files file = nf.getFile();
+              // FileStorageService를 통해 완전한 URL을 가져와서 DTO에 포함
+              return FileResponseDto.of(file, fileStorageService.getFileUrl(file.getFilesNo()));
+            })
         .toList();
   }
 

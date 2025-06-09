@@ -126,7 +126,7 @@ public class MyPageService {
             .map(
                 r ->
                     MyReviewResponseDto.builder()
-                        .reviewNo(r.getReviewsNo())
+                        .reviewsNo(r.getReviewsNo())
                         .artsNo(r.getArts() != null ? r.getArts().getArtsNo() : null)
                         .artName(r.getArts() != null ? r.getArts().getArtName() : null)
                         .reviewText(r.getReviewText())

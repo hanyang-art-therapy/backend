@@ -1,7 +1,6 @@
 package com.hanyang.arttherapy.repository;
 
 import java.util.List;
-import java.util.Optional;
 
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -11,9 +10,6 @@ import org.springframework.data.repository.query.Param;
 import com.hanyang.arttherapy.domain.Arts;
 
 public interface ArtsRepository extends JpaRepository<Arts, Long> {
-
-  // 기본 조회
-  Optional<Arts> findByArtsNo(Long artsNo);
 
   // 특정 전시회에 속한 모든 작품 조회
   List<Arts> findTop9ByGalleries_GalleriesNoAndArtsNoGreaterThanOrderByArtsNoAsc(
@@ -26,12 +22,6 @@ public interface ArtsRepository extends JpaRepository<Arts, Long> {
   List<Arts>
       findTop9ByGalleries_GalleriesNoAndArtArtistRels_Artists_CohortAndArtsNoGreaterThanOrderByArtsNoAsc(
           Long galleriesNo, int cohort, Long artsNo);
-
-  Long countByGalleries_GalleriesNo(Long galleriesNo);
-
-  Long countByGalleries_GalleriesNoAndArtArtistRels_Artists_Cohort(Long galleriesNo, int cohort);
-
-  Long countByArtArtistRels_Artists_Cohort(int cohort);
 
   // 마이페이지 나의 게시글
   @Query(
