@@ -1,5 +1,6 @@
 package com.hanyang.arttherapy.repository;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -18,7 +19,7 @@ public interface RefreshTokenRepository extends JpaRepository<RefreshTokens, Lon
   Optional<RefreshTokens> findByRefreshToken(String refreshToken);
 
   // Users의 userNo 필드를 기준으로 찾고 싶다면
-  Optional<RefreshTokens> findByUsers_UserNo(Long userNo);
+  List<RefreshTokens> findAllByUsers_UserNo(Long userNo);
 
   Optional<RefreshTokens> findByIpAndUserAgentAndRefreshToken(
       String ip, String userAgent, String refreshToken);

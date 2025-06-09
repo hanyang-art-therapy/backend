@@ -16,10 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.hanyang.arttherapy.common.exception.CustomException;
 import com.hanyang.arttherapy.common.exception.exceptionType.UserException;
-import com.hanyang.arttherapy.domain.Arts;
-import com.hanyang.arttherapy.domain.Reviews;
-import com.hanyang.arttherapy.domain.Users;
-import com.hanyang.arttherapy.domain.UsersHistory;
+import com.hanyang.arttherapy.domain.*;
 import com.hanyang.arttherapy.domain.enums.Role;
 import com.hanyang.arttherapy.domain.enums.UserStatus;
 import com.hanyang.arttherapy.dto.request.MypageUpdateRequest;
@@ -39,7 +36,6 @@ public class MyPageService {
   private final ArtsRepository artsRepository;
   private final ReviewRepository reviewRepository;
   private final HttpSession session;
-  private final UserService userService;
   private final RefreshTokenRepository refreshTokenRepository;
 
   @Transactional(readOnly = true)
@@ -175,7 +171,8 @@ public class MyPageService {
     history.setSignoutTimestamp();
     history.setUserStatus(UserStatus.UNACTIVE);
 
-    refreshTokenRepository.findByUsers_UserNo(userNo).ifPresent(refreshTokenRepository::delete);
+    List<RefreshTokens> tokens = refreshTokenRepository.findAllByUsers_UserNo(userNo);
+    tokens.forEach(refreshTokenRepository::delete);
 
     return "회원탈퇴 되었습니다.";
   }

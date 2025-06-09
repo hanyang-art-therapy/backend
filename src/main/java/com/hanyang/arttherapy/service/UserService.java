@@ -186,7 +186,7 @@ public class UserService {
 
   // 임시 비밀번호 생성 (예: 9자리 랜덤+마지막 고정'@')
   private String generateTemporaryPassword() {
-    int length = 9;
+    int length = 11;
     String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789~!@#$%^&*";
     Random random = new Random();
     StringBuilder sb = new StringBuilder(length);
@@ -196,6 +196,9 @@ public class UserService {
       sb.append(chars.charAt(index));
     }
     sb.append('@'); // 마지막 고정 문자 추가
+    sb.append('Q');
+    sb.append('q');
+    sb.append('1');
     return sb.toString();
   }
 
