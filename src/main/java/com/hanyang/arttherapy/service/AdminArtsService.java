@@ -154,12 +154,11 @@ public class AdminArtsService {
             .orElseThrow(() -> new CustomException(AdminArtsExceptionType.ARTS_NOT_FOUND));
 
     if (art.getFile() != null) {
-      Files file =
-          filesRepository
-              .findById(art.getFile().getFilesNo())
-              .orElseThrow(() -> new CustomException(AdminArtsExceptionType.FILE_NOT_FOUND));
+
       file.markAsDeleted();
       filesRepository.save(file);
+
+      fileStorageService.softDeleteFile(art.getFile().getFilesNo());
     }
 
     artArtistRelRepository.deleteByArts(art);
