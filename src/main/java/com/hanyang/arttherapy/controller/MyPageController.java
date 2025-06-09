@@ -8,8 +8,8 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import com.hanyang.arttherapy.common.filter.CustomUserDetail;
+import com.hanyang.arttherapy.dto.request.MypageEmailRequest;
 import com.hanyang.arttherapy.dto.request.MypageUpdateRequest;
-import com.hanyang.arttherapy.dto.request.users.EmailRequest;
 import com.hanyang.arttherapy.dto.response.MyInfoResponseDto;
 import com.hanyang.arttherapy.dto.response.MyPostResponseDto;
 import com.hanyang.arttherapy.dto.response.userResponse.CommonMessageResponse;
@@ -49,8 +49,13 @@ public class MyPageController {
 
   @PostMapping("/email-verification")
   public ResponseEntity<CommonMessageResponse> verifyEmailForChange(
+      @AuthenticationPrincipal CustomUserDetail userDetails,
       @RequestBody MypageUpdateRequest request) {
-    String message = userService.checkEmail(new EmailRequest(request.email()));
+
+    Long userNo = userDetails.getUser().getUserNo();
+    MypageEmailRequest emailRequest = new MypageEmailRequest(userNo, request.email(), null);
+
+    String message = userService.checkEmailForChange(emailRequest);
     return ResponseEntity.ok(new CommonMessageResponse(message));
   }
 
