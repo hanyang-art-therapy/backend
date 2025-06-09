@@ -16,7 +16,7 @@ public class AdminArtsDetailResponseDto {
   private String coDescription;
 
   private Long galleriesNo;
-  private String galleriesTitle;
+  private String title;
 
   private List<ArtistInfo> artists;
 

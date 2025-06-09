@@ -33,6 +33,7 @@ public class AdminArtsService {
   private final ArtistsRepository artistsRepository;
   private final FileStorageService fileStorageService;
 
+  // 등록
   @Transactional
   public String register(AdminArtsRequestDto request, CustomUserDetail userDetail) {
     if (userDetail.getUser().getRole() != Role.ADMIN) {
@@ -81,6 +82,7 @@ public class AdminArtsService {
     return "작품 등록에 성공했습니다";
   }
 
+  // 수정
   @Transactional
   public String update(Long artsNo, AdminArtsPatchRequestDto request, CustomUserDetail userDetail) {
     if (userDetail.getUser().getRole() != Role.ADMIN) {
@@ -139,6 +141,7 @@ public class AdminArtsService {
     return "작품 수정에 성공했습니다";
   }
 
+  // 삭제
   @Transactional
   public String delete(Long artsNo, CustomUserDetail userDetail) {
     if (userDetail.getUser().getRole() != Role.ADMIN) {
@@ -151,11 +154,16 @@ public class AdminArtsService {
             .orElseThrow(() -> new CustomException(AdminArtsExceptionType.ARTS_NOT_FOUND));
 
     if (art.getFile() != null) {
+
+      file.markAsDeleted();
+      filesRepository.save(file);
+
       fileStorageService.softDeleteFile(art.getFile().getFilesNo());
     }
 
     artArtistRelRepository.deleteByArts(art);
     artsRepository.delete(art);
+
     return "작품 삭제에 성공했습니다";
   }
 
@@ -220,7 +228,7 @@ public class AdminArtsService {
         .artType(art.getArtType().name())
         .fileUrl(fileUrl)
         .galleriesNo(gallery.getGalleriesNo())
-        .galleriesTitle(gallery.getTitle())
+        .title(gallery.getTitle())
         .coDescription(art.getCoDescription())
         .artists(artistInfos)
         .build();
