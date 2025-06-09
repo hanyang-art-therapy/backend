@@ -39,10 +39,8 @@ public class ReviewService {
 
   private final ReviewRepository reviewRepository;
   private final FilesRepository filesRepository;
-  private final UserRepository userRepository;
-  private final FileStorageService fileStorageService;
   private final ArtsRepository artsRepository;
-  private final GalleriesRepository galleriesRepository;
+  private final FileStorageService fileStorageService;
 
   // 리뷰 조회
   public Map<String, Object> getReviews(Long artsNo, Pageable pageable) {
@@ -55,15 +53,20 @@ public class ReviewService {
                   review -> {
                     Users user = review.getUser();
                     List<Files> files = new ArrayList<>();
+                    List<FileResponseDto> fileResponseDtos = new ArrayList<>();
 
                     if (review.getFile() != null) {
                       files =
                           findFiles(List.of(review.getFile().getFilesNo())).stream()
                               .filter(Files::isUseYn)
                               .collect(Collectors.toList());
-                    }
 
-                    List<FileResponseDto> fileResponseDtos = toFileResponseDtos(files);
+                      // 파일이 존재하고 유효하면 DTO로 변환
+                      if (!files.isEmpty()) {
+                        // toFileResponseDtos 메서드를 호출하여 완전한 URL을 포함하도록 변경
+                        fileResponseDtos = toFileResponseDtos(files);
+                      }
+                    }
 
                     return new ReviewResponseDto(
                         review.getReviewsNo(),
@@ -172,11 +175,11 @@ public class ReviewService {
 
   // 댓글 수정
   public CommonDataResponse<ReviewResponseDto> patchReview(
-      Long reviewNo, String reviewText, List<Long> filesNo) {
+      Long reviewsNo, String reviewText, List<Long> filesNo) {
     try {
       Reviews review =
           reviewRepository
-              .findById(reviewNo)
+              .findById(reviewsNo)
               .orElseThrow(() -> new CustomException(ReviewException.REVIEW_NOT_FOUND));
 
       Users currentUser = getUserByUserId();
@@ -236,10 +239,10 @@ public class ReviewService {
   }
 
   // 댓글 삭제
-  public CommonMessageResponse deleteReview(Long reviewNo) {
+  public CommonMessageResponse deleteReview(Long reviewsNo) {
     Reviews review =
         reviewRepository
-            .findById(reviewNo)
+            .findById(reviewsNo)
             .orElseThrow(() -> new CustomException(ReviewException.REVIEW_NOT_FOUND));
 
     Users reviewOwner = review.getUser();
@@ -314,7 +317,10 @@ public class ReviewService {
   // FileResponseDto 변환
   private List<FileResponseDto> toFileResponseDtos(List<Files> files) {
     return files.stream()
-        .map(file -> FileResponseDto.of(file, file.getUrl()))
+        .map(
+            file ->
+                FileResponseDto.of(
+                    file, fileStorageService.getFileUrl(file.getFilesNo()))) // <-- 핵심 수정 부분!
         .collect(Collectors.toList());
   }
 }

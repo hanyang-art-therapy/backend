@@ -2,10 +2,7 @@ package com.hanyang.arttherapy.service;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.Comparator;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
@@ -22,7 +19,9 @@ import com.hanyang.arttherapy.dto.response.*;
 import com.hanyang.arttherapy.repository.*;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -31,9 +30,8 @@ public class ArtsService {
   private final ArtsRepository artsRepository;
   private final FilesRepository filesRepository;
   private final ArtArtistRelRepository artArtistRelRepository;
-  private final ReviewService reviewService;
   private final GalleriesRepository galleriesRepository;
-  private final ArtistsRepository artistsRepository;
+  private final FileStorageService fileStorageService;
 
   /**
    * 통합 조회 메서드 - 최초 로딩 시 (연도와 기수 모두 없음): 현재 연도로 조회 - 연도와 기수가 모두 있으면 Year + Cohort 조회 - 연도만 있으면 Year
@@ -87,6 +85,7 @@ public class ArtsService {
     } catch (CustomException e) {
       throw e;
     } catch (Exception e) {
+      log.error("Error getting art detail for artsNo {}: {}", artsNo, e.getMessage(), e); // 로깅 추가
       throw new CustomException(ArtsExceptionType.ART_LOAD_FAILED);
     }
   }
@@ -178,10 +177,15 @@ public class ArtsService {
       // 1. 모든 artsNo, filesNo 추출
       List<Long> artsNos = artsList.stream().map(Arts::getArtsNo).toList();
 
-      List<Long> fileNos = artsList.stream().map(a -> a.getFile().getFilesNo()).toList();
+      List<Long> fileNos =
+          artsList.stream()
+              .map(Arts::getFile)
+              .filter(Objects::nonNull)
+              .map(Files::getFilesNo)
+              .toList();
 
       // 2. 파일, 작가 관계 미리 조회하여 Map으로 캐싱
-      Map<Long, Files> fileMap =
+      Map<Long, Files> fileEntityMap =
           filesRepository.findAllById(fileNos).stream()
               .collect(Collectors.toMap(Files::getFilesNo, f -> f));
 
@@ -205,19 +209,31 @@ public class ArtsService {
       return sortedList.stream()
           .map(
               arts -> {
-                Files file = fileMap.get(arts.getFile().getFilesNo());
+                Files fileEntity = fileEntityMap.get(arts.getFile().getFilesNo());
                 List<ArtArtistRel> rels = artistRelMap.getOrDefault(arts.getArtsNo(), List.of());
-                return ArtsListResponseDto.of(arts, file, rels);
+
+                String name = (fileEntity != null) ? fileEntity.getName() : null;
+                String url = null;
+                if (fileEntity != null) {
+                  // FileStorageService 인터페이스를 통해 getFileUrl을 호출
+                  url = fileStorageService.getFileUrl(fileEntity.getFilesNo());
+                }
+                return ArtsListResponseDto.of(arts, name, url, rels);
               })
           .toList();
     } catch (Exception e) {
+      log.error("Error mapping arts to DTO list: {}", e.getMessage(), e);
       throw new CustomException(ArtsExceptionType.ART_LOAD_FAILED);
     }
   }
 
-  private List<FileResponseDto> getFileResponseDto(Long filesNo) {
+  private List<com.hanyang.arttherapy.dto.response.FileResponseDto> getFileResponseDto(
+      Long filesNo) {
     return filesRepository.findByFilesNoInAndUseYn(List.of(filesNo), true).stream()
-        .map(file -> FileResponseDto.of(file, file.getUrl()))
+        .map(
+            file ->
+                com.hanyang.arttherapy.dto.response.FileResponseDto.of(
+                    file, fileStorageService.getFileUrl(file.getFilesNo()))) // 변경된 변수명 적용
         .collect(Collectors.toList());
   }
 

@@ -44,7 +44,8 @@ public class SecurityConfig {
                         "/api/galleries/arts/**",
                         "/css/**",
                         "/js/**",
-                        "/images/**")
+                        "/images/**",
+                        "/api/notices/**")
                     .permitAll()
                     .anyRequest()
                     .authenticated())
