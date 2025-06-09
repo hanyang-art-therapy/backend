@@ -6,6 +6,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -153,7 +154,7 @@ public class AdminUserService {
     UsersHistory history =
         usersHistoryRepository
             .findByUser_UserNo(user.getUserNo())
-            .orElseThrow(() -> new RuntimeException("히스토리 없음"));
+            .orElseThrow(() -> new CustomException(UserException.USER_HISTORY_NOT_FOUND));
 
     // 기존 기록 업데이트
     history.setUserStatus(UserStatus.BANNED);
@@ -163,5 +164,29 @@ public class AdminUserService {
     usersHistoryRepository.save(history);
 
     return "해당 리뷰 작성자를 정지시켰습니다.";
+  }
+
+  @Scheduled(cron = "0 30 * * * *") // 매일 새벽 3시에 실행
+  @Transactional
+  public void restoreBannedUsers() {
+    // 7일 전 시간 계산
+    LocalDateTime sevenDaysAgo = LocalDateTime.now().minusMinutes(5);
+
+    // 7일 이상 정지된 회원 기록 조회
+    List<UsersHistory> histories =
+        usersHistoryRepository.findByUserStatusAndBannedTimestampBefore(
+            UserStatus.BANNED, Timestamp.valueOf(sevenDaysAgo));
+
+    for (UsersHistory history : histories) {
+      Users user = history.getUser();
+
+      // 상태 변경
+      user.setUserStatus(UserStatus.ACTIVE);
+      history.setUserStatus(UserStatus.ACTIVE);
+
+      // 저장
+      userRepository.save(user);
+      usersHistoryRepository.save(history);
+    }
   }
 }
