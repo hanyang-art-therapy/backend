@@ -23,6 +23,7 @@ import com.hanyang.arttherapy.domain.UsersHistory;
 import com.hanyang.arttherapy.domain.enums.Role;
 import com.hanyang.arttherapy.domain.enums.UserStatus;
 import com.hanyang.arttherapy.dto.request.MypageUpdateRequest;
+import com.hanyang.arttherapy.dto.request.users.VerificationRequest;
 import com.hanyang.arttherapy.dto.response.MyInfoResponseDto;
 import com.hanyang.arttherapy.dto.response.MyPostResponseDto;
 import com.hanyang.arttherapy.dto.response.MyReviewResponseDto;
@@ -81,10 +82,7 @@ public class MyPageService {
         throw new CustomException(UserException.EMAIL_ALREADY_EXISTS);
       }
 
-      if (request.verificationCode() == null
-          || !isVerifiedEmail(request.email(), request.verificationCode())) {
-        throw new CustomException(UserException.EMAIL_VERIFICATION_FAILED);
-      }
+      userService.verifyEmailCode(new VerificationRequest(request.verificationCode()));
     }
 
     // role 변경
@@ -103,16 +101,6 @@ public class MyPageService {
         user.getUserStatus());
 
     return MyInfoResponseDto.from(user, user.getUserId());
-  }
-
-  private boolean isVerifiedEmail(String email, String code) {
-    String storedCode = (String) session.getAttribute("verificationCode");
-    Long expirationTime = (Long) session.getAttribute("verificationCodeExpirationTime");
-
-    if (storedCode == null || expirationTime == null) return false;
-    if (System.currentTimeMillis() > expirationTime) return false;
-
-    return storedCode.equals(code);
   }
 
   @Transactional(readOnly = true)
