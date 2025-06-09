@@ -26,7 +26,6 @@ import com.hanyang.arttherapy.domain.enums.UserStatus;
 import com.hanyang.arttherapy.dto.request.MypageEmailRequest;
 import com.hanyang.arttherapy.dto.request.users.*;
 import com.hanyang.arttherapy.dto.response.userResponse.SigninResponse;
-import com.hanyang.arttherapy.dto.response.userResponse.TokenResponse;
 import com.hanyang.arttherapy.repository.RefreshTokenRepository;
 import com.hanyang.arttherapy.repository.UserRepository;
 import com.hanyang.arttherapy.repository.UsersHistoryRepository;
@@ -92,7 +91,7 @@ public class UserService {
       SimpleMailMessage message = new SimpleMailMessage();
       message.setTo(email);
       message.setSubject("이메일 설정 인증번호");
-      message.setText("안녕하세요. 인증 번호는   " + verificationCode + "   입니다.\n인증시 공백이 들어가지 않도록 주의해주세요.");
+      message.setText("안녕하세요. 인증 번호는 \n" + verificationCode + "\n입니다.\n인증시 공백이 들어가지 않도록 주의해주세요.");
       message.setFrom("mingke48@gmail.com");
       mailSender.send(message);
     } catch (Exception e) {
@@ -376,10 +375,11 @@ public class UserService {
     return new SigninResponse(user.getUserNo(), accessToken, user.getRole());
   }
 
-  public TokenResponse newAccessToken(String ip, String userAgent) {
+  public SigninResponse newAccessToken(
+      String ip, String userAgent, String refreshToken, HttpServletResponse httpResponse) {
     RefreshTokens savedToken =
         refreshTokenRepository
-            .findByIpAndUserAgent(ip, userAgent)
+            .findByIpAndUserAgentAndRefreshToken(ip, userAgent, refreshToken)
             .orElseThrow(() -> new CustomException(UserException.INVALID_REFRESH_TOKEN));
 
     // 리프레시 토큰 만료 확인
@@ -393,12 +393,17 @@ public class UserService {
             .orElseThrow(() -> new CustomException(UserException.USER_NOT_FOUND));
 
     String newAccessToken = jwtUtil.createAccessToken(user);
-    return new TokenResponse(newAccessToken);
+    httpResponse.setHeader("Authorization", "Bearer " + newAccessToken);
+    return new SigninResponse(user.getUserNo(), newAccessToken, user.getRole());
   }
 
   @Transactional
   public String logout(String ip, String userAgent, String refreshToken) {
-    // 토큰으로 엔티티 조회
+    if (refreshToken == null || refreshToken.isBlank()) {
+      throw new CustomException(UserException.REFRESH_TOKEN_EMPTY);
+    }
+
+    // 리프레시토큰 조회
     RefreshTokens token =
         refreshTokenRepository
             .findByIpAndUserAgentAndRefreshToken(ip, userAgent, refreshToken)

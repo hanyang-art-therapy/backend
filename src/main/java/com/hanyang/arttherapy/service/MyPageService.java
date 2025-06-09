@@ -37,6 +37,7 @@ public class MyPageService {
   private final ArtsRepository artsRepository;
   private final ReviewRepository reviewRepository;
   private final HttpSession session;
+  private final UserService userService;
   private final RefreshTokenRepository refreshTokenRepository;
 
   @Transactional(readOnly = true)

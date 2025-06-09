@@ -3,6 +3,8 @@ package com.hanyang.arttherapy.controller;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -10,7 +12,6 @@ import com.hanyang.arttherapy.common.util.JwtUtil;
 import com.hanyang.arttherapy.dto.request.users.*;
 import com.hanyang.arttherapy.dto.response.userResponse.CommonMessageResponse;
 import com.hanyang.arttherapy.dto.response.userResponse.SigninResponse;
-import com.hanyang.arttherapy.dto.response.userResponse.TokenResponse;
 import com.hanyang.arttherapy.service.UserService;
 
 import lombok.RequiredArgsConstructor;
@@ -88,24 +89,29 @@ public class UserController {
 
   @PostMapping("/refresh")
   public ResponseEntity<?> newAccessToken(
-      HttpServletRequest httpRequest, HttpServletResponse response) {
+      HttpServletRequest httpRequest, HttpServletResponse httpresponse) {
     String ip = getClientIp(httpRequest);
     String userAgent = httpRequest.getHeader("User-Agent");
-    TokenResponse token = userService.newAccessToken(ip, userAgent);
-    return ResponseEntity.ok(token);
+    String refreshToken = jwtUtil.refreshTokenFromCookie(httpRequest);
+    SigninResponse refresh = userService.newAccessToken(ip, userAgent, refreshToken, httpresponse);
+    return ResponseEntity.ok(refresh);
   }
 
   @PostMapping("/sign-out")
   public ResponseEntity<CommonMessageResponse> logout(
       HttpServletRequest httpRequest, HttpServletResponse httpResponse) {
+
     String ip = getClientIp(httpRequest);
     String userAgent = httpRequest.getHeader("User-Agent");
     String refreshToken = jwtUtil.refreshTokenFromCookie(httpRequest);
     // 로그아웃 처리
     String message = userService.logout(ip, userAgent, refreshToken);
     // 쿠키에서 refreshToken 삭제
-    jwtUtil.deleteRefreshTokenCookie(httpResponse);
-    return ResponseEntity.ok(new CommonMessageResponse(message));
+    ResponseCookie deleteCookie = jwtUtil.deleteRefreshTokenCookie();
+    // JSON 응답 + Set-Cookie 헤더 함께 반환
+    return ResponseEntity.ok()
+        .header(HttpHeaders.SET_COOKIE, deleteCookie.toString())
+        .body(new CommonMessageResponse(message));
   }
 
   private String getClientIp(HttpServletRequest request) {

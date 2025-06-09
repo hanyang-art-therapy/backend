@@ -11,6 +11,7 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
+import org.springframework.http.ResponseCookie;
 import org.springframework.stereotype.Component;
 
 import com.hanyang.arttherapy.domain.Users;
@@ -63,6 +64,7 @@ public class JwtUtil {
     cookie.setSecure(false); // HTTPS 연결에서만 쿠키 전송
     cookie.setPath("/"); // 전체 경로에서 유효하도록 설정
     cookie.setMaxAge(7 * 24 * 60 * 60); // 7일 동안 유효
+    //    cookie.setMaxAge(300); //5분 유효
 
     httpResponse.addCookie(cookie); // 응답에 쿠키 추가
   }
@@ -104,11 +106,12 @@ public class JwtUtil {
     return Role.valueOf(roleStr);
   }
 
-  public void deleteRefreshTokenCookie(HttpServletResponse response) {
-    Cookie cookie = new Cookie("refreshToken", null);
-    cookie.setMaxAge(0); // 즉시 만료
-    cookie.setPath("/");
-    cookie.setHttpOnly(false);
-    response.addCookie(cookie);
+  public ResponseCookie deleteRefreshTokenCookie() {
+    return ResponseCookie.from("refreshToken", "")
+        .httpOnly(true)
+        .secure(false)
+        .path("/")
+        .maxAge(0)
+        .build();
   }
 }
