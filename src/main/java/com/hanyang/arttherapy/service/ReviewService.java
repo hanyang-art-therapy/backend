@@ -317,10 +317,7 @@ public class ReviewService {
   // FileResponseDto 변환
   private List<FileResponseDto> toFileResponseDtos(List<Files> files) {
     return files.stream()
-        .map(
-            file ->
-                FileResponseDto.of(
-                    file, fileStorageService.getFileUrl(file.getFilesNo()))) // <-- 핵심 수정 부분!
+        .map(file -> FileResponseDto.of(file, fileStorageService.getFileUrl(file.getFilesNo())))
         .collect(Collectors.toList());
   }
 }
