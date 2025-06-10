@@ -45,8 +45,11 @@ public class NoticesService {
   // 게시판 전체 조회 (keyword가 없으면 전체 조회)
   public NoticeListResponseDto getNotices(String keyword, int page) {
     String trimmedKeyword = keyword != null ? keyword.trim() : null;
+
+    int safePage = (page > 0) ? page - 1 : 0;
     Pageable pageable =
-        PageRequest.of(page, 10, Sort.by(Sort.Order.desc("isFixed"), Sort.Order.desc("createdAt")));
+        PageRequest.of(
+            safePage, 10, Sort.by(Sort.Order.desc("isFixed"), Sort.Order.desc("createdAt")));
 
     Page<Notices> noticesPage =
         (trimmedKeyword != null && !trimmedKeyword.isBlank())
