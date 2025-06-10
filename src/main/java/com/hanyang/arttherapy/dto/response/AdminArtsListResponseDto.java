@@ -1,14 +1,16 @@
 package com.hanyang.arttherapy.dto.response;
 
-import lombok.Builder;
-import lombok.Data;
+import java.util.List;
 
-@Data
+import lombok.Builder;
+import lombok.Getter;
+
+@Getter
 @Builder
 public class AdminArtsListResponseDto {
   private Long artsNo;
   private String artName;
-  private String artType;
   private Long galleriesNo;
   private String galleriesTitle;
+  private List<String> artists;
 }

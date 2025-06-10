@@ -168,6 +168,7 @@ public class AdminArtsService {
     return "작품 삭제에 성공했습니다";
   }
 
+  // 무한 스크롤 기반 전체 조회 or 검색 조회
   @Transactional(readOnly = true)
   public CommonScrollResponse<AdminArtsListResponseDto> getArtsWithScroll(
       String filter, String keyword, Long lastId, int size) {
@@ -194,6 +195,7 @@ public class AdminArtsService {
     return new CommonScrollResponse<>(content, nextCursor, hasNext);
   }
 
+  // 삭제
   @Transactional(readOnly = true)
   public AdminArtsDetailResponseDto getArtDetail(Long artsNo) {
     Arts art =
@@ -235,18 +237,22 @@ public class AdminArtsService {
         .build();
   }
 
+  // 전체 조회
   private AdminArtsListResponseDto toListDto(Arts art) {
     Galleries gallery = art.getGalleries();
     if (gallery == null) {
       throw new CustomException(AdminArtsExceptionType.GALLERY_NOT_FOUND);
     }
 
+    List<String> artistNames =
+        art.getArtArtistRels().stream().map(rel -> rel.getArtists().getArtistName()).toList();
+
     return AdminArtsListResponseDto.builder()
         .artsNo(art.getArtsNo())
         .artName(art.getArtName())
-        .artType(art.getArtType().name())
         .galleriesNo(gallery.getGalleriesNo())
         .galleriesTitle(gallery.getTitle())
+        .artists(artistNames)
         .build();
   }
 }
