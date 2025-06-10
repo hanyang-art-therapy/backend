@@ -384,7 +384,7 @@ public class UserService {
             .orElseThrow(() -> new CustomException(UserException.INVALID_REFRESH_TOKEN));
 
     // 리프레시 토큰 만료 확인
-    if (savedToken.getExpiredAt().isBefore(LocalDateTime.now())) {
+    if (savedToken.getExpiredAt().isAfter(LocalDateTime.now())) {
       throw new CustomException(UserException.FORBIDDEN); // 프론트에서 로그인 화면으로 유도
     }
 
@@ -395,6 +395,8 @@ public class UserService {
 
     String newAccessToken = jwtUtil.createAccessToken(user);
     httpResponse.setHeader("Authorization", "Bearer " + newAccessToken);
+    // 헤더에 리프레시토큰 다시 담아주기
+    jwtUtil.addRefreshTokenToCookie(httpResponse, refreshToken);
     return new SigninResponse(user.getUserNo(), newAccessToken, user.getRole());
   }
 
