@@ -76,7 +76,7 @@ public class S3FileStorageService implements FileStorageService {
   @Override
   public String getFileUrl(Long filesNo) {
     Files file = getFileById(filesNo);
-    return fileUtils.getCloudFrontFileUrl("https://" + cloudFrontUrl, file.getUrl());
+    return fileUtils.getCloudFrontFileUrl("http://" + cloudFrontUrl, file.getUrl());
   }
 
   private Files getFileById(Long filesNo) {
