@@ -47,15 +47,12 @@ public class MyPageController {
     return ResponseEntity.ok(updatedInfo);
   }
 
+  // 이메일 인증
   @PostMapping("/email-verification")
   public ResponseEntity<CommonMessageResponse> verifyEmailForChange(
-      @AuthenticationPrincipal CustomUserDetail userDetails,
-      @RequestBody MypageUpdateRequest request) {
+      @RequestBody MypageEmailRequest request) {
 
-    Long userNo = userDetails.getUser().getUserNo();
-    MypageEmailRequest emailRequest = new MypageEmailRequest(userNo, request.email(), null);
-
-    String message = userService.checkEmailForChange(emailRequest);
+    String message = userService.checkEmailForChange(request);
     return ResponseEntity.ok(new CommonMessageResponse(message));
   }
 
