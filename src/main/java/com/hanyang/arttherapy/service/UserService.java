@@ -321,7 +321,8 @@ public class UserService {
     }
 
     // 기존 리프레시 토큰 확인
-    Optional<RefreshTokens> existingTokenOpt = refreshTokenRepository.findByUsers(user);
+    Optional<RefreshTokens> existingTokenOpt =
+        refreshTokenRepository.findByUsers_UserNoAndIpAndUserAgent(user.getUserNo(), ip, userAgent);
     RefreshTokens token = null;
     if (existingTokenOpt.isPresent()) {
       token = existingTokenOpt.get();

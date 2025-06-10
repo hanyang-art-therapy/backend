@@ -8,13 +8,11 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 
 import com.hanyang.arttherapy.domain.RefreshTokens;
-import com.hanyang.arttherapy.domain.Users;
 
 public interface RefreshTokenRepository extends JpaRepository<RefreshTokens, Long> {
 
-  Optional<RefreshTokens> findByIpAndUserAgent(String ip, String userAgent);
-
-  Optional<RefreshTokens> findByUsers(Users users);
+  Optional<RefreshTokens> findByUsers_UserNoAndIpAndUserAgent(
+      Long userNo, String ip, String userAgent);
 
   Optional<RefreshTokens> findByRefreshToken(String refreshToken);
 
