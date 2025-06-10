@@ -6,7 +6,6 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import com.hanyang.arttherapy.common.exception.CustomException;
 import com.hanyang.arttherapy.common.exception.exceptionType.ArtsExceptionType;
@@ -24,7 +23,6 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-@Transactional
 public class ArtsService {
   // 공통 메서드 분리(리팩토링)
   private final ArtsRepository artsRepository;
