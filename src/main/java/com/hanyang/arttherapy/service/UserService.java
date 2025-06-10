@@ -26,7 +26,6 @@ import com.hanyang.arttherapy.domain.enums.UserStatus;
 import com.hanyang.arttherapy.dto.request.MypageEmailRequest;
 import com.hanyang.arttherapy.dto.request.users.*;
 import com.hanyang.arttherapy.dto.response.userResponse.SigninResponse;
-import com.hanyang.arttherapy.dto.response.userResponse.TokenResponse;
 import com.hanyang.arttherapy.repository.RefreshTokenRepository;
 import com.hanyang.arttherapy.repository.UserRepository;
 import com.hanyang.arttherapy.repository.UsersHistoryRepository;
@@ -92,7 +91,7 @@ public class UserService {
       SimpleMailMessage message = new SimpleMailMessage();
       message.setTo(email);
       message.setSubject("이메일 설정 인증번호");
-      message.setText("안녕하세요. 인증 번호는   " + verificationCode + "   입니다.\n인증시 공백이 들어가지 않도록 주의해주세요.");
+      message.setText("안녕하세요. 인증 번호는 \n" + verificationCode + "\n입니다.\n인증시 공백이 들어가지 않도록 주의해주세요.");
       message.setFrom("mingke48@gmail.com");
       mailSender.send(message);
     } catch (Exception e) {
@@ -186,7 +185,7 @@ public class UserService {
 
   // 임시 비밀번호 생성 (예: 9자리 랜덤+마지막 고정'@')
   private String generateTemporaryPassword() {
-    int length = 9;
+    int length = 11;
     String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789~!@#$%^&*";
     Random random = new Random();
     StringBuilder sb = new StringBuilder(length);
@@ -196,6 +195,9 @@ public class UserService {
       sb.append(chars.charAt(index));
     }
     sb.append('@'); // 마지막 고정 문자 추가
+    sb.append('Q');
+    sb.append('q');
+    sb.append('1');
     return sb.toString();
   }
 
@@ -319,7 +321,8 @@ public class UserService {
     }
 
     // 기존 리프레시 토큰 확인
-    Optional<RefreshTokens> existingTokenOpt = refreshTokenRepository.findByUsers(user);
+    Optional<RefreshTokens> existingTokenOpt =
+        refreshTokenRepository.findByUsers_UserNoAndIpAndUserAgent(user.getUserNo(), ip, userAgent);
     RefreshTokens token = null;
     if (existingTokenOpt.isPresent()) {
       token = existingTokenOpt.get();
@@ -373,14 +376,15 @@ public class UserService {
     return new SigninResponse(user.getUserNo(), accessToken, user.getRole());
   }
 
-  public TokenResponse newAccessToken(String ip, String userAgent) {
+  public SigninResponse newAccessToken(
+      String ip, String userAgent, String refreshToken, HttpServletResponse httpResponse) {
     RefreshTokens savedToken =
         refreshTokenRepository
-            .findByIpAndUserAgent(ip, userAgent)
+            .findByIpAndUserAgentAndRefreshToken(ip, userAgent, refreshToken)
             .orElseThrow(() -> new CustomException(UserException.INVALID_REFRESH_TOKEN));
 
     // 리프레시 토큰 만료 확인
-    if (savedToken.getExpiredAt().isBefore(LocalDateTime.now())) {
+    if (savedToken.getExpiredAt().isAfter(LocalDateTime.now())) {
       throw new CustomException(UserException.FORBIDDEN); // 프론트에서 로그인 화면으로 유도
     }
 
@@ -390,12 +394,19 @@ public class UserService {
             .orElseThrow(() -> new CustomException(UserException.USER_NOT_FOUND));
 
     String newAccessToken = jwtUtil.createAccessToken(user);
-    return new TokenResponse(newAccessToken);
+    httpResponse.setHeader("Authorization", "Bearer " + newAccessToken);
+    // 헤더에 리프레시토큰 다시 담아주기
+    jwtUtil.addRefreshTokenToCookie(httpResponse, refreshToken);
+    return new SigninResponse(user.getUserNo(), newAccessToken, user.getRole());
   }
 
   @Transactional
   public String logout(String ip, String userAgent, String refreshToken) {
-    // 토큰으로 엔티티 조회
+    if (refreshToken == null || refreshToken.isBlank()) {
+      throw new CustomException(UserException.REFRESH_TOKEN_EMPTY);
+    }
+
+    // 리프레시토큰 조회
     RefreshTokens token =
         refreshTokenRepository
             .findByIpAndUserAgentAndRefreshToken(ip, userAgent, refreshToken)

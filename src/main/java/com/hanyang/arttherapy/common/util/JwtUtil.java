@@ -11,6 +11,7 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
+import org.springframework.http.ResponseCookie;
 import org.springframework.stereotype.Component;
 
 import com.hanyang.arttherapy.domain.Users;
@@ -31,7 +32,7 @@ public class JwtUtil {
           Base64.getDecoder().decode("yoursecretlongandsecuresecretkeymustbeatleast32bywcg"),
           SignatureAlgorithm.HS256.getJcaName());
 
-  private final long accessTokenValidity = 1000L * 60 * 3; // 3분
+  private final long accessTokenValidity = 1000L * 60 * 60 * 10; // 10시간
 
   public static String refreshTokenFromCookie(HttpServletRequest httpRequest) {
     // 쿠키가 없거나 빈 배열인 경우
@@ -57,14 +58,16 @@ public class JwtUtil {
 
   // 리프레시 토큰을 생성하고 쿠키에 담는 메서드
   public void addRefreshTokenToCookie(HttpServletResponse httpResponse, String refreshToken) {
+    ResponseCookie cookie =
+        ResponseCookie.from("refreshToken", refreshToken)
+            .httpOnly(true)
+            .secure(false) // HTTPS면 true
+            //            .sameSite("None") // ← 중요!
+            .path("/")
+            .maxAge(7 * 24 * 60 * 60)
+            .build();
 
-    Cookie cookie = new Cookie("refreshToken", refreshToken);
-    cookie.setHttpOnly(true); // 보안을 위해 HttpOnly 설정
-    cookie.setSecure(false); // HTTPS 연결에서만 쿠키 전송
-    cookie.setPath("/"); // 전체 경로에서 유효하도록 설정
-    cookie.setMaxAge(7 * 24 * 60 * 60); // 7일 동안 유효
-
-    httpResponse.addCookie(cookie); // 응답에 쿠키 추가
+    httpResponse.addHeader("Set-Cookie", cookie.toString());
   }
 
   // access토큰 생성 로직
@@ -104,11 +107,12 @@ public class JwtUtil {
     return Role.valueOf(roleStr);
   }
 
-  public void deleteRefreshTokenCookie(HttpServletResponse response) {
-    Cookie cookie = new Cookie("refreshToken", null);
-    cookie.setMaxAge(0); // 즉시 만료
-    cookie.setPath("/");
-    cookie.setHttpOnly(false);
-    response.addCookie(cookie);
+  public ResponseCookie deleteRefreshTokenCookie() {
+    return ResponseCookie.from("refreshToken", "")
+        .httpOnly(true)
+        .secure(false)
+        .path("/")
+        .maxAge(0)
+        .build();
   }
 }
