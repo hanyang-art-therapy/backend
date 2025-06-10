@@ -45,17 +45,20 @@ public class AdminUserService {
 
     List<Users> users =
         (userName != null && !userName.isBlank())
-            ? userRepository.findTop10ByUserNameContainingAndUserNoLessThanOrderByUserNoDesc(
-                userName, cursor)
-            : userRepository.findTop10ByUserNoLessThanOrderByUserNoDesc(cursor);
+            ? userRepository
+                .findTop10ByUserNameContainingAndUserNoLessThanOrderByUserNameAscUserNoDesc(
+                    userName, cursor)
+            : userRepository.findTop10ByUserNoLessThanOrderByUserNameAscUserNoDesc(cursor);
 
-    List<UserDto> content = users.stream().map(this::convertToDto).toList();
-
+    List<UserDto> content =
+        users.stream()
+            .map(u -> new UserDto(u.getUserNo(), u.getUserName(), u.getUserId(), u.getStudentNo()))
+            .toList();
     boolean hasNext = content.size() == 10;
 
     Map<String, Object> response = new LinkedHashMap<>();
     response.put("content", content);
-    response.put("lastId", !content.isEmpty() ? content.get(content.size() - 1).userNo() : null);
+    response.put("lastId", !users.isEmpty() ? users.get(users.size() - 1).getUserNo() : null);
     response.put("hasNext", hasNext);
     return response;
   }
@@ -104,12 +107,7 @@ public class AdminUserService {
   }
 
   private UserDto convertToDto(Users user) {
-    return new UserDto(
-        user.getUserNo(),
-        user.getUserName(),
-        user.getStudentNo(),
-        user.getRole(),
-        user.getUserStatus());
+    return new UserDto(user.getUserNo(), user.getUserId(), user.getUserName(), user.getStudentNo());
   }
 
   private Users getAdminUserOrThrow() {
