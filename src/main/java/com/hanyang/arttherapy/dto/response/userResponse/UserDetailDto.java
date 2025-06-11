@@ -14,7 +14,7 @@ public record UserDetailDto(
     String studentNo,
     Role role,
     UserStatus userStatus,
-    Timestamp signinTimestamp,
+    Timestamp signupTimestamp,
     Timestamp signoutTimestamp,
     Timestamp bannedTimestamp,
     String cause) {}

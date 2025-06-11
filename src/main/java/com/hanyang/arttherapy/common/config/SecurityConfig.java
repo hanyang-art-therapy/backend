@@ -38,6 +38,7 @@ public class SecurityConfig {
                         "/api/user/**",
                         "/api/files",
                         "/api/galleries/arts/**",
+                        "/api/files",
                         "/css/**",
                         "/js/**",
                         "/images/**")

@@ -50,7 +50,7 @@ public class ArtistsService {
     List<Artists> artists;
 
     if ((filter == null || filter.isBlank()) && (keyword == null || keyword.isBlank())) {
-      artists = artistsRepository.findAll();
+      artists = artistsRepository.searchByArtistNameOrStudentNo(null, null, lastNo, size);
     } else {
       if (filter == null || filter.isBlank()) {
         throw new CustomException(FilteringException.INVALID_REQUEST_FILTER);
