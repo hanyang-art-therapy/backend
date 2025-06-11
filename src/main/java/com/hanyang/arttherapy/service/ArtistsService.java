@@ -11,10 +11,12 @@ import com.hanyang.arttherapy.common.exception.CustomException;
 import com.hanyang.arttherapy.common.exception.exceptionType.ArtistsException;
 import com.hanyang.arttherapy.common.exception.exceptionType.FilteringException;
 import com.hanyang.arttherapy.common.exception.exceptionType.UserException;
+import com.hanyang.arttherapy.domain.ArtArtistRel;
 import com.hanyang.arttherapy.domain.Artists;
 import com.hanyang.arttherapy.dto.request.ArtistRequestDto;
 import com.hanyang.arttherapy.dto.response.artistResponse.ArtistResponseDto;
 import com.hanyang.arttherapy.dto.response.artistResponse.ArtistScrollResponseDto;
+import com.hanyang.arttherapy.repository.ArtArtistRelRepository;
 import com.hanyang.arttherapy.repository.ArtistsRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -27,6 +29,7 @@ import lombok.extern.slf4j.Slf4j;
 public class ArtistsService {
 
   private final ArtistsRepository artistsRepository;
+  private final ArtArtistRelRepository artArtistRelRepository;
 
   public String registerArtist(ArtistRequestDto dto) {
 
@@ -93,6 +96,13 @@ public class ArtistsService {
 
   public String deleteArtist(Long artistNo) {
     Artists artist = findArtistById(artistNo);
+    // DB에서 직접 artistNo로 연관된 ArtArtistRel 조회
+    List<ArtArtistRel> relList = artArtistRelRepository.findByArtists_ArtistNo(artistNo);
+
+    // 연관 관계 먼저 삭제
+    artArtistRelRepository.deleteAll(relList);
+
+    // 작가 삭제
     artistsRepository.delete(artist);
     return "작가 삭제가 완료되었습니다.";
   }

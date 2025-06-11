@@ -1,26 +1,26 @@
 package com.hanyang.arttherapy.service;
 
-import java.io.*;
-import java.util.*;
+import java.io.IOException;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.*;
-import org.springframework.web.multipart.*;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.hanyang.arttherapy.common.exception.CustomException;
-import com.hanyang.arttherapy.common.exception.exceptionType.*;
-import com.hanyang.arttherapy.domain.*;
-import com.hanyang.arttherapy.domain.enums.*;
-import com.hanyang.arttherapy.dto.response.*;
-import com.hanyang.arttherapy.repository.*;
+import com.hanyang.arttherapy.common.exception.exceptionType.FileSystemExceptionType;
+import com.hanyang.arttherapy.domain.Files;
+import com.hanyang.arttherapy.domain.enums.FilesType;
+import com.hanyang.arttherapy.dto.response.FileResponseDto;
+import com.hanyang.arttherapy.repository.FilesRepository;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import software.amazon.awssdk.core.sync.RequestBody;
-import software.amazon.awssdk.services.s3.*;
-import software.amazon.awssdk.services.s3.model.*;
+import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
 @Slf4j
 @Service
@@ -53,7 +53,7 @@ public class S3FileStorageService implements FileStorageService {
               Files fileEntity = convertToEntity(file, type, savedName, s3Key, extension);
               filesRepository.save(fileEntity);
 
-              String fileUrl = fileUtils.getCloudFrontFileUrl(cloudFrontUrl, s3Key);
+              String fileUrl = fileUtils.getCloudFrontFileUrl("https://" + cloudFrontUrl, s3Key);
               return FileResponseDto.of(fileEntity, fileUrl);
             })
         .toList();
@@ -76,7 +76,7 @@ public class S3FileStorageService implements FileStorageService {
   @Override
   public String getFileUrl(Long filesNo) {
     Files file = getFileById(filesNo);
-    return fileUtils.getCloudFrontFileUrl(cloudFrontUrl, file.getUrl());
+    return fileUtils.getCloudFrontFileUrl("https://" + cloudFrontUrl, file.getUrl());
   }
 
   private Files getFileById(Long filesNo) {

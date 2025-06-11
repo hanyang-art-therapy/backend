@@ -2,13 +2,15 @@ package com.hanyang.arttherapy.service;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
-import java.util.*;
+import java.util.List;
+import java.util.Optional;
 
 import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.*;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import com.hanyang.arttherapy.domain.*;
-import com.hanyang.arttherapy.repository.*;
+import com.hanyang.arttherapy.domain.Files;
+import com.hanyang.arttherapy.repository.FilesRepository;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -18,11 +20,11 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class FileScheduledService {
 
+  private static final int FILE_EXPIRATION_DAYS = 5;
   private final FileStorageService fileStorageService;
   private final FilesRepository filesRepository;
 
-  private static final int FILE_EXPIRATION_DAYS = 5;
-
+  @Transactional
   @Scheduled(cron = "0 0 3 ? * SUN")
   public void deleteFile() {
     LocalDateTime cutoffDate = getCutoffDate(FILE_EXPIRATION_DAYS);
