@@ -25,26 +25,25 @@ public class ProfessorsService {
 
   private final ProfessorsRepository professorsRepository;
   private final FilesRepository filesRepository;
-  private final FileStorageService fileStorageService; // <-- FileStorageService 주입!
+  private final FileStorageService fileStorageService;
 
-  // 교수진 전체조회 (누구나 가능)
+  // 교수진 전체 조회
   public List<ProfessorsResponseDto> getAllProfessors() {
     return professorsRepository.findAll().stream()
-        .map(this::toResponseDto) // <-- 메서드 참조 대신 헬퍼 메서드 사용
+        .map(this::toResponseDto)
         .collect(Collectors.toList());
   }
 
-  // 교수진 상세조회 (누구나 가능)
+  // 교수진 상세 조회
   public ProfessorsResponseDto getProfessorDetail(Long professorNo) {
     Professors professor =
         professorsRepository
             .findById(professorNo)
             .orElseThrow(() -> new CustomException(ProfessorExceptionType.PROFESSOR_NOT_FOUND));
-
-    return toResponseDto(professor); // <-- 헬퍼 메서드 사용
+    return toResponseDto(professor);
   }
 
-  // 교수진 등록 (관리자만)
+  // 교수진 등록
   @Transactional
   public String saveProfessor(ProfessorsRequestDto requestDto, CustomUserDetail userDetail) {
     checkAdmin(userDetail);
@@ -55,7 +54,6 @@ public class ProfessorsService {
           filesRepository
               .findById(requestDto.getFilesNo())
               .orElseThrow(() -> new CustomException(ProfessorExceptionType.FILE_NOT_FOUND));
-      // 파일 활성화 처리
       file.activateFile();
       filesRepository.save(file);
     }
@@ -74,7 +72,7 @@ public class ProfessorsService {
     return "교수 등록에 성공했습니다";
   }
 
-  // 교수진 수정 (관리자만)
+  // 교수진 수정
   @Transactional
   public String updateProfessor(
       Long professorNo, ProfessorsRequestDto requestDto, CustomUserDetail userDetail) {
@@ -92,16 +90,14 @@ public class ProfessorsService {
               .findById(requestDto.getFilesNo())
               .orElseThrow(() -> new CustomException(ProfessorExceptionType.FILE_NOT_FOUND));
 
-      // 기존 파일이 있고, 새 파일과 다르면 기존 파일 비활성화
       if (professor.getFile() != null
           && !professor.getFile().getFilesNo().equals(requestDto.getFilesNo())) {
         fileStorageService.softDeleteFile(professor.getFile().getFilesNo());
       }
-      // 새 파일 활성화
+
       newFile.activateFile();
       filesRepository.save(newFile);
     } else {
-      // requestDto.getFilesNo()가 null이고 기존 파일이 있다면 비활성화
       if (professor.getFile() != null) {
         fileStorageService.softDeleteFile(professor.getFile().getFilesNo());
       }
@@ -113,13 +109,13 @@ public class ProfessorsService {
         requestDto.getMajor(),
         requestDto.getEmail(),
         requestDto.getTel(),
-        newFile); // 새 파일 또는 null 전달
+        newFile);
 
-    professorsRepository.save(professor); // 변경사항 저장
+    professorsRepository.save(professor);
     return "교수 정보가 수정되었습니다";
   }
 
-  // 교수진 삭제 (관리자만)
+  // 교수진 삭제
   @Transactional
   public String deleteProfessor(Long professorNo, CustomUserDetail userDetail) {
     checkAdmin(userDetail);
@@ -129,7 +125,6 @@ public class ProfessorsService {
             .findById(professorNo)
             .orElseThrow(() -> new CustomException(ProfessorExceptionType.PROFESSOR_NOT_FOUND));
 
-    // 연결된 파일이 있다면 소프트 삭제
     if (professor.getFile() != null) {
       fileStorageService.softDeleteFile(professor.getFile().getFilesNo());
     }
@@ -138,28 +133,20 @@ public class ProfessorsService {
     return "교수 정보가 삭제되었습니다";
   }
 
-  // ✅ 관리자 권한 검사 메서드
+  // 관리자 권한 체크
   private void checkAdmin(CustomUserDetail userDetail) {
     if (userDetail.getUser().getRole() != Role.ADMIN) {
       throw new CustomException(ProfessorExceptionType.UNAUTHORIZED);
     }
   }
 
-  // ProfessorsResponseDto 변환 헬퍼 메서드
+  // 응답 변환 메서드
   private ProfessorsResponseDto toResponseDto(Professors professor) {
     String fileUrl = null;
     if (professor.getFile() != null) {
       fileUrl = fileStorageService.getFileUrl(professor.getFile().getFilesNo());
     }
 
-    return ProfessorsResponseDto.builder()
-        .professorNo(professor.getProfessorNo())
-        .professorName(professor.getProfessorName())
-        .position(professor.getPosition())
-        .major(professor.getMajor())
-        .email(professor.getEmail())
-        .tel(professor.getTel())
-        .fileUrl(fileUrl)
-        .build();
+    return ProfessorsResponseDto.from(professor, fileUrl);
   }
 }
