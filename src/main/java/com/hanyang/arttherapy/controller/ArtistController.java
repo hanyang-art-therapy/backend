@@ -3,7 +3,7 @@ package com.hanyang.arttherapy.controller;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import com.hanyang.arttherapy.dto.request.*;
+import com.hanyang.arttherapy.dto.request.ArtistRequestDto;
 import com.hanyang.arttherapy.dto.response.artistResponse.ArtistResponseDto;
 import com.hanyang.arttherapy.dto.response.artistResponse.ArtistScrollResponseDto;
 import com.hanyang.arttherapy.dto.response.userResponse.CommonMessageResponse;
@@ -28,9 +28,9 @@ public class ArtistController {
   public ResponseEntity<ArtistScrollResponseDto> getArtists(
       @RequestParam(required = false) String filter,
       @RequestParam(required = false) String keyword,
-      @RequestParam(required = false) Long lastNo,
+      @RequestParam(required = false) Long lastId,
       @RequestParam(defaultValue = "10") int size) {
-    return ResponseEntity.ok(artistsService.searchArtists(filter, keyword, lastNo, size));
+    return ResponseEntity.ok(artistsService.searchArtists(filter, keyword, lastId, size));
   }
 
   @GetMapping("{artistsNo}")
