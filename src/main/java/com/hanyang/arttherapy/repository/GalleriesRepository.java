@@ -14,6 +14,5 @@ public interface GalleriesRepository extends JpaRepository<Galleries, Long> {
   // 특정 기간에 열린 전시회 조회
   List<Galleries> findByStartDateBetween(LocalDate start, LocalDate end);
 
-  // 전시회 제목으로 검색
-  List<Galleries> findByTitleContaining(String title);
+  boolean existsByStartDateBetween(LocalDate start, LocalDate end);
 }
