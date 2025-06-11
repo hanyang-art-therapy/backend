@@ -11,10 +11,12 @@ import com.hanyang.arttherapy.common.exception.CustomException;
 import com.hanyang.arttherapy.common.exception.exceptionType.ArtistsException;
 import com.hanyang.arttherapy.common.exception.exceptionType.FilteringException;
 import com.hanyang.arttherapy.common.exception.exceptionType.UserException;
+import com.hanyang.arttherapy.domain.ArtArtistRel;
 import com.hanyang.arttherapy.domain.Artists;
 import com.hanyang.arttherapy.dto.request.ArtistRequestDto;
 import com.hanyang.arttherapy.dto.response.artistResponse.ArtistResponseDto;
 import com.hanyang.arttherapy.dto.response.artistResponse.ArtistScrollResponseDto;
+import com.hanyang.arttherapy.repository.ArtArtistRelRepository;
 import com.hanyang.arttherapy.repository.ArtistsRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -27,6 +29,7 @@ import lombok.extern.slf4j.Slf4j;
 public class ArtistsService {
 
   private final ArtistsRepository artistsRepository;
+  private final ArtArtistRelRepository artArtistRelRepository;
 
   public String registerArtist(ArtistRequestDto dto) {
 
@@ -64,7 +67,7 @@ public class ArtistsService {
     List<ArtistResponseDto> dtos =
         artists.stream().map(ArtistResponseDto::of).collect(Collectors.toList());
 
-    Long newLastNo = artists.isEmpty() ? null : artists.get(artists.size() - 1).getArtistsNo();
+    Long newLastNo = artists.isEmpty() ? null : artists.get(artists.size() - 1).getArtistNo();
     boolean hasNext = artists.size() == size;
 
     return new ArtistScrollResponseDto(dtos, newLastNo, hasNext);
@@ -75,11 +78,11 @@ public class ArtistsService {
     return ArtistResponseDto.of(artist);
   }
 
-  public String updateArtist(long artistsNo, ArtistRequestDto dto) {
-    Artists artist = findArtistById(artistsNo);
+  public String updateArtist(long artistNo, ArtistRequestDto dto) {
+    Artists artist = findArtistById(artistNo);
 
     if (dto.studentNo() != null && !dto.studentNo().equals(artist.getStudentNo())) {
-      validateDuplicateStudentNo(dto.studentNo(), artistsNo);
+      validateDuplicateStudentNo(dto.studentNo(), artistNo);
     }
 
     artist.updateArtistInfo(
@@ -91,8 +94,15 @@ public class ArtistsService {
     return "작가 수정이 완료되었습니다";
   }
 
-  public String deleteArtist(Long artistsNo) {
-    Artists artist = findArtistById(artistsNo);
+  public String deleteArtist(Long artistNo) {
+    Artists artist = findArtistById(artistNo);
+    // DB에서 직접 artistNo로 연관된 ArtArtistRel 조회
+    List<ArtArtistRel> relList = artArtistRelRepository.findByArtists_ArtistNo(artistNo);
+
+    // 연관 관계 먼저 삭제
+    artArtistRelRepository.deleteAll(relList);
+
+    // 작가 삭제
     artistsRepository.delete(artist);
     return "작가 삭제가 완료되었습니다.";
   }
@@ -103,16 +113,16 @@ public class ArtistsService {
         .orElseThrow(() -> new CustomException(ArtistsException.ARTIST_NOT_FOUND));
   }
 
-  private Artists findArtistById(Long artistsNo) {
+  private Artists findArtistById(Long artistNo) {
     return artistsRepository
-        .findById(artistsNo)
+        .findById(artistNo)
         .orElseThrow(() -> new CustomException(ArtistsException.ARTIST_NOT_FOUND));
   }
 
   private void validateDuplicateStudentNo(String studentNo, Long excludeArtistNo) {
     Optional<Artists> found = artistsRepository.findByStudentNo(studentNo);
     if (found.isPresent()
-        && (excludeArtistNo == null || !found.get().getArtistsNo().equals(excludeArtistNo))) {
+        && (excludeArtistNo == null || !found.get().getArtistNo().equals(excludeArtistNo))) {
       throw new CustomException(ArtistsException.DUPLICATE_STUDENT_NO);
     }
   }

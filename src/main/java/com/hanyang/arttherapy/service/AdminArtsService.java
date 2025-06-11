@@ -218,7 +218,7 @@ public class AdminArtsService {
             .map(
                 rel ->
                     AdminArtsDetailResponseDto.ArtistInfo.builder()
-                        .artistNo(rel.getArtists().getArtistsNo())
+                        .artistNo(rel.getArtists().getArtistNo())
                         .name(rel.getArtists().getArtistName())
                         .description(rel.getDescription())
                         .build())

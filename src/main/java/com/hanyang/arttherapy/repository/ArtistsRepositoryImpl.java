@@ -44,13 +44,13 @@ public class ArtistsRepositoryImpl implements ArtistRepositoryCustom {
     }
 
     if (lastId != null) {
-      builder.and(artist.artistsNo.lt(lastId));
+      builder.and(artist.artistNo.lt(lastId));
     }
 
     return queryFactory
         .selectFrom(artist)
         .where(builder)
-        .orderBy(artist.artistsNo.desc())
+        .orderBy(artist.artistNo.desc())
         .limit(size)
         .fetch();
   }

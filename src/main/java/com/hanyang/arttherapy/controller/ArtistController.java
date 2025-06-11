@@ -33,21 +33,21 @@ public class ArtistController {
     return ResponseEntity.ok(artistsService.searchArtists(filter, keyword, lastId, size));
   }
 
-  @GetMapping("{artistsNo}")
-  public ResponseEntity<ArtistResponseDto> getArtist(@PathVariable Long artistsNo) {
-    return ResponseEntity.ok(artistsService.getArtist(artistsNo));
+  @GetMapping("{artistNo}")
+  public ResponseEntity<ArtistResponseDto> getArtist(@PathVariable Long artistNo) {
+    return ResponseEntity.ok(artistsService.getArtist(artistNo));
   }
 
-  @PatchMapping("/{artistsNo}")
+  @PatchMapping("/{artistNo}")
   public ResponseEntity<CommonMessageResponse> updateArtist(
-      @PathVariable Long artistsNo, @RequestBody ArtistRequestDto dto) {
-    String message = artistsService.updateArtist(artistsNo, dto);
+      @PathVariable Long artistNo, @RequestBody ArtistRequestDto dto) {
+    String message = artistsService.updateArtist(artistNo, dto);
     return ResponseEntity.ok(new CommonMessageResponse(message));
   }
 
-  @DeleteMapping("/{artistsNo}")
-  public ResponseEntity<CommonMessageResponse> deleteArtist(@PathVariable Long artistsNo) {
-    String message = artistsService.deleteArtist(artistsNo);
+  @DeleteMapping("/{artistNo}")
+  public ResponseEntity<CommonMessageResponse> deleteArtist(@PathVariable Long artistNo) {
+    String message = artistsService.deleteArtist(artistNo);
     return ResponseEntity.ok(new CommonMessageResponse(message));
   }
 }
