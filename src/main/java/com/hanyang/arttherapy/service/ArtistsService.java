@@ -46,11 +46,11 @@ public class ArtistsService {
   }
 
   public ArtistScrollResponseDto searchArtists(
-      String filter, String keyword, Long lastNo, int size) {
+      String filter, String keyword, Long lastId, int size) {
     List<Artists> artists;
 
     if ((filter == null || filter.isBlank()) && (keyword == null || keyword.isBlank())) {
-      artists = artistsRepository.findAll();
+      artists = artistsRepository.searchByArtistNameOrStudentNo(null, null, lastId, size);
     } else {
       if (filter == null || filter.isBlank()) {
         throw new CustomException(FilteringException.INVALID_REQUEST_FILTER);
@@ -58,7 +58,7 @@ public class ArtistsService {
       if (keyword == null || keyword.isBlank()) {
         throw new CustomException(FilteringException.INVALID_REQUEST_KEYWORD);
       }
-      artists = artistsRepository.searchByArtistNameOrStudentNo(filter, keyword, lastNo, size);
+      artists = artistsRepository.searchByArtistNameOrStudentNo(filter, keyword, lastId, size);
     }
 
     List<ArtistResponseDto> dtos =
