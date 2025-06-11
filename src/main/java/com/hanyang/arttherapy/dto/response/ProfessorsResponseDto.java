@@ -1,5 +1,7 @@
 package com.hanyang.arttherapy.dto.response;
 
+import java.util.Map;
+
 import com.hanyang.arttherapy.domain.Professors;
 
 import lombok.Builder;
@@ -14,9 +16,15 @@ public class ProfessorsResponseDto {
   private String major;
   private String email;
   private String tel;
-  private String fileUrl; // 파일 URL만 필요하면
 
-  public static ProfessorsResponseDto from(Professors professor) {
+  private Map<String, Object> files;
+
+  public static ProfessorsResponseDto from(Professors professor, String fileUrl) {
+    Map<String, Object> filesMap = null;
+    if (professor.getFile() != null) {
+      filesMap = Map.of("filesNo", professor.getFile().getFilesNo(), "url", fileUrl);
+    }
+
     return ProfessorsResponseDto.builder()
         .professorNo(professor.getProfessorNo())
         .professorName(professor.getProfessorName())
@@ -24,7 +32,7 @@ public class ProfessorsResponseDto {
         .major(professor.getMajor())
         .email(professor.getEmail())
         .tel(professor.getTel())
-        .fileUrl(professor.getFile() != null ? professor.getFile().getUrl() : null)
+        .files(filesMap)
         .build();
   }
 }
