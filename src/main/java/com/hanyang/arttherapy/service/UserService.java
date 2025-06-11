@@ -1,5 +1,6 @@
 package com.hanyang.arttherapy.service;
 
+import java.security.SecureRandom;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.Optional;
@@ -18,14 +19,13 @@ import org.springframework.transaction.annotation.Transactional;
 import com.hanyang.arttherapy.common.exception.CustomException;
 import com.hanyang.arttherapy.common.exception.exceptionType.UserException;
 import com.hanyang.arttherapy.common.util.JwtUtil;
-import com.hanyang.arttherapy.domain.RefreshToken;
+import com.hanyang.arttherapy.domain.RefreshTokens;
 import com.hanyang.arttherapy.domain.Users;
 import com.hanyang.arttherapy.domain.UsersHistory;
 import com.hanyang.arttherapy.domain.enums.UserStatus;
 import com.hanyang.arttherapy.dto.request.MypageEmailRequest;
-import com.hanyang.arttherapy.dto.request.userRequest.*;
+import com.hanyang.arttherapy.dto.request.users.*;
 import com.hanyang.arttherapy.dto.response.userResponse.SigninResponse;
-import com.hanyang.arttherapy.dto.response.userResponse.TokenResponse;
 import com.hanyang.arttherapy.repository.RefreshTokenRepository;
 import com.hanyang.arttherapy.repository.UserRepository;
 import com.hanyang.arttherapy.repository.UsersHistoryRepository;
@@ -36,6 +36,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class UserService {
   private static final long VERIFICATION_CODE_EXPIRATION_TIME = 3 * 60 * 1000; // 3분
+  private static final int MAX_RETRY = 10;
   private final UserRepository userRepository;
   private final UsersHistoryRepository usersHistoryRepository;
   private final RefreshTokenRepository refreshTokenRepository;
@@ -56,7 +57,7 @@ public class UserService {
 
     // 이메일이 이미 존재하는지 확인
     if (userRepository.existsByEmail(request.email())) {
-      return "이미 사용 중인 이메일입니다.";
+      throw new CustomException(UserException.EMAIL_ALREADY_EXISTS);
     }
     // 인증번호 생성
     String verificationCode = generateTemporaryPassword();
@@ -73,7 +74,7 @@ public class UserService {
 
     // 이미 존재하는데, 내 계정이 아니라면 중복
     if (existingUser.isPresent() && !existingUser.get().getUserNo().equals(request.userNo())) {
-      return "이미 다른 사용자가 사용 중인 이메일입니다.";
+      throw new CustomException(UserException.EMAIL_ALREADY_EXISTS);
     }
 
     // 본인이 사용 중이거나 새로운 이메일인 경우 인증 절차 진행
@@ -90,7 +91,7 @@ public class UserService {
       SimpleMailMessage message = new SimpleMailMessage();
       message.setTo(email);
       message.setSubject("이메일 설정 인증번호");
-      message.setText("안녕하세요. 인증 번호 : " + verificationCode);
+      message.setText("안녕하세요. 인증 번호는 \n" + verificationCode + "\n입니다.\n인증시 공백이 들어가지 않도록 주의해주세요.");
       message.setFrom("mingke48@gmail.com");
       mailSender.send(message);
     } catch (Exception e) {
@@ -109,15 +110,15 @@ public class UserService {
     Long expirationTime = (Long) session.getAttribute("verificationCodeExpirationTime");
 
     if (storedCode == null || expirationTime == null) {
-      return "인증 번호가 존재하지 않거나 세션이 만료되었습니다.";
+      throw new CustomException(UserException.VERIFICATION_CODE_NOT_FOUND);
     }
 
     if (System.currentTimeMillis() > expirationTime) {
-      return "인증 번호가 만료되었습니다.";
+      throw new CustomException(UserException.VERIFICATION_CODE_EXPIRED);
     }
 
     if (!storedCode.equals(request.verificationCode())) {
-      return "인증 번호가 일치하지 않습니다.";
+      throw new CustomException(UserException.VERIFICATION_CODE_MISMATCH);
     }
 
     return "이메일 인증이 완료되었습니다.";
@@ -184,7 +185,7 @@ public class UserService {
 
   // 임시 비밀번호 생성 (예: 9자리 랜덤+마지막 고정'@')
   private String generateTemporaryPassword() {
-    int length = 9;
+    int length = 11;
     String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789~!@#$%^&*";
     Random random = new Random();
     StringBuilder sb = new StringBuilder(length);
@@ -194,6 +195,9 @@ public class UserService {
       sb.append(chars.charAt(index));
     }
     sb.append('@'); // 마지막 고정 문자 추가
+    sb.append('Q');
+    sb.append('q');
+    sb.append('1');
     return sb.toString();
   }
 
@@ -203,7 +207,8 @@ public class UserService {
       SimpleMailMessage message = new SimpleMailMessage();
       message.setTo(email);
       message.setSubject("임시 비밀번호 안내");
-      message.setText("안녕하세요.\n\n임시 비밀번호 : " + temporaryPassword + " 입니다.");
+      message.setText(
+          "안녕하세요. 임시 비밀번호는   " + temporaryPassword + "   입니다.\n인증시 공백이 들어가지 않도록 주의해주세요.");
       message.setFrom("mingke48@gmail.com");
       mailSender.send(message);
     } catch (Exception e) {
@@ -255,11 +260,15 @@ public class UserService {
       throw new CustomException(UserException.STUDENT_ALREADY_EXISTS);
     } else {
 
+      // 중복되지 않는 랜덤 userNo 생성
+      Long userNo = (long) generateUniqueUserNo();
+
       // 비밀번호를 BCrypt로 인코딩
       String encodedPassword = bCryptpasswordEncoder.encode(request.password());
 
       Users user =
           Users.builder()
+              .userNo(userNo)
               .userId(request.userId())
               .password(encodedPassword)
               .email(request.email())
@@ -275,10 +284,23 @@ public class UserService {
       UsersHistory history = new UsersHistory();
       history.setUser(user);
       Timestamp now = new Timestamp(System.currentTimeMillis());
-      history.setSigninTimestamp(now);
+      history.setSignupTimestamp(now);
 
       usersHistoryRepository.save(history); // UsersHistory 저장
     }
+  }
+
+  public long generateUniqueUserNo() {
+    SecureRandom random = new SecureRandom();
+    int max = Integer.MAX_VALUE; // 2,147,483,647
+    int min = 1; // 0 제외
+
+    long userNo;
+    do {
+      userNo = random.nextInt(max - min) + min;
+    } while (userRepository.existsById(userNo)); // 중복 확인
+
+    return userNo; // long 타입이지만 실제 값은 int 범위
   }
 
   @Transactional
@@ -289,9 +311,9 @@ public class UserService {
             .findByUserId(request.userId())
             .orElseThrow(() -> new CustomException(UserException.USER_NOT_FOUND));
 
-    // 사용자 상태가 ACTIVE가 아니면 로그인 불가
-    if (user.getUserStatus() != UserStatus.ACTIVE) {
-      throw new CustomException(UserException.USER_NOT_ACTIVE); // 탈퇴회원
+    // 사용자 상태 UNACTIVE 로그인 불가
+    if (user.getUserStatus() == UserStatus.UNACTIVE) {
+      throw new CustomException(UserException.USER_STATUS_UNACTIVE); // 탈퇴회원
     }
 
     if (!bCryptpasswordEncoder.matches(request.password(), user.getPassword())) {
@@ -299,18 +321,30 @@ public class UserService {
     }
 
     // 기존 리프레시 토큰 확인
-    Optional<RefreshToken> existingTokenOpt = refreshTokenRepository.findByUsers(user);
-    RefreshToken token = null;
+    Optional<RefreshTokens> existingTokenOpt =
+        refreshTokenRepository.findByUsers_UserNoAndIpAndUserAgent(user.getUserNo(), ip, userAgent);
+    RefreshTokens token = null;
     if (existingTokenOpt.isPresent()) {
       token = existingTokenOpt.get();
 
       boolean isExpired = token.getExpiredAt().isBefore(LocalDateTime.now());
       boolean isDifferentIpOrAgent =
           !token.getIp().equals(ip) || !token.getUserAgent().equals(userAgent);
+      boolean isEmptyToken = token.getRefreshToken() == null || token.getRefreshToken().isBlank();
 
-      if (isExpired) {
-        // 만료되면 삭제하고 새로 발급
-        refreshTokenRepository.delete(token);
+      if (isExpired || isEmptyToken) {
+        // 만료되었거나 비어있으면 리프레시토큰만 새로 발급
+        String newRefreshToken = jwtUtil.createRefreshToken(user);
+        token.setRefreshToken(newRefreshToken);
+        token.setExpiredAt(LocalDateTime.now().plusDays(7));
+
+        refreshTokenRepository.save(token); // 업데이트
+        jwtUtil.addRefreshTokenToCookie(httpResponse, newRefreshToken);
+
+        String accessToken = jwtUtil.createAccessToken(user);
+        httpResponse.setHeader("Authorization", "Bearer " + accessToken);
+        return new SigninResponse(user.getUserNo(), accessToken, user.getRole());
+
       } else if (isDifferentIpOrAgent) {
         // IP 또는 UserAgent가 다르면 새로 발급
         // 기존 토큰 삭제하지 않음 (필요시 정책적으로 삭제 가능)
@@ -325,8 +359,8 @@ public class UserService {
     String refreshToken = jwtUtil.createRefreshToken(user);
 
     // RefreshToken 엔티티 저장
-    RefreshToken tokenEntity =
-        RefreshToken.builder()
+    RefreshTokens tokenEntity =
+        RefreshTokens.builder()
             .users(user)
             .refreshToken(refreshToken)
             .expiredAt(LocalDateTime.now().plusDays(7))
@@ -342,14 +376,15 @@ public class UserService {
     return new SigninResponse(user.getUserNo(), accessToken, user.getRole());
   }
 
-  public TokenResponse newAccessToken(String ip, String userAgent) {
-    RefreshToken savedToken =
+  public SigninResponse newAccessToken(
+      String ip, String userAgent, String refreshToken, HttpServletResponse httpResponse) {
+    RefreshTokens savedToken =
         refreshTokenRepository
-            .findByIpAndUserAgent(ip, userAgent)
+            .findByIpAndUserAgentAndRefreshToken(ip, userAgent, refreshToken)
             .orElseThrow(() -> new CustomException(UserException.INVALID_REFRESH_TOKEN));
 
     // 리프레시 토큰 만료 확인
-    if (savedToken.getExpiredAt().isBefore(LocalDateTime.now())) {
+    if (savedToken.getExpiredAt().isAfter(LocalDateTime.now())) {
       throw new CustomException(UserException.FORBIDDEN); // 프론트에서 로그인 화면으로 유도
     }
 
@@ -359,17 +394,26 @@ public class UserService {
             .orElseThrow(() -> new CustomException(UserException.USER_NOT_FOUND));
 
     String newAccessToken = jwtUtil.createAccessToken(user);
-    return new TokenResponse(newAccessToken);
+    httpResponse.setHeader("Authorization", "Bearer " + newAccessToken);
+    // 헤더에 리프레시토큰 다시 담아주기
+    jwtUtil.addRefreshTokenToCookie(httpResponse, refreshToken);
+    return new SigninResponse(user.getUserNo(), newAccessToken, user.getRole());
   }
 
+  @Transactional
   public String logout(String ip, String userAgent, String refreshToken) {
-    // 토큰으로 엔티티 조회
-    RefreshToken token =
+    if (refreshToken == null || refreshToken.isBlank()) {
+      throw new CustomException(UserException.REFRESH_TOKEN_EMPTY);
+    }
+
+    // 리프레시토큰 조회
+    RefreshTokens token =
         refreshTokenRepository
             .findByIpAndUserAgentAndRefreshToken(ip, userAgent, refreshToken)
             .orElseThrow(() -> new CustomException(UserException.INVALID_REFRESH_TOKEN));
-    // 로그아웃시 토큰삭제
-    refreshTokenRepository.delete(token);
+
+    // 리프레시토큰 컬럼만 비우기
+    refreshTokenRepository.clearRefreshToken(ip, userAgent, token.getUsers().getUserNo());
     return "로그아웃 되었습니다.";
   }
 }

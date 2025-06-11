@@ -4,7 +4,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 public record ReviewResponseDto(
-    Long reviewNo,
+    Long reviewsNo,
     String reviewText,
     String userName,
     Long userNo,

@@ -12,18 +12,18 @@ import lombok.*;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@Table(name = "refresh_token")
-public class RefreshToken {
+@Table(name = "refresh_tokens")
+public class RefreshTokens {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long refreshTokenNo;
 
-  @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "user_no", nullable = false, unique = true)
+  @ManyToOne(fetch = FetchType.EAGER)
+  @JoinColumn(name = "user_no", nullable = false)
   private Users users;
 
-  @Column(nullable = false, unique = true)
+  @Column(unique = true)
   private String refreshToken;
 
   @Column(nullable = false)
@@ -36,7 +36,9 @@ public class RefreshToken {
   private String ip;
 
   @PrePersist
-  public void setExpiredAt() {
-    this.expiredAt = LocalDateTime.now().plusDays(7);
+  public void updateExpiredAt() {
+    if (this.expiredAt == null) {
+      this.expiredAt = LocalDateTime.now().plusDays(7);
+    }
   }
 }

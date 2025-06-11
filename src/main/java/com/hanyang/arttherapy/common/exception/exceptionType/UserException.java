@@ -16,15 +16,22 @@ public enum UserException implements ExceptionType {
   STUDENT_ALREADY_EXISTS(HttpStatus.CONFLICT, "이미 등록된 학번입니다."),
   BLANK_REQUIRED(HttpStatus.BAD_REQUEST, "정보를 입력해 주세요."),
   USER_NOT_FOUND(HttpStatus.BAD_REQUEST, "일치하는 회원을 찾을 수 없습니다."),
-  USER_NOT_ACTIVE(HttpStatus.FORBIDDEN, "탈퇴한 회원입니다."),
+  USER_STATUS_UNACTIVE(HttpStatus.FORBIDDEN, "탈퇴한 회원입니다."),
+  USER_STATUS_BANNED(HttpStatus.FORBIDDEN, "댓글사용이 제한되어있습니다."),
   ERROR_PASSWORD(HttpStatus.BAD_REQUEST, "비밀번호가 일치하지 않습니다."),
   EMAIL_SEND_FAIL(HttpStatus.INTERNAL_SERVER_ERROR, "이메일 전송 실패"),
+  EMAIL_VERIFICATION_FAILED(HttpStatus.BAD_REQUEST, "이메일 인증에 실패했습니다."),
   INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "서버 오류로 등록이 실패했습니다."),
   INVALID_ACCESS_TOKEN(HttpStatus.UNAUTHORIZED, "유효하지 않은 ACCESSTOKEN입니다."),
   INVALID_REFRESH_TOKEN(HttpStatus.FORBIDDEN, "유효하지 않은 REFRESHTOKEN입니다."),
+  REFRESH_TOKEN_EMPTY(HttpStatus.FORBIDDEN, "리프레시토큰이 비어있습니다."),
   USER_HISTORY_NOT_FOUND(HttpStatus.BAD_REQUEST, "해당 회원의 가입 이력을 찾을 수 없습니다."),
   NOT_ADMIN(HttpStatus.FORBIDDEN, "관리자 권한이 필요합니다."),
-  UNAUTHENTICATED(HttpStatus.UNAUTHORIZED, "로그인이 필요합니다.");
+  UNAUTHENTICATED(HttpStatus.UNAUTHORIZED, "로그인이 필요합니다."),
+  VERIFICATION_CODE_NOT_FOUND(HttpStatus.NOT_FOUND, "인증 번호가 존재하지 않거나 세션이 만료되었습니다."),
+  VERIFICATION_CODE_EXPIRED(HttpStatus.GONE, "인증 번호가 만료되었습니다."),
+  VERIFICATION_CODE_MISMATCH(HttpStatus.BAD_REQUEST, "인증 번호가 일치하지 않습니다."),
+  USER_NO_FAILED(HttpStatus.BAD_REQUEST, "회원가입 실패하였습니다.");
 
   private final HttpStatus status;
   private final String message;

@@ -5,7 +5,6 @@ import java.util.stream.Collectors;
 
 import com.hanyang.arttherapy.domain.ArtArtistRel;
 import com.hanyang.arttherapy.domain.Arts;
-import com.hanyang.arttherapy.domain.Files;
 
 public record ArtsListResponseDto(
     Long artsNo,
@@ -14,7 +13,8 @@ public record ArtsListResponseDto(
     FileResponseDto files,
     List<ArtistResponseDto> artists) {
 
-  public static ArtsListResponseDto of(Arts arts, Files file, List<ArtArtistRel> artArtistRels) {
+  public static ArtsListResponseDto of(
+      Arts arts, String name, String url, List<ArtArtistRel> artArtistRels) {
     String coDescription = arts.getCoDescription(); // 공동 작품 설명 (공동 작품이 아닐 경우 null/빈 문자열로 저장돼 있음)
 
     List<ArtistResponseDto> artistDtos =
@@ -31,7 +31,7 @@ public record ArtsListResponseDto(
         arts.getArtsNo(),
         arts.getArtName(),
         coDescription,
-        new FileResponseDto(file.getName(), file.getUrl()),
+        new FileResponseDto(name, url),
         artistDtos);
   }
 

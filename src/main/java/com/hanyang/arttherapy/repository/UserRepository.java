@@ -26,8 +26,14 @@ public interface UserRepository
 
   Optional<Users> findByUserNo(Long userNo);
 
-  List<Users> findTop10ByUserNoLessThanOrderByUserNoDesc(Long lastId);
+  List<Users> findTop10ByUserNoLessThanOrderByUserNameAscUserNoDesc(Long lastId);
 
-  List<Users> findTop10ByUserNameContainingAndUserNoLessThanOrderByUserNoDesc(
-      String name, Long lastId);
+  List<Users> findTop10ByUserNameContainingAndUserNoLessThanOrderByUserNameAscUserNoDesc(
+      String userName, Long lastId);
+
+  boolean existsByEmailAndUserNoNot(String email, Long userNo);
+
+  boolean existsByStudentNoAndUserNoNot(String studentNo, Long userNo);
+
+  boolean existsByUserNo(Long userNo);
 }

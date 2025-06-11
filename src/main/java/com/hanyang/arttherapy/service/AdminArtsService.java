@@ -13,8 +13,8 @@ import com.hanyang.arttherapy.common.exception.exceptionType.FilteringException;
 import com.hanyang.arttherapy.common.filter.CustomUserDetail;
 import com.hanyang.arttherapy.domain.*;
 import com.hanyang.arttherapy.domain.enums.Role;
-import com.hanyang.arttherapy.dto.request.AdminArtsPatchRequestDto;
-import com.hanyang.arttherapy.dto.request.AdminArtsRequestDto;
+import com.hanyang.arttherapy.dto.request.admin.AdminArtsPatchRequestDto;
+import com.hanyang.arttherapy.dto.request.admin.AdminArtsRequestDto;
 import com.hanyang.arttherapy.dto.response.AdminArtsDetailResponseDto;
 import com.hanyang.arttherapy.dto.response.AdminArtsListResponseDto;
 import com.hanyang.arttherapy.dto.response.CommonScrollResponse;
@@ -31,7 +31,9 @@ public class AdminArtsService {
   private final GalleriesRepository galleriesRepository;
   private final ArtArtistRelRepository artArtistRelRepository;
   private final ArtistsRepository artistsRepository;
+  private final FileStorageService fileStorageService;
 
+  // 등록
   @Transactional
   public String register(AdminArtsRequestDto request, CustomUserDetail userDetail) {
     if (userDetail.getUser().getRole() != Role.ADMIN) {
@@ -42,6 +44,10 @@ public class AdminArtsService {
         filesRepository
             .findById(request.getFilesNo())
             .orElseThrow(() -> new CustomException(AdminArtsExceptionType.FILE_NOT_FOUND));
+
+    file.activateFile();
+    filesRepository.save(file);
+
     Galleries gallery =
         galleriesRepository
             .findById(request.getGalleriesNo())
@@ -76,6 +82,7 @@ public class AdminArtsService {
     return "작품 등록에 성공했습니다";
   }
 
+  // 수정
   @Transactional
   public String update(Long artsNo, AdminArtsPatchRequestDto request, CustomUserDetail userDetail) {
     if (userDetail.getUser().getRole() != Role.ADMIN) {
@@ -87,11 +94,19 @@ public class AdminArtsService {
             .findById(artsNo)
             .orElseThrow(() -> new CustomException(AdminArtsExceptionType.ARTS_NOT_FOUND));
 
+    if (request.getFilesNo() != null
+        && art.getFile() != null
+        && !art.getFile().getFilesNo().equals(request.getFilesNo())) {
+      fileStorageService.softDeleteFile(art.getFile().getFilesNo());
+    }
+
     if (request.getFilesNo() != null) {
       Files file =
           filesRepository
               .findById(request.getFilesNo())
               .orElseThrow(() -> new CustomException(AdminArtsExceptionType.FILE_NOT_FOUND));
+      file.activateFile(); // 새 파일 활성화
+      filesRepository.save(file); // 변경사항 저장
       art.updateFile(file);
     }
     if (request.getArtName() != null) art.updateTitle(request.getArtName());
@@ -126,6 +141,7 @@ public class AdminArtsService {
     return "작품 수정에 성공했습니다";
   }
 
+  // 삭제
   @Transactional
   public String delete(Long artsNo, CustomUserDetail userDetail) {
     if (userDetail.getUser().getRole() != Role.ADMIN) {
@@ -136,11 +152,23 @@ public class AdminArtsService {
         artsRepository
             .findById(artsNo)
             .orElseThrow(() -> new CustomException(AdminArtsExceptionType.ARTS_NOT_FOUND));
+
+    if (art.getFile() != null) {
+      Files file =
+          filesRepository
+              .findById(art.getFile().getFilesNo())
+              .orElseThrow(() -> new CustomException(AdminArtsExceptionType.FILE_NOT_FOUND));
+      file.markAsDeleted();
+      filesRepository.save(file);
+    }
+
     artArtistRelRepository.deleteByArts(art);
     artsRepository.delete(art);
+
     return "작품 삭제에 성공했습니다";
   }
 
+  // 무한 스크롤 기반 전체 조회 or 검색 조회
   @Transactional(readOnly = true)
   public CommonScrollResponse<AdminArtsListResponseDto> getArtsWithScroll(
       String filter, String keyword, Long lastId, int size) {
@@ -167,6 +195,7 @@ public class AdminArtsService {
     return new CommonScrollResponse<>(content, nextCursor, hasNext);
   }
 
+  // 삭제
   @Transactional(readOnly = true)
   public AdminArtsDetailResponseDto getArtDetail(Long artsNo) {
     Arts art =
@@ -177,6 +206,11 @@ public class AdminArtsService {
     Galleries gallery = art.getGalleries();
     if (gallery == null) {
       throw new CustomException(AdminArtsExceptionType.GALLERY_NOT_FOUND);
+    }
+
+    String fileUrl = null;
+    if (art.getFile() != null) {
+      fileUrl = fileStorageService.getFileUrl(art.getFile().getFilesNo());
     }
 
     List<AdminArtsDetailResponseDto.ArtistInfo> artistInfos =
@@ -195,26 +229,30 @@ public class AdminArtsService {
         .artName(art.getArtName())
         .caption(art.getCaption())
         .artType(art.getArtType().name())
-        .fileUrl(art.getFile().getUrl())
+        .fileUrl(fileUrl)
         .galleriesNo(gallery.getGalleriesNo())
-        .galleriesTitle(gallery.getTitle())
+        .title(gallery.getTitle())
         .coDescription(art.getCoDescription())
         .artists(artistInfos)
         .build();
   }
 
+  // 전체 조회
   private AdminArtsListResponseDto toListDto(Arts art) {
     Galleries gallery = art.getGalleries();
     if (gallery == null) {
       throw new CustomException(AdminArtsExceptionType.GALLERY_NOT_FOUND);
     }
 
+    List<String> artistNames =
+        art.getArtArtistRels().stream().map(rel -> rel.getArtists().getArtistName()).toList();
+
     return AdminArtsListResponseDto.builder()
         .artsNo(art.getArtsNo())
         .artName(art.getArtName())
-        .artType(art.getArtType().name())
         .galleriesNo(gallery.getGalleriesNo())
         .galleriesTitle(gallery.getTitle())
+        .artists(artistNames)
         .build();
   }
 }
