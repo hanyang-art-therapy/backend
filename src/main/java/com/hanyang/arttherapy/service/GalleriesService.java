@@ -1,5 +1,6 @@
 package com.hanyang.arttherapy.service;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -38,6 +39,15 @@ public class GalleriesService {
 
     if (user.getRole() != Role.ADMIN) {
       throw new CustomException(GalleryExceptionType.UNAUTHORIZED);
+    }
+
+    // ✅ 1년에 하나의 전시회만 허용
+    int year = dto.getStartDate().getYear();
+    LocalDate startOfYear = LocalDate.of(year, 1, 1);
+    LocalDate endOfYear = LocalDate.of(year, 12, 31);
+
+    if (galleriesRepository.existsByStartDateBetween(startOfYear, endOfYear)) {
+      throw new CustomException(GalleryExceptionType.DUPLICATED_YEAR);
     }
 
     try {
