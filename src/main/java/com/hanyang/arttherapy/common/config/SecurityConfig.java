@@ -40,7 +40,6 @@ public class SecurityConfig {
                     .hasRole("TESTER")
                     .requestMatchers(
                         "/api/user/**",
-                        "/api/files",
                         "/api/galleries/arts/**",
                         "/api/files",
                         "/css/**",
