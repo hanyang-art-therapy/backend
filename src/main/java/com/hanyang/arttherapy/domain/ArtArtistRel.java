@@ -20,7 +20,7 @@ public class ArtArtistRel {
   private Arts arts;
 
   @ManyToOne
-  @JoinColumn(name = "artist_no")
+  @JoinColumn(name = "artist_no", nullable = true)
   private Artists artists;
 
   @Column(columnDefinition = "LONGTEXT")
