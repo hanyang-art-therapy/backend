@@ -124,7 +124,7 @@ public class AdminArtsService {
       art.updateGallery(gallery);
     }
 
-    // ✅ 작가 추가/수정/삭제 처리
+    //  작가 추가/수정/삭제 처리
     if (request.getArtistList() != null) {
       // 1. 현재 관계 조회
       List<ArtArtistRel> existingRels = artArtistRelRepository.findByArts(art);
