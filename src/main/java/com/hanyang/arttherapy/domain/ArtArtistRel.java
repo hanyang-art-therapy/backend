@@ -25,4 +25,8 @@ public class ArtArtistRel {
 
   @Column(columnDefinition = "LONGTEXT")
   private String description;
+
+  public void updateDescription(String description) {
+    this.description = description;
+  }
 }
