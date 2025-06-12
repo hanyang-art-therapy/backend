@@ -94,14 +94,13 @@ public class AdminArtsService {
             .findById(artsNo)
             .orElseThrow(() -> new CustomException(AdminArtsExceptionType.ARTS_NOT_FOUND));
 
-    // 기존 파일 soft delete
+    // 파일 soft delete → 새 파일 교체
     if (request.getFilesNo() != null
         && art.getFile() != null
         && !art.getFile().getFilesNo().equals(request.getFilesNo())) {
       fileStorageService.softDeleteFile(art.getFile().getFilesNo());
     }
 
-    // 새 파일 교체
     if (request.getFilesNo() != null) {
       Files file =
           filesRepository
@@ -125,22 +124,48 @@ public class AdminArtsService {
       art.updateGallery(gallery);
     }
 
-    // 작가 개인 설명만 수정 (관계 삭제 X)
+    // ✅ 작가 추가/수정/삭제 처리
     if (request.getArtistList() != null) {
+      // 1. 현재 관계 조회
       List<ArtArtistRel> existingRels = artArtistRelRepository.findByArts(art);
 
-      for (AdminArtsPatchRequestDto.ArtistInfo artistInfo : request.getArtistList()) {
-        Long artistNo = artistInfo.getArtistNo();
-        String newDescription = artistInfo.getDescription();
+      // 2. 요청 받은 artistNo 목록으로 매핑
+      List<Long> requestedArtistNos =
+          request.getArtistList().stream()
+              .map(AdminArtsPatchRequestDto.ArtistInfo::getArtistNo)
+              .toList();
 
-        ArtArtistRel rel =
+      // 3. 기존 관계 중 요청에 없는 작가 삭제
+      for (ArtArtistRel rel : existingRels) {
+        if (!requestedArtistNos.contains(rel.getArtists().getArtistNo())) {
+          artArtistRelRepository.delete(rel);
+        }
+      }
+
+      // 4. 요청 목록 처리
+      for (AdminArtsPatchRequestDto.ArtistInfo info : request.getArtistList()) {
+        Long artistNo = info.getArtistNo();
+        String newDesc = info.getDescription();
+
+        // 이미 존재하는 경우 → 설명 업데이트
+        ArtArtistRel existing =
             existingRels.stream()
                 .filter(r -> r.getArtists().getArtistNo().equals(artistNo))
                 .findFirst()
-                .orElseThrow(
-                    () -> new CustomException(AdminArtsExceptionType.ARTIST_REL_NOT_FOUND));
+                .orElse(null);
 
-        rel.updateDescription(newDescription);
+        if (existing != null) {
+          existing.updateDescription(newDesc);
+        } else {
+          // 없는 경우 → 새로 추가
+          Artists artist =
+              artistsRepository
+                  .findById(artistNo)
+                  .orElseThrow(() -> new CustomException(AdminArtsExceptionType.ARTIST_NOT_FOUND));
+          ArtArtistRel newRel =
+              ArtArtistRel.builder().arts(art).artists(artist).description(newDesc).build();
+          artArtistRelRepository.save(newRel);
+        }
       }
     }
 
