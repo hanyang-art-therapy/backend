@@ -125,13 +125,13 @@ public class AdminArtsService {
     }
 
     //  작가 추가/수정/삭제 처리
-    if (request.getArtistList() != null) {
+    if (request.getArtists() != null) {
       // 1. 현재 관계 조회
       List<ArtArtistRel> existingRels = artArtistRelRepository.findByArts(art);
 
       // 2. 요청 받은 artistNo 목록으로 매핑
       List<Long> requestedArtistNos =
-          request.getArtistList().stream()
+          request.getArtists().stream()
               .map(AdminArtsPatchRequestDto.ArtistInfo::getArtistNo)
               .toList();
 
@@ -143,7 +143,7 @@ public class AdminArtsService {
       }
 
       // 4. 요청 목록 처리
-      for (AdminArtsPatchRequestDto.ArtistInfo info : request.getArtistList()) {
+      for (AdminArtsPatchRequestDto.ArtistInfo info : request.getArtists()) {
         Long artistNo = info.getArtistNo();
         String newDesc = info.getDescription();
 
