@@ -94,6 +94,7 @@ public class ArtistsService {
     return "작가 수정이 완료되었습니다";
   }
 
+  @Transactional
   public String deleteArtist(Long artistNo) {
     Artists artist = findArtistById(artistNo);
     // DB에서 직접 artistNo로 연관된 ArtArtistRel 조회
