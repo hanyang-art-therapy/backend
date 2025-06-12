@@ -306,73 +306,64 @@ public class UserService {
   @Transactional
   public SigninResponse signin(
       SigninRequest request, String ip, String userAgent, HttpServletResponse httpResponse) {
+
     Users user =
         userRepository
             .findByUserId(request.userId())
             .orElseThrow(() -> new CustomException(UserException.USER_NOT_FOUND));
 
-    // 사용자 상태 UNACTIVE 로그인 불가
     if (user.getUserStatus() == UserStatus.UNACTIVE) {
-      throw new CustomException(UserException.USER_STATUS_UNACTIVE); // 탈퇴회원
+      throw new CustomException(UserException.USER_STATUS_UNACTIVE);
     }
 
     if (!bCryptpasswordEncoder.matches(request.password(), user.getPassword())) {
       throw new CustomException(UserException.ERROR_PASSWORD);
     }
 
-    // 기존 리프레시 토큰 확인
+    String accessToken = jwtUtil.createAccessToken(user);
+
+    // 기존 토큰 확인 (IP + UserAgent 기준)
     Optional<RefreshTokens> existingTokenOpt =
         refreshTokenRepository.findByUsers_UserNoAndIpAndUserAgent(user.getUserNo(), ip, userAgent);
-    RefreshTokens token = null;
+
+    String refreshToken;
+
     if (existingTokenOpt.isPresent()) {
-      token = existingTokenOpt.get();
+      RefreshTokens existingToken = existingTokenOpt.get();
 
-      boolean isExpired = token.getExpiredAt().isBefore(LocalDateTime.now());
-      boolean isDifferentIpOrAgent =
-          !token.getIp().equals(ip) || !token.getUserAgent().equals(userAgent);
-      boolean isEmptyToken = token.getRefreshToken() == null || token.getRefreshToken().isBlank();
+      boolean isExpired = existingToken.getExpiredAt().isBefore(LocalDateTime.now());
+      boolean isEmpty =
+          existingToken.getRefreshToken() == null || existingToken.getRefreshToken().isBlank();
 
-      if (isExpired || isEmptyToken) {
-        // 만료되었거나 비어있으면 리프레시토큰만 새로 발급
-        String newRefreshToken = jwtUtil.createRefreshToken(user);
-        token.setRefreshToken(newRefreshToken);
-        token.setExpiredAt(LocalDateTime.now().plusDays(7));
-
-        refreshTokenRepository.save(token); // 업데이트
-        jwtUtil.addRefreshTokenToCookie(httpResponse, newRefreshToken);
-
-        String accessToken = jwtUtil.createAccessToken(user);
-        httpResponse.setHeader("Authorization", "Bearer " + accessToken);
-        return new SigninResponse(user.getUserNo(), accessToken, user.getRole());
-
-      } else if (isDifferentIpOrAgent) {
-        // IP 또는 UserAgent가 다르면 새로 발급
-        // 기존 토큰 삭제하지 않음 (필요시 정책적으로 삭제 가능)
+      if (isExpired || isEmpty) {
+        // 만료 또는 비어 있으면 새로 발급
+        refreshToken = jwtUtil.createRefreshToken(user);
+        existingToken.setRefreshToken(refreshToken);
+        existingToken.setExpiredAt(LocalDateTime.now().plusDays(7));
+        refreshTokenRepository.save(existingToken);
       } else {
-        // 만료되지 않았고 IP/UserAgent가 같으면 기존 토큰 사용
-        String accessToken = jwtUtil.createAccessToken(user);
-        jwtUtil.addRefreshTokenToCookie(httpResponse, token.getRefreshToken());
-        return new SigninResponse(user.getUserNo(), accessToken, user.getRole());
+        // 그대로 사용
+        refreshToken = existingToken.getRefreshToken();
       }
+
+    } else {
+      // IP 또는 UserAgent 다르므로 새 RefreshToken 발급
+      refreshToken = jwtUtil.createRefreshToken(user);
+      RefreshTokens newToken =
+          RefreshTokens.builder()
+              .users(user)
+              .refreshToken(refreshToken)
+              .expiredAt(LocalDateTime.now().plusDays(7))
+              .ip(ip)
+              .userAgent(userAgent)
+              .build();
+      refreshTokenRepository.save(newToken);
     }
-    String accessToken = jwtUtil.createAccessToken(user);
-    String refreshToken = jwtUtil.createRefreshToken(user);
 
-    // RefreshToken 엔티티 저장
-    RefreshTokens tokenEntity =
-        RefreshTokens.builder()
-            .users(user)
-            .refreshToken(refreshToken)
-            .expiredAt(LocalDateTime.now().plusDays(7))
-            .ip(ip)
-            .userAgent(userAgent)
-            .build();
-
-    refreshTokenRepository.save(tokenEntity);
-
-    jwtUtil.addRefreshTokenToCookie(httpResponse, tokenEntity.getRefreshToken());
-
+    // 쿠키 & 헤더에 토큰 설정
+    jwtUtil.addRefreshTokenToCookie(httpResponse, refreshToken);
     httpResponse.setHeader("Authorization", "Bearer " + accessToken);
+
     return new SigninResponse(user.getUserNo(), accessToken, user.getRole());
   }
 
