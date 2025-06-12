@@ -16,7 +16,7 @@ public class AdminArtsPatchRequestDto {
   private Long galleriesNo; // 전시회 ID (nullable)
   private String coDescription; // 공동작품 설명 (nullable)
 
-  private List<ArtistInfo> artistList; // 작가 리스트 (nullable)
+  private List<ArtistInfo> artists; // 작가 리스트 (nullable)
 
   @Data
   public static class ArtistInfo {
