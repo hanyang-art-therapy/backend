@@ -36,4 +36,6 @@ public interface ArtArtistRelRepository extends JpaRepository<ArtArtistRel, Long
   List<Integer> findDistinctCohortsByGalleriesNo(@Param("galleriesNo") Long galleriesNo);
 
   List<ArtArtistRel> findByArtists_ArtistNo(Long artistNo);
+
+  List<ArtArtistRel> findByArts(Arts arts);
 }

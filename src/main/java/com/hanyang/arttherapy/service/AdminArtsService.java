@@ -94,6 +94,7 @@ public class AdminArtsService {
             .findById(artsNo)
             .orElseThrow(() -> new CustomException(AdminArtsExceptionType.ARTS_NOT_FOUND));
 
+    // 파일 soft delete → 새 파일 교체
     if (request.getFilesNo() != null
         && art.getFile() != null
         && !art.getFile().getFilesNo().equals(request.getFilesNo())) {
@@ -105,14 +106,16 @@ public class AdminArtsService {
           filesRepository
               .findById(request.getFilesNo())
               .orElseThrow(() -> new CustomException(AdminArtsExceptionType.FILE_NOT_FOUND));
-      file.activateFile(); // 새 파일 활성화
-      filesRepository.save(file); // 변경사항 저장
+      file.activateFile();
+      filesRepository.save(file);
       art.updateFile(file);
     }
+
     if (request.getArtName() != null) art.updateTitle(request.getArtName());
     if (request.getCaption() != null) art.updateCaption(request.getCaption());
     if (request.getArtType() != null) art.updateArtType(request.getArtType());
     if (request.getCoDescription() != null) art.updateCoDescription(request.getCoDescription());
+
     if (request.getGalleriesNo() != null) {
       Galleries gallery =
           galleriesRepository
@@ -121,23 +124,51 @@ public class AdminArtsService {
       art.updateGallery(gallery);
     }
 
+    //  작가 추가/수정/삭제 처리
     if (request.getArtistList() != null) {
-      artArtistRelRepository.deleteByArts(art);
-      for (AdminArtsPatchRequestDto.ArtistInfo artistInfo : request.getArtistList()) {
-        Artists artist =
-            artistsRepository
-                .findById(artistInfo.getArtistNo())
-                .orElseThrow(() -> new CustomException(AdminArtsExceptionType.ARTIST_NOT_FOUND));
+      // 1. 현재 관계 조회
+      List<ArtArtistRel> existingRels = artArtistRelRepository.findByArts(art);
 
-        ArtArtistRel rel =
-            ArtArtistRel.builder()
-                .arts(art)
-                .artists(artist)
-                .description(artistInfo.getDescription())
-                .build();
-        artArtistRelRepository.save(rel);
+      // 2. 요청 받은 artistNo 목록으로 매핑
+      List<Long> requestedArtistNos =
+          request.getArtistList().stream()
+              .map(AdminArtsPatchRequestDto.ArtistInfo::getArtistNo)
+              .toList();
+
+      // 3. 기존 관계 중 요청에 없는 작가 삭제
+      for (ArtArtistRel rel : existingRels) {
+        if (!requestedArtistNos.contains(rel.getArtists().getArtistNo())) {
+          artArtistRelRepository.delete(rel);
+        }
+      }
+
+      // 4. 요청 목록 처리
+      for (AdminArtsPatchRequestDto.ArtistInfo info : request.getArtistList()) {
+        Long artistNo = info.getArtistNo();
+        String newDesc = info.getDescription();
+
+        // 이미 존재하는 경우 → 설명 업데이트
+        ArtArtistRel existing =
+            existingRels.stream()
+                .filter(r -> r.getArtists().getArtistNo().equals(artistNo))
+                .findFirst()
+                .orElse(null);
+
+        if (existing != null) {
+          existing.updateDescription(newDesc);
+        } else {
+          // 없는 경우 → 새로 추가
+          Artists artist =
+              artistsRepository
+                  .findById(artistNo)
+                  .orElseThrow(() -> new CustomException(AdminArtsExceptionType.ARTIST_NOT_FOUND));
+          ArtArtistRel newRel =
+              ArtArtistRel.builder().arts(art).artists(artist).description(newDesc).build();
+          artArtistRelRepository.save(newRel);
+        }
       }
     }
+
     return "작품 수정에 성공했습니다";
   }
 
