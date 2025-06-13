@@ -125,7 +125,7 @@ public class UserService {
   }
 
   // 아이디 찾기
-  public String findByEmailAndUserName(IdRequest request) {
+  public String findUserId(IdRequest request) {
     Users user =
         userRepository
             .findByEmailAndUserName(request.email(), request.userName())
