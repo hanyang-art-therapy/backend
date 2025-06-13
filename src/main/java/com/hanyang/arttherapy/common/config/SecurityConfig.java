@@ -49,8 +49,8 @@ public class SecurityConfig {
                     .permitAll()
                     .anyRequest()
                     .authenticated())
-        .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
-    //        .requiresChannel(channel -> channel.anyRequest().requiresSecure());
+        .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+        .requiresChannel(channel -> channel.anyRequest().requiresSecure());
 
     return http.build();
   }
