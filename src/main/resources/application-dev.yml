@@ -1,13 +1,4 @@
 # application.yml (공통 설정)
-#server:
-#  port: 8443
-#  ssl:
-#    enabled: true
-#    key-store: classpath:keystore.p12
-#    key-store-password: ${KEY_STORE_PASSWORD}
-#    key-store-type: PKCS12
-#    key-alias: hyart
-
 spring:
   web:
     resources:
