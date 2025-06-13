@@ -30,7 +30,7 @@ public class ReviewController {
   // 리뷰 조회
   @GetMapping
   public ResponseEntity<Map<String, Object>> getReviews(
-      @PathVariable Long artsNo, @PageableDefault(size = 5) Pageable pageable) {
+      @PathVariable Long artsNo, @PageableDefault(size = 4) Pageable pageable) {
     return ResponseEntity.ok(reviewService.getReviews(artsNo, pageable));
   }
 
