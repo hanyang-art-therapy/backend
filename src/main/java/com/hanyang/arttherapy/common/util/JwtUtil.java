@@ -61,11 +61,13 @@ public class JwtUtil {
     ResponseCookie cookie =
         ResponseCookie.from("refreshToken", refreshToken)
             .httpOnly(true)
-            .secure(false) // HTTPS면 true
-            //            .sameSite("None") // ← 중요!
+            .secure(true) // HTTPS면 true
+            .sameSite("None") // ← 인증,인가를 위해 중요!
             .path("/")
             .maxAge(7 * 24 * 60 * 60)
             .build();
+
+    System.out.println("[JwtUtil] Set-Cookie header: " + cookie.toString());
 
     httpResponse.addHeader("Set-Cookie", cookie.toString());
   }
@@ -110,7 +112,7 @@ public class JwtUtil {
   public ResponseCookie deleteRefreshTokenCookie() {
     return ResponseCookie.from("refreshToken", "")
         .httpOnly(true)
-        .secure(false)
+        .secure(true)
         .path("/")
         .maxAge(0)
         .build();

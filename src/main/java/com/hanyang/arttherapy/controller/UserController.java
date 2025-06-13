@@ -49,7 +49,7 @@ public class UserController {
 
   @PostMapping("/find-id")
   public ResponseEntity<CommonMessageResponse> findUserId(@RequestBody IdRequest request) {
-    String message = userService.findByEmailAndUserName(request);
+    String message = userService.findUserId(request);
     return ResponseEntity.ok(new CommonMessageResponse(message));
   }
 
