@@ -101,7 +101,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
       // Refresh Token도 실패 → 인증 실패
       SecurityContextHolder.clearContext();
-      response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+      response.setContentType("application/json");
+      response
+          .getWriter()
+          .write("{\"error\": \"Access token expired and refresh token invalid or missing.\"}");
       return;
     }
 

@@ -2,6 +2,8 @@ package com.hanyang.arttherapy.common.config;
 
 import java.util.List;
 
+import jakarta.servlet.http.HttpServletResponse;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -35,9 +37,7 @@ public class SecurityConfig {
                 auth.requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**")
                     .permitAll()
                     .requestMatchers("/admin/**")
-                    .hasRole("ADMIN")
-                    .requestMatchers("/admin/**")
-                    .hasRole("TESTER")
+                    .hasAnyRole("ADMIN", "TESTER")
                     .requestMatchers(
                         "/api/user/**",
                         "/api/galleries/arts/**",
@@ -49,6 +49,14 @@ public class SecurityConfig {
                     .permitAll()
                     .anyRequest()
                     .authenticated())
+        .exceptionHandling(
+            exception ->
+                exception.authenticationEntryPoint(
+                    (request, response, authException) -> {
+                      response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                      response.setContentType("application/json");
+                      response.getWriter().write("{\"error\": \"Unauthorized or token expired\"}");
+                    }))
         .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
         .requiresChannel(channel -> channel.anyRequest().requiresSecure());
 
@@ -61,12 +69,13 @@ public class SecurityConfig {
     configuration.setAllowedOrigins(
         List.of(
             "https://hy-erica-arttherapy.com",
-            "https://frontend-rho-woad.vercel.app",
+            "https://www.hy-erica-arttherapy.com",
             "http://localhost:5173"));
     configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
     configuration.setAllowedHeaders(
         List.of(
             "Authorization", "Content-Type", "X-Requested-With", "Accept", "Origin", "Referer"));
+    configuration.setExposedHeaders(List.of("Authorization", "Set-Cookie"));
     configuration.setAllowCredentials(true);
     UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
     source.registerCorsConfiguration("/**", configuration);

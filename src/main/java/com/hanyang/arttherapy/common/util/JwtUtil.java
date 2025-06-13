@@ -67,6 +67,8 @@ public class JwtUtil {
             .maxAge(7 * 24 * 60 * 60)
             .build();
 
+    System.out.println("[JwtUtil] Set-Cookie header: " + cookie.toString());
+
     httpResponse.addHeader("Set-Cookie", cookie.toString());
   }
 
