@@ -87,16 +87,6 @@ public class UserController {
     return ResponseEntity.ok(response);
   }
 
-  @PostMapping("/refresh")
-  public ResponseEntity<?> newAccessToken(
-      HttpServletRequest httpRequest, HttpServletResponse httpresponse) {
-    String ip = getClientIp(httpRequest);
-    String userAgent = httpRequest.getHeader("User-Agent");
-    String refreshToken = jwtUtil.refreshTokenFromCookie(httpRequest);
-    SigninResponse refresh = userService.newAccessToken(ip, userAgent, refreshToken, httpresponse);
-    return ResponseEntity.ok(refresh);
-  }
-
   @PostMapping("/sign-out")
   public ResponseEntity<CommonMessageResponse> logout(
       HttpServletRequest httpRequest, HttpServletResponse httpResponse) {

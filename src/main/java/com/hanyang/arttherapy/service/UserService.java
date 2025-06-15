@@ -91,7 +91,7 @@ public class UserService {
       SimpleMailMessage message = new SimpleMailMessage();
       message.setTo(email);
       message.setSubject("이메일 설정 인증번호");
-      message.setText("안녕하세요. 인증 번호는 \n" + verificationCode + "\n입니다.\n인증시 공백이 들어가지 않도록 주의해주세요.");
+      message.setText("안녕하세요. 인증 번호는 \n" + verificationCode + "\n입니다. 인증시 공백이 들어가지 않도록 주의해주세요.");
       message.setFrom("mingke48@gmail.com");
       mailSender.send(message);
     } catch (Exception e) {
@@ -207,8 +207,7 @@ public class UserService {
       SimpleMailMessage message = new SimpleMailMessage();
       message.setTo(email);
       message.setSubject("임시 비밀번호 안내");
-      message.setText(
-          "안녕하세요. 임시 비밀번호는   " + temporaryPassword + "   입니다.\n인증시 공백이 들어가지 않도록 주의해주세요.");
+      message.setText("안녕하세요. 임시 비밀번호는\n" + temporaryPassword + "\n입니다. 인증시 공백이 들어가지 않도록 주의해주세요.");
       message.setFrom("mingke48@gmail.com");
       mailSender.send(message);
     } catch (Exception e) {

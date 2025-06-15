@@ -41,6 +41,8 @@ public class SecurityConfig {
                     .requestMatchers(
                         "/api/user/**",
                         "/api/galleries/arts/**",
+                        "/api/galleries/cohorts",
+                        "/api/galleries/years",
                         "/api/files",
                         "/css/**",
                         "/js/**",
@@ -55,7 +57,8 @@ public class SecurityConfig {
                     (request, response, authException) -> {
                       response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                       response.setContentType("application/json");
-                      response.getWriter().write("{\"error\": \"Unauthorized or token expired\"}");
+                      //                      response.getWriter().write("{\"error\": \"Unauthorized
+                      // or token expired\"}");
                     }))
         .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
         .requiresChannel(channel -> channel.anyRequest().requiresSecure());
@@ -70,7 +73,7 @@ public class SecurityConfig {
         List.of(
             "https://hy-erica-arttherapy.com",
             "https://www.hy-erica-arttherapy.com",
-            "http://localhost:5173"));
+            "https://localhost:5173"));
     configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
     configuration.setAllowedHeaders(
         List.of(
