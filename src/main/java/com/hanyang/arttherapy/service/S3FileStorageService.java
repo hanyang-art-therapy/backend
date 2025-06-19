@@ -70,7 +70,11 @@ public class S3FileStorageService implements FileStorageService {
   public void deletedFileFromSystem(Long filesNo) {
     Files file = getFileById(filesNo);
     String s3Key = extractS3Key(file.getUrl());
+    // S3에서 파일 삭제
     deleteFileFromS3(s3Key);
+
+    // RDS에서 파일 삭제
+    filesRepository.delete(file);
   }
 
   @Override

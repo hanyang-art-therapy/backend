@@ -36,18 +36,20 @@ public class SecurityConfig {
             auth ->
                 auth.requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**")
                     .permitAll()
-                    .requestMatchers("/admin/**")
+                    .requestMatchers("/api/admin/**")
                     .hasAnyRole("ADMIN", "TESTER")
                     .requestMatchers(
+                        "/api/auth/**",
                         "/api/user/**",
                         "/api/galleries/arts/**",
                         "/api/galleries/cohorts",
                         "/api/galleries/years",
                         "/api/files",
+                        "/api/notices/**",
+                        "/api/professors",
                         "/css/**",
                         "/js/**",
-                        "/images/**",
-                        "/api/notices/**")
+                        "/images/**")
                     .permitAll()
                     .anyRequest()
                     .authenticated())
@@ -77,7 +79,13 @@ public class SecurityConfig {
     configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
     configuration.setAllowedHeaders(
         List.of(
-            "Authorization", "Content-Type", "X-Requested-With", "Accept", "Origin", "Referer"));
+            "Authorization",
+            "Content-Type",
+            "X-Requested-With",
+            "Accept",
+            "Origin",
+            "Referer",
+            "Access-Control-Request-Headers"));
     configuration.setExposedHeaders(List.of("Authorization", "Set-Cookie"));
     configuration.setAllowCredentials(true);
     UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();

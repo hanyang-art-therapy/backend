@@ -19,6 +19,8 @@ public interface RefreshTokenRepository extends JpaRepository<RefreshTokens, Lon
   // Users의 userNo 필드를 기준으로 찾고 싶다면
   List<RefreshTokens> findAllByUsers_UserNo(Long userNo);
 
+  Optional<RefreshTokens> findByIpAndUserAgent(String ip, String userAgent);
+
   Optional<RefreshTokens> findByIpAndUserAgentAndRefreshToken(
       String ip, String userAgent, String refreshToken);
 

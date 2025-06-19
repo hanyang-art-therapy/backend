@@ -2,12 +2,12 @@
 server:
   address: 0.0.0.0
   port: 8443
-#  ssl:
-#    enabled: true
-#    key-store: file:/home/ec2-user/backend/src/main/resources/keystore.p12   # 또는 classpath:keystore.p12
-#    key-store-password: ${KEY_STORE_PASSWORD}
-#    key-store-type: PKCS12
-#    key-alias: hyart
+  ssl:
+    enabled: true
+    key-store: file:/home/ec2-user/backend/src/main/resources/keystore.p12   # 또는 classpath:keystore.p12
+    key-store-password: ${KEY_STORE_PASSWORD}
+    key-store-type: PKCS12
+    key-alias: hyart
 
 spring:
   #  web:

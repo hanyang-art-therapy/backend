@@ -368,13 +368,24 @@ public class UserService {
 
   public SigninResponse newAccessToken(
       String ip, String userAgent, String refreshToken, HttpServletResponse httpResponse) {
-    RefreshTokens savedToken =
-        refreshTokenRepository
-            .findByIpAndUserAgentAndRefreshToken(ip, userAgent, refreshToken)
-            .orElseThrow(() -> new CustomException(UserException.INVALID_REFRESH_TOKEN));
 
+    RefreshTokens savedToken;
+
+    // 1. refreshToken이 null일 경우 → ip + userAgent로 조회
+    if (refreshToken == null) {
+      savedToken =
+          refreshTokenRepository
+              .findByIpAndUserAgent(ip, userAgent)
+              .orElseThrow(() -> new CustomException(UserException.UNAUTHENTICATED));
+      refreshToken = savedToken.getRefreshToken();
+    } else {
+      savedToken =
+          refreshTokenRepository
+              .findByIpAndUserAgentAndRefreshToken(ip, userAgent, refreshToken)
+              .orElseThrow(() -> new CustomException(UserException.INVALID_REFRESH_TOKEN));
+    }
     // 리프레시 토큰 만료 확인
-    if (savedToken.getExpiredAt().isAfter(LocalDateTime.now())) {
+    if (savedToken.getExpiredAt().isBefore(LocalDateTime.now())) {
       throw new CustomException(UserException.FORBIDDEN); // 프론트에서 로그인 화면으로 유도
     }
 
