@@ -1,7 +1,6 @@
 package com.hanyang.arttherapy.service;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -76,10 +75,9 @@ public class ArtsService {
           artistRels.stream().map(ArtArtistRelResponseDto::of).collect(Collectors.toList());
 
       List<FileResponseDto> fileResponses = getFileResponseDto(arts.getFile().getFilesNo());
-      LocalDateTime createdAt = arts.getCreatedAt();
 
       return ArtsResponseDto.of(
-          arts, createdAt, artistResponses, fileResponses.isEmpty() ? null : fileResponses.get(0));
+          arts, artistResponses, fileResponses.isEmpty() ? null : fileResponses.get(0));
     } catch (CustomException e) {
       throw e;
     } catch (Exception e) {
