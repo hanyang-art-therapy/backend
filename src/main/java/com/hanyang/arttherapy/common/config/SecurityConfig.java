@@ -37,7 +37,7 @@ public class SecurityConfig {
                 auth.requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**")
                     .permitAll()
                     .requestMatchers("/api/admin/**")
-                    .hasAnyRole("ADMIN", "TESTER")
+                    .hasAnyAuthority("ADMIN", "TESTER")
                     .requestMatchers(
                         "/api/auth/**",
                         "/api/user/**",
@@ -75,7 +75,7 @@ public class SecurityConfig {
         List.of(
             "https://hy-erica-arttherapy.com",
             "https://www.hy-erica-arttherapy.com",
-            "https://localhost:5173"));
+            "http://localhost:5173"));
     configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
     configuration.setAllowedHeaders(
         List.of(
