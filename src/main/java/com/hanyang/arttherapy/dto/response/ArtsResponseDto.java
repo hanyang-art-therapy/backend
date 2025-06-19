@@ -1,5 +1,6 @@
 package com.hanyang.arttherapy.dto.response;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -12,7 +13,9 @@ public record ArtsResponseDto(
     String coDescription,
     LocalDateTime createdAt,
     List<ArtArtistRelResponseDto> artists,
-    FileResponseDto file) {
+    FileResponseDto file,
+    String galleriesTitle,
+    LocalDate galleriesStartDate) {
   public static ArtsResponseDto of(
       Arts arts,
       LocalDateTime createdAt,
@@ -25,6 +28,8 @@ public record ArtsResponseDto(
         arts.getCoDescription(),
         createdAt,
         artists,
-        file);
+        file,
+        arts.getGalleries().getTitle(),
+        arts.getGalleries().getStartDate());
   }
 }
