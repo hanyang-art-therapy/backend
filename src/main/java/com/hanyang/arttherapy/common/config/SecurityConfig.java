@@ -62,8 +62,8 @@ public class SecurityConfig {
                       //                      response.getWriter().write("{\"error\": \"Unauthorized
                       // or token expired\"}");
                     }))
-        .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
-        .requiresChannel(channel -> channel.anyRequest().requiresSecure());
+        .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+    //        .requiresChannel(channel -> channel.anyRequest().requiresSecure());
 
     return http.build();
   }
