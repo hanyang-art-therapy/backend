@@ -61,7 +61,7 @@ public class JwtUtil {
     ResponseCookie cookie =
         ResponseCookie.from("refreshToken", refreshToken)
             .httpOnly(true)
-            .secure(true) // HTTPS면 true
+            .secure(false) // HTTPS면 true
             .sameSite("None") // ← 인증,인가를 위해 중요!
             .path("/")
             .maxAge(7 * 24 * 60 * 60)
@@ -112,7 +112,7 @@ public class JwtUtil {
   public ResponseCookie deleteRefreshTokenCookie() {
     return ResponseCookie.from("refreshToken", "")
         .httpOnly(true)
-        .secure(true)
+        .secure(false)
         .path("/")
         .maxAge(0)
         .build();

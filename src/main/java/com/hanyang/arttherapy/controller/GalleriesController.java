@@ -5,6 +5,7 @@ import java.util.List;
 import jakarta.validation.Valid;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,6 +20,7 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("api/admin/galleries")
+@PreAuthorize("hasRole('ADMIN')")
 public class GalleriesController {
 
   private final GalleriesService galleriesService;

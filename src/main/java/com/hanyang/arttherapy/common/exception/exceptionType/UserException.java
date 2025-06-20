@@ -11,8 +11,8 @@ import lombok.RequiredArgsConstructor;
 public enum UserException implements ExceptionType {
   UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "토큰만료"), // 토큰 만료됐을 때
   FORBIDDEN(HttpStatus.FORBIDDEN, "다시 로그인해주세요"),
-  USER_ALREADY_EXISTS(HttpStatus.CONFLICT, "이미 존재하는 아이디입니다."),
-  EMAIL_ALREADY_EXISTS(HttpStatus.CONFLICT, "이미 사용 중인 이메일입니다."),
+  USER_ALREADY_EXISTS(HttpStatus.CONFLICT, "이미 사용중인 아이디입니다."),
+  EMAIL_ALREADY_EXISTS(HttpStatus.CONFLICT, "이미 사용중인 이메일입니다."),
   STUDENT_ALREADY_EXISTS(HttpStatus.CONFLICT, "이미 등록된 학번입니다."),
   BLANK_REQUIRED(HttpStatus.BAD_REQUEST, "정보를 입력해 주세요."),
   USER_NOT_FOUND(HttpStatus.BAD_REQUEST, "일치하는 회원을 찾을 수 없습니다."),

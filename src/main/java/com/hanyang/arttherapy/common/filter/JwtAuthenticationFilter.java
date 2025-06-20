@@ -23,7 +23,9 @@ import com.hanyang.arttherapy.repository.RefreshTokenRepository;
 import com.hanyang.arttherapy.repository.UserRepository;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {

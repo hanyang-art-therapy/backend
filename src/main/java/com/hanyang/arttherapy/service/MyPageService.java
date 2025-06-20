@@ -149,7 +149,6 @@ public class MyPageService {
             .orElseThrow(() -> new CustomException(UserException.USER_NOT_FOUND));
 
     user.setUserStatus(UserStatus.UNACTIVE);
-    user.setEmail("");
     user.setPassword("");
 
     UsersHistory history =

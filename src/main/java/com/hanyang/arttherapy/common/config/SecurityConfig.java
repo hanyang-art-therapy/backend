@@ -36,18 +36,20 @@ public class SecurityConfig {
             auth ->
                 auth.requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**")
                     .permitAll()
-                    .requestMatchers("/admin/**")
-                    .hasAnyRole("ADMIN", "TESTER")
+                    .requestMatchers("/api/admin/**")
+                    .hasAnyAuthority("ADMIN", "TESTER")
                     .requestMatchers(
+                        "/api/auth/**",
                         "/api/user/**",
                         "/api/galleries/arts/**",
                         "/api/galleries/cohorts",
                         "/api/galleries/years",
                         "/api/files",
+                        "/api/notices/**",
+                        "/api/professors",
                         "/css/**",
                         "/js/**",
-                        "/images/**",
-                        "/api/notices/**")
+                        "/images/**")
                     .permitAll()
                     .anyRequest()
                     .authenticated())
@@ -60,8 +62,8 @@ public class SecurityConfig {
                       //                      response.getWriter().write("{\"error\": \"Unauthorized
                       // or token expired\"}");
                     }))
-        .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
-        .requiresChannel(channel -> channel.anyRequest().requiresSecure());
+        .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+    //        .requiresChannel(channel -> channel.anyRequest().requiresSecure());
 
     return http.build();
   }
@@ -73,11 +75,17 @@ public class SecurityConfig {
         List.of(
             "https://hy-erica-arttherapy.com",
             "https://www.hy-erica-arttherapy.com",
-            "https://localhost:5173"));
+            "http://localhost:5173"));
     configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
     configuration.setAllowedHeaders(
         List.of(
-            "Authorization", "Content-Type", "X-Requested-With", "Accept", "Origin", "Referer"));
+            "Authorization",
+            "Content-Type",
+            "X-Requested-With",
+            "Accept",
+            "Origin",
+            "Referer",
+            "Access-Control-Request-Headers"));
     configuration.setExposedHeaders(List.of("Authorization", "Set-Cookie"));
     configuration.setAllowCredentials(true);
     UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
