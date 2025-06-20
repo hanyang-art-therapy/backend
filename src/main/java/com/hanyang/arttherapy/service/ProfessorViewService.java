@@ -5,7 +5,6 @@ import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
-import com.hanyang.arttherapy.domain.Professors;
 import com.hanyang.arttherapy.dto.response.ProfessorsResponseDto;
 import com.hanyang.arttherapy.repository.ProfessorsRepository;
 
@@ -16,16 +15,19 @@ import lombok.RequiredArgsConstructor;
 public class ProfessorViewService {
 
   private final ProfessorsRepository professorsRepository;
+  private final FileStorageService fileStorageService;
 
-  // 교수진 정보 소개
+  // 교수진 정보 조회
   public List<ProfessorsResponseDto> getAllProfessors() {
-    List<Professors> professors = professorsRepository.findAll();
-
-    return professors.stream()
+    return professorsRepository.findAll().stream()
         .map(
-            professor ->
-                ProfessorsResponseDto.from(
-                    professor, professor.getFile() != null ? professor.getFile().getUrl() : null))
+            professor -> {
+              String fileUrl = null;
+              if (professor.getFile() != null) {
+                fileUrl = fileStorageService.getFileUrl(professor.getFile().getFilesNo());
+              }
+              return ProfessorsResponseDto.from(professor, fileUrl);
+            })
         .collect(Collectors.toList());
   }
 }
