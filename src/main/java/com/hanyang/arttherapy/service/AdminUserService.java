@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -39,8 +38,8 @@ public class AdminUserService {
   private final ReviewRepository reviewRepository;
 
   // 전체 조회 또는 이름 검색 조회 (무한스크롤)
-  public Map<String, Object> getUsers(String userName, Long lastId) {
-    getAdminUserOrThrow();
+  public Map<String, Object> getUsers(String userName, Long lastId, CustomUserDetail userDetail) {
+    checkAdmin(userDetail);
     Long cursor = (lastId == null) ? Long.MAX_VALUE : lastId;
 
     List<Users> users =
@@ -63,8 +62,8 @@ public class AdminUserService {
     return response;
   }
 
-  public UserDetailDto getUserDetail(Long userNo) {
-    getAdminUserOrThrow();
+  public UserDetailDto getUserDetail(Long userNo, CustomUserDetail userDetail) {
+    checkAdmin(userDetail);
     Users user =
         userRepository
             .findByUserNo(userNo)
@@ -89,8 +88,8 @@ public class AdminUserService {
         history.getCause());
   }
 
-  public String updateUser(Long userNo, UserRequestDto request) {
-    getAdminUserOrThrow();
+  public String updateUser(Long userNo, UserRequestDto request, CustomUserDetail userDetail) {
+    checkAdmin(userDetail);
     Users user =
         userRepository
             .findByUserNo(userNo)
@@ -104,27 +103,6 @@ public class AdminUserService {
         request.userStatus());
 
     return "회원 정보가 수정되었습니다.";
-  }
-
-  private UserDto convertToDto(Users user) {
-    return new UserDto(user.getUserNo(), user.getUserId(), user.getUserName(), user.getStudentNo());
-  }
-
-  private Users getAdminUserOrThrow() {
-    var auth = SecurityContextHolder.getContext().getAuthentication();
-    if (auth == null || !auth.isAuthenticated()) {
-      throw new CustomException(UserException.UNAUTHENTICATED);
-    }
-
-    Object principal = auth.getPrincipal();
-    if (principal instanceof CustomUserDetail customUserDetail) {
-      Users user = customUserDetail.getUser();
-      if (!user.getRole().equals(Role.ADMIN)) {
-        throw new CustomException(UserException.NOT_ADMIN);
-      }
-      return user;
-    }
-    throw new CustomException(UserException.UNAUTHENTICATED);
   }
 
   // 부적절 댓글 회원 정지
@@ -185,6 +163,13 @@ public class AdminUserService {
       // 저장
       userRepository.save(user);
       usersHistoryRepository.save(history);
+    }
+  }
+
+  // 관리자 권한 검사
+  private void checkAdmin(CustomUserDetail userDetail) {
+    if (userDetail == null || userDetail.getUser().getRole() != Role.ADMIN) {
+      throw new CustomException(UserException.NOT_ADMIN);
     }
   }
 }
