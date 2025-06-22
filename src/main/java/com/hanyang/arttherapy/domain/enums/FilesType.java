@@ -4,8 +4,8 @@ import lombok.Getter;
 
 @Getter
 public enum FilesType {
-  ART("art", FileExtension.IMAGE),
-  REVIEW("review", FileExtension.IMAGE),
+  ART("art", FileExtension.ALL),
+  REVIEW("review", FileExtension.ALL),
   ;
 
   private final String directory;
