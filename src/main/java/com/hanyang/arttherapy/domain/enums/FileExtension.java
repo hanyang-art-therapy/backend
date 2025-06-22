@@ -1,5 +1,9 @@
 package com.hanyang.arttherapy.domain.enums;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 import lombok.Getter;
 
 @Getter
@@ -10,7 +14,8 @@ enum FileExtension {
   DOCUMENT("pdf", "docx", "xlsx", "pptx", "txt", "rtf", "odt", "hwp", "hwpx", "ppt", "doc", "xls"),
   VIDEO("mp4", "mkv", "avi", "mov", "flv", "webm"),
   AUDIO("mp3", "wav", "ogg", "flac", "aac", "m4a"),
-  ARCHIVE("zip", "rar", "tar", "7z", "gzip");
+  ARCHIVE("zip", "rar", "tar", "7z", "gzip"),
+  ALL(combineAll());
 
   private final String[] extensions;
 
@@ -25,5 +30,15 @@ enum FileExtension {
       }
     }
     return false;
+  }
+
+  private static String[] combineAll() {
+    List<String> all = new ArrayList<>();
+    for (FileExtension fe : values()) {
+      if (fe != ALL) {
+        Collections.addAll(all, fe.extensions);
+      }
+    }
+    return all.toArray(new String[0]);
   }
 }
