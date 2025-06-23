@@ -39,7 +39,7 @@ public class AdminUserService {
 
   // 전체 조회 또는 이름 검색 조회 (무한스크롤)
   public Map<String, Object> getUsers(String userName, Long lastId, CustomUserDetail userDetail) {
-    checkAdmin(userDetail);
+    checkAdminOrTester(userDetail);
     Long cursor = (lastId == null) ? Long.MAX_VALUE : lastId;
 
     List<Users> users =
@@ -63,7 +63,7 @@ public class AdminUserService {
   }
 
   public UserDetailDto getUserDetail(Long userNo, CustomUserDetail userDetail) {
-    checkAdmin(userDetail);
+    checkAdminOrTester(userDetail);
     Users user =
         userRepository
             .findByUserNo(userNo)
@@ -89,7 +89,7 @@ public class AdminUserService {
   }
 
   public String updateUser(Long userNo, UserRequestDto request, CustomUserDetail userDetail) {
-    checkAdmin(userDetail);
+    checkAdminOrTester(userDetail);
     Users user =
         userRepository
             .findByUserNo(userNo)
@@ -166,9 +166,14 @@ public class AdminUserService {
     }
   }
 
-  // 관리자 권한 검사
-  private void checkAdmin(CustomUserDetail userDetail) {
-    if (userDetail == null || userDetail.getUser().getRole() != Role.ADMIN) {
+  // 관리자 또는 테스터 권한 검사
+  private void checkAdminOrTester(CustomUserDetail userDetail) {
+    if (userDetail == null) {
+      throw new CustomException(UserException.NOT_ADMIN);
+    }
+
+    Role role = userDetail.getUser().getRole();
+    if (role != Role.ADMIN && role != Role.TESTER) {
       throw new CustomException(UserException.NOT_ADMIN);
     }
   }
