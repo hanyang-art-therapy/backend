@@ -20,6 +20,7 @@ import com.hanyang.arttherapy.domain.Files;
 import com.hanyang.arttherapy.domain.NoticeFiles;
 import com.hanyang.arttherapy.domain.Notices;
 import com.hanyang.arttherapy.domain.Users;
+import com.hanyang.arttherapy.domain.enums.NoticeCategory;
 import com.hanyang.arttherapy.domain.enums.Role;
 import com.hanyang.arttherapy.dto.request.NoticeRequestDto;
 import com.hanyang.arttherapy.dto.response.FileResponseDto;
@@ -43,18 +44,30 @@ public class NoticesService {
   private final FileStorageService fileStorageService;
 
   // 게시판 전체 조회 (keyword가 없으면 전체 조회)
-  public NoticeListResponseDto getNotices(String keyword, int page) {
-    String trimmedKeyword = keyword != null ? keyword.trim() : null;
+  public NoticeListResponseDto getNotices(String keyword, NoticeCategory category, int page) {
+    String trimmedKeyword = (keyword != null && !keyword.isBlank()) ? keyword.trim() : null;
 
     int safePage = (page > 0) ? page - 1 : 0;
     Pageable pageable =
         PageRequest.of(
             safePage, 10, Sort.by(Sort.Order.desc("isFixed"), Sort.Order.desc("createdAt")));
 
-    Page<Notices> noticesPage =
-        (trimmedKeyword != null && !trimmedKeyword.isBlank())
-            ? noticesRepository.findAllByKeyword(trimmedKeyword, pageable)
-            : noticesRepository.findAll(pageable);
+    Page<Notices> noticesPage;
+
+    if (trimmedKeyword != null) {
+      if (category != null) {
+        noticesPage =
+            noticesRepository.findAllByKeywordAndCategory(trimmedKeyword, category, pageable);
+      } else {
+        noticesPage = noticesRepository.findAllByKeyword(trimmedKeyword, pageable);
+      }
+    } else {
+      if (category != null) {
+        noticesPage = noticesRepository.findAllByCategory(category, pageable);
+      } else {
+        noticesPage = noticesRepository.findAll(pageable);
+      }
+    }
 
     List<NoticeResponseDto> content =
         noticesPage.getContent().stream()

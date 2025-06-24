@@ -10,6 +10,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import com.hanyang.arttherapy.domain.Notices;
+import com.hanyang.arttherapy.domain.enums.NoticeCategory;
 
 public interface NoticesRepository extends JpaRepository<Notices, Long> {
 
@@ -20,6 +21,24 @@ public interface NoticesRepository extends JpaRepository<Notices, Long> {
           + "OR LOWER(n.content) LIKE LOWER(CONCAT('%', :keyword, '%')) "
           + "ORDER BY n.isFixed DESC, n.createdAt DESC")
   Page<Notices> findAllByKeyword(@Param("keyword") String keyword, Pageable pageable);
+
+  // 카테고리만 필터링
+  Page<Notices> findAllByCategory(NoticeCategory category, Pageable pageable);
+
+  // 키워드 + 카테고리
+  @Query(
+      """
+  SELECT n FROM Notices n
+  WHERE (LOWER(n.title) LIKE LOWER(CONCAT('%', :keyword, '%'))
+         OR LOWER(n.content) LIKE LOWER(CONCAT('%', :keyword, '%'))
+         OR LOWER(n.user.userName) LIKE LOWER(CONCAT('%', :keyword, '%')))
+  AND n.category = :category
+  ORDER BY n.isFixed DESC, n.createdAt DESC
+""")
+  Page<Notices> findAllByKeywordAndCategory(
+      @Param("keyword") String keyword,
+      @Param("category") NoticeCategory category,
+      Pageable pageable);
 
   Optional<Notices> findByNoticesNo(Long noticesNo);
 
