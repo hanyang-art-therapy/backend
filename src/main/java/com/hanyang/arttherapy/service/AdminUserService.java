@@ -44,15 +44,15 @@ public class AdminUserService {
 
     List<Users> users =
         (userName != null && !userName.isBlank())
-            ? userRepository
-                .findTop10ByUserNameContainingAndUserNoLessThanOrderByUserNameAscUserNoDesc(
-                    userName, cursor)
-            : userRepository.findTop10ByUserNoLessThanOrderByUserNameAscUserNoDesc(cursor);
+            ? userRepository.findTop10ByUserNameContainingAndUserNoLessThanOrderByUserNoDesc(
+                userName, cursor)
+            : userRepository.findTop10ByUserNoLessThanOrderByUserNoDesc(cursor);
 
     List<UserDto> content =
         users.stream()
             .map(u -> new UserDto(u.getUserNo(), u.getUserName(), u.getUserId(), u.getStudentNo()))
             .toList();
+
     boolean hasNext = content.size() == 10;
 
     Map<String, Object> response = new LinkedHashMap<>();
