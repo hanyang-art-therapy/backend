@@ -3,6 +3,7 @@ package com.hanyang.arttherapy.controller;
 import java.util.Map;
 
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -30,7 +31,9 @@ public class ReviewController {
   // 리뷰 조회
   @GetMapping
   public ResponseEntity<Map<String, Object>> getReviews(
-      @PathVariable Long artsNo, @PageableDefault(size = 4) Pageable pageable) {
+      @PathVariable Long artsNo,
+      @PageableDefault(size = 4, sort = "createdAt", direction = Sort.Direction.DESC)
+          Pageable pageable) {
     return ResponseEntity.ok(reviewService.getReviews(artsNo, pageable));
   }
 
