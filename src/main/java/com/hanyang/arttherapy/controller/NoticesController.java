@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import com.hanyang.arttherapy.domain.enums.NoticeCategory;
 import com.hanyang.arttherapy.dto.request.NoticeRequestDto;
 import com.hanyang.arttherapy.dto.response.noticeResponse.CommonDataResponse;
 import com.hanyang.arttherapy.dto.response.noticeResponse.NoticeDetailResponseDto;
@@ -26,8 +27,10 @@ public class NoticesController {
   // 전체 조회
   @GetMapping
   public NoticeListResponseDto getNotices(
-      @RequestParam(required = false) String keyword, @RequestParam(defaultValue = "0") int page) {
-    return noticesService.getNotices(keyword, page);
+      @RequestParam(required = false) String keyword,
+      @RequestParam(required = false) NoticeCategory category,
+      @RequestParam(defaultValue = "0") int page) {
+    return noticesService.getNotices(keyword, category, page);
   }
 
   // 상세 조회
