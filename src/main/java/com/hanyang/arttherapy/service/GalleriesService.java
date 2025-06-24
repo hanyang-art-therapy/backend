@@ -41,7 +41,7 @@ public class GalleriesService {
       throw new CustomException(GalleryExceptionType.UNAUTHORIZED);
     }
 
-    // ✅ 1년에 하나의 전시회만 허용
+    // 1년에 하나의 전시회만 허용
     int year = dto.getStartDate().getYear();
     LocalDate startOfYear = LocalDate.of(year, 1, 1);
     LocalDate endOfYear = LocalDate.of(year, 12, 31);
