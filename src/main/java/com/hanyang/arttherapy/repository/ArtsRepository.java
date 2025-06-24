@@ -62,7 +62,7 @@ public interface ArtsRepository extends JpaRepository<Arts, Long> {
   @Query(
       """
   SELECT a FROM Arts a
-  WHERE (:lastId IS NULL OR a.artsNo > :lastId)
+  WHERE (:lastId IS NULL OR a.artsNo < :lastId)
   ORDER BY a.artsNo DESC
 """)
   List<Arts> findAllArtsWithCursor(@Param("lastId") Long lastId, Pageable pageable);
