@@ -170,18 +170,15 @@ public class ArtsService {
     if (artsList.isEmpty()) return List.of();
 
     try {
-      // 1. 중복 제거 (artsNo 기준)
+      // 1. artsNo 기준 중복 제거 (혹시 모를 중복 대비)
       Map<Long, Arts> distinctArtsMap =
-          artsList.stream()
-              .collect(
-                  Collectors.toMap(
-                      Arts::getArtsNo, a -> a, (a1, a2) -> a1 // 중복 시 첫 번째 값 유지
-                      ));
+          artsList.stream().collect(Collectors.toMap(Arts::getArtsNo, a -> a, (a1, a2) -> a1));
 
       List<Arts> distinctArtsList = new ArrayList<>(distinctArtsMap.values());
 
-      // 2. artsNo 모아놓고 필요한 정보 조회
+      // 2. artsNo, filesNo 추출
       List<Long> artsNos = distinctArtsList.stream().map(Arts::getArtsNo).toList();
+
       List<Long> fileNos =
           distinctArtsList.stream()
               .map(Arts::getFile)
@@ -189,6 +186,7 @@ public class ArtsService {
               .map(Files::getFilesNo)
               .toList();
 
+      // 3. 파일, 작가 관계 캐싱
       Map<Long, Files> fileEntityMap =
           filesRepository.findAllById(fileNos).stream()
               .collect(Collectors.toMap(Files::getFilesNo, f -> f));
@@ -197,44 +195,27 @@ public class ArtsService {
           artArtistRelRepository.findWithArtistsByArtsNoIn(artsNos).stream()
               .collect(Collectors.groupingBy(rel -> rel.getArts().getArtsNo()));
 
-      // 3. 작가 이름 기준으로 정렬
+      // 4. artsNo 기준 정렬
       List<Arts> sortedList =
-          distinctArtsList.stream()
-              .sorted(
-                  Comparator.comparing(
-                      art ->
-                          artistRelMap.getOrDefault(art.getArtsNo(), List.of()).stream()
-                              .map(rel -> rel.getArtists().getArtistName())
-                              .sorted(String.CASE_INSENSITIVE_ORDER)
-                              .collect(Collectors.joining(", "))))
-              .toList();
+          distinctArtsList.stream().sorted(Comparator.comparing(Arts::getArtsNo)).toList();
 
-      // 4. DTO로 변환
-      List<ArtsListResponseDto> response =
-          sortedList.stream()
-              .map(
-                  arts -> {
-                    Files fileEntity =
-                        fileEntityMap.get(
-                            arts.getFile() != null ? arts.getFile().getFilesNo() : null);
-                    List<ArtArtistRel> rels =
-                        artistRelMap.getOrDefault(arts.getArtsNo(), List.of());
+      // 5. DTO 변환
+      return sortedList.stream()
+          .map(
+              arts -> {
+                Files fileEntity =
+                    fileEntityMap.get(arts.getFile() != null ? arts.getFile().getFilesNo() : null);
+                List<ArtArtistRel> rels = artistRelMap.getOrDefault(arts.getArtsNo(), List.of());
 
-                    String name = (fileEntity != null) ? fileEntity.getName() : null;
-                    String url =
-                        (fileEntity != null)
-                            ? fileStorageService.getFileUrl(fileEntity.getFilesNo())
-                            : null;
+                String name = (fileEntity != null) ? fileEntity.getName() : null;
+                String url =
+                    (fileEntity != null)
+                        ? fileStorageService.getFileUrl(fileEntity.getFilesNo())
+                        : null;
 
-                    return ArtsListResponseDto.of(arts, name, url, rels);
-                  })
-              .collect(
-                  Collectors.toMap(ArtsListResponseDto::artsNo, dto -> dto, (dto1, dto2) -> dto1))
-              .values()
-              .stream()
-              .toList();
-
-      return response;
+                return ArtsListResponseDto.of(arts, name, url, rels);
+              })
+          .toList();
 
     } catch (Exception e) {
       log.error("Error mapping arts to DTO list: {}", e.getMessage(), e);
