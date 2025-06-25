@@ -170,17 +170,27 @@ public class ArtsService {
     if (artsList.isEmpty()) return List.of();
 
     try {
-      // 1. 모든 artsNo, filesNo 추출
-      List<Long> artsNos = artsList.stream().map(Arts::getArtsNo).toList();
+      // 1. 중복 제거: artsNo 기준
+      Map<Long, Arts> distinctArtsMap =
+          artsList.stream()
+              .collect(
+                  Collectors.toMap(
+                      Arts::getArtsNo, a -> a, (a1, a2) -> a1 // 중복 발생 시 앞의 값 유지
+                      ));
+
+      List<Arts> distinctArtsList = new ArrayList<>(distinctArtsMap.values());
+
+      // 2. 모든 artsNo, filesNo 추출
+      List<Long> artsNos = distinctArtsList.stream().map(Arts::getArtsNo).toList();
 
       List<Long> fileNos =
-          artsList.stream()
+          distinctArtsList.stream()
               .map(Arts::getFile)
               .filter(Objects::nonNull)
               .map(Files::getFilesNo)
               .toList();
 
-      // 2. 파일, 작가 관계 미리 조회하여 Map으로 캐싱
+      // 3. 파일, 작가 관계 미리 조회하여 Map으로 캐싱
       Map<Long, Files> fileEntityMap =
           filesRepository.findAllById(fileNos).stream()
               .collect(Collectors.toMap(Files::getFilesNo, f -> f));
@@ -189,9 +199,9 @@ public class ArtsService {
           artArtistRelRepository.findWithArtistsByArtsNoIn(artsNos).stream()
               .collect(Collectors.groupingBy(rel -> rel.getArts().getArtsNo()));
 
-      // 3. 정렬 (작가 이름 가나다 순 기준)
+      // 4. 작가 이름 가나다 정렬
       List<Arts> sortedList =
-          artsList.stream()
+          distinctArtsList.stream()
               .sorted(
                   Comparator.comparing(
                       art ->
@@ -201,22 +211,24 @@ public class ArtsService {
                               .collect(Collectors.joining(", "))))
               .toList();
 
-      // 4. DTO 매핑
+      // 5. DTO 매핑
       return sortedList.stream()
           .map(
               arts -> {
-                Files fileEntity = fileEntityMap.get(arts.getFile().getFilesNo());
+                Files fileEntity =
+                    fileEntityMap.get(arts.getFile() != null ? arts.getFile().getFilesNo() : null);
                 List<ArtArtistRel> rels = artistRelMap.getOrDefault(arts.getArtsNo(), List.of());
 
                 String name = (fileEntity != null) ? fileEntity.getName() : null;
-                String url = null;
-                if (fileEntity != null) {
-                  // FileStorageService 인터페이스를 통해 getFileUrl을 호출
-                  url = fileStorageService.getFileUrl(fileEntity.getFilesNo());
-                }
+                String url =
+                    (fileEntity != null)
+                        ? fileStorageService.getFileUrl(fileEntity.getFilesNo())
+                        : null;
+
                 return ArtsListResponseDto.of(arts, name, url, rels);
               })
           .toList();
+
     } catch (Exception e) {
       log.error("Error mapping arts to DTO list: {}", e.getMessage(), e);
       throw new CustomException(ArtsExceptionType.ART_LOAD_FAILED);
