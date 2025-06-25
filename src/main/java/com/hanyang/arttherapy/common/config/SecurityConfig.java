@@ -44,6 +44,7 @@ public class SecurityConfig {
                         "/api/galleries/arts/**",
                         "/api/galleries/cohorts",
                         "/api/galleries/years",
+                        "/api/galleries/**",
                         "/api/files",
                         "/api/notices/**",
                         "/api/professors",

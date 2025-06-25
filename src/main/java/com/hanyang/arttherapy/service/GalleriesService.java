@@ -126,4 +126,17 @@ public class GalleriesService {
       throw new CustomException(GalleryExceptionType.GALLERY_DELETE_FAIL);
     }
   }
+
+  public GalleriesResponseDto getGalleryIntro(int year) {
+    LocalDate start = LocalDate.of(year, 1, 1);
+    LocalDate end = LocalDate.of(year, 12, 31);
+
+    List<Galleries> galleries = galleriesRepository.findByStartDateBetween(start, end);
+
+    if (galleries.isEmpty()) {
+      throw new CustomException(GalleryExceptionType.GALLERY_YEAR_NOT_FOUND);
+    }
+
+    return GalleriesResponseDto.from(galleries.get(0)); // 1년에 1번만 열리므로 첫 번째 꺼 사용
+  }
 }
