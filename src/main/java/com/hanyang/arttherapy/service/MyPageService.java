@@ -84,7 +84,9 @@ public class MyPageService {
 
     // role 변경
     Role updatedRole;
-    if (request.studentNo() != null && !request.studentNo().trim().isEmpty()) {
+    if (user.getRole() == Role.ADMIN || user.getRole() == Role.TESTER) {
+      updatedRole = user.getRole();
+    } else if (request.studentNo() != null && !request.studentNo().trim().isEmpty()) {
       updatedRole = Role.ARTIST;
     } else {
       updatedRole = Role.USER;
