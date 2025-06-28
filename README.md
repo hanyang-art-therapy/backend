@@ -99,7 +99,7 @@
 
 </p>
 
-<br></br>
+<br/>
 
 ## 👫 개발팀 소개
 
@@ -109,4 +109,8 @@
 |                                                            Front-end                                                             |                                                            Front-end                                                            |                                                             Front-end                                                              |                                                               Back-end                                                               |                                                              Back-end                                                               |                                                              Back-end                                                               |
 |                                                       관리자 <br />메인 홈                                                       |                                                      인증/인가<br />갤러리                                                      |                                                     작품 상세 <br /> 공지사항                                                      |                                                        갤러리 <br /> 공지사항                                                        |                                                      관리자 <br /> 마이페이지                                                       |                                                       인증/인가 <br /> CI/CD                                                        |
 
-<br /><br />
+<br/>
+
+## ✏ 피드백
+
+![사용자평가1](https://github.com/user-attachments/assets/31e4fa87-0ab7-4765-bb3a-c7edbf6d8708)
