@@ -145,7 +145,7 @@ public class ArtsService {
     int targetYear = (year != null) ? year : LocalDate.now().getYear();
     Galleries galleries = findGalleryByYear(targetYear);
     if (galleries == null) return List.of();
-    return artArtistRelRepository.findDistinctCohortsByGalleriesNo(galleries.getGalleriesNo());
+    return artArtistRelRepository.findDistinctCohortsByYear(targetYear);
   }
 
   // 연도에 해당하는 전시회 조회

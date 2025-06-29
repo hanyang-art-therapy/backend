@@ -26,14 +26,17 @@ public interface ArtArtistRelRepository extends JpaRepository<ArtArtistRel, Long
   // 관리자 작품
   void deleteByArts(Arts arts);
 
+  // 기수 목록 조회
   @Query(
       """
-  SELECT DISTINCT r.artists.cohort
-  FROM ArtArtistRel r
-  WHERE r.arts.galleries.galleriesNo = :galleriesNo
-  ORDER BY r.artists.cohort ASC
+    SELECT DISTINCT r.artists.cohort
+    FROM ArtArtistRel r
+    JOIN r.arts a
+    JOIN a.galleries g
+    WHERE FUNCTION('YEAR', g.startDate) = :year
+    ORDER BY r.artists.cohort ASC
 """)
-  List<Integer> findDistinctCohortsByGalleriesNo(@Param("galleriesNo") Long galleriesNo);
+  List<Integer> findDistinctCohortsByYear(@Param("year") int year);
 
   List<ArtArtistRel> findByArtists_ArtistNo(Long artistNo);
 
