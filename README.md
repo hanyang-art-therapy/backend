@@ -50,7 +50,8 @@
 
 <br />
 
-[기능 상세 설명 보기](https://solid-player-db7.notion.site/20c235cffd3f80ea9fc1f4146761c1db?source=copy_link)<br/>
+[기능 상세 설명 보기](https://solid-player-db7.notion.site/20c235cffd3f80ea9fc1f4146761c1db?source=copy_link)
+<br/><br/>
 
 ## 🛠️️ 사용기술 및 개발환경
 
