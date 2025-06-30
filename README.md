@@ -6,7 +6,7 @@
 
 <img src="https://github.com/user-attachments/assets/1fb7b4c6-724e-456c-afec-778ad0a3bf0c" width="" />
 
-<br /><br />
+<br />
 
 ## 📇 프로젝트 개요
 
