@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import com.hanyang.arttherapy.domain.Arts;
+import com.hanyang.arttherapy.domain.Galleries;
 
 public interface ArtsRepository extends JpaRepository<Arts, Long> {
 
@@ -66,4 +67,6 @@ public interface ArtsRepository extends JpaRepository<Arts, Long> {
   ORDER BY a.artsNo DESC
 """)
   List<Arts> findAllArtsWithCursor(@Param("lastId") Long lastId, Pageable pageable);
+
+  boolean existsByGalleries(Galleries galleries);
 }
