@@ -27,6 +27,7 @@
 <br />
 
 ## 🎨 프로젝트 역할분담
+[자세히 보기](https://solid-player-db7.notion.site/20c235cffd3f80ea9fc1f4146761c1db?source=copy_link)<br/>
 
 **문민아**
 - AWS 배포<br />
