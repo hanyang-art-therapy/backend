@@ -16,6 +16,7 @@ import com.hanyang.arttherapy.domain.Users;
 import com.hanyang.arttherapy.domain.enums.Role;
 import com.hanyang.arttherapy.dto.request.GalleriesRequestDto;
 import com.hanyang.arttherapy.dto.response.GalleriesResponseDto;
+import com.hanyang.arttherapy.repository.ArtsRepository;
 import com.hanyang.arttherapy.repository.GalleriesRepository;
 import com.hanyang.arttherapy.repository.UserRepository;
 
@@ -30,6 +31,7 @@ public class GalleriesService {
 
   private final GalleriesRepository galleriesRepository;
   private final UserRepository userRepository;
+  private final ArtsRepository artsRepository;
 
   public String save(GalleriesRequestDto dto, CustomUserDetail userDetail) {
     Users user =
@@ -117,10 +119,15 @@ public class GalleriesService {
             .findById(id)
             .orElseThrow(() -> new CustomException(GalleryExceptionType.GALLERY_NOT_FOUND));
 
+    // 1. 해당 전시회에 작품 연결 여부 체크
+    boolean hasArts = artsRepository.existsByGalleries(gallery);
+    if (hasArts) {
+      throw new CustomException(GalleryExceptionType.HAS_ARTS); // 409
+    }
+
     try {
       galleriesRepository.delete(gallery);
       return "전시회 삭제가 완료되었습니다.";
-
     } catch (Exception e) {
       log.error("전시회 삭제 실패: {}", e.getMessage());
       throw new CustomException(GalleryExceptionType.GALLERY_DELETE_FAIL);
