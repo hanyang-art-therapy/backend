@@ -50,7 +50,8 @@
 
 <br />
 
-[기능 상세 설명 보기](https://solid-player-db7.notion.site/20c235cffd3f80ea9fc1f4146761c1db?source=copy_link)
+[기능 상세 설명 보기](https://solid-player-db7.notion.site/20c235cffd3f80ea9fc1f4146761c1db?source=copy_link)<br/>
+[트러블 슈팅](https://www.notion.so/222235cffd3f805a82d6f5dc92ba3d67?v=222235cffd3f8091b706000c29cff509)
 <br/><br/>
 
 ## 🛠️️ 사용기술 및 개발환경
