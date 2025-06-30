@@ -10,9 +10,9 @@ public enum GalleryExceptionType implements ExceptionType {
   INVALID_GALLERY_DATE(HttpStatus.BAD_REQUEST, "전시회 날짜가 유효하지 않습니다."),
   UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "관리자 권한이 없습니다."),
   GALLERY_YEAR_NOT_FOUND(HttpStatus.NOT_FOUND, "해당년도에 개최된 전시회가 존재하지 않습니다."),
-  HAS_ARTS(HttpStatus.CONFLICT, "해당 전시회에 작품이 존재하여 전시회를 삭제할 수 없습니다."),
+  HAS_ARTS(HttpStatus.CONFLICT, "전시회에 작품이 존재하여 삭제할 수 없습니다."),
 
-  DUPLICATED_YEAR(HttpStatus.CONFLICT, "해당 전시회에 작품이 존재하여 전시회를 삭제할 수 없습니다.");
+  DUPLICATED_YEAR(HttpStatus.CONFLICT, "전시회에 작품이 존재하여 삭제할 수 없습니다.");
   private final HttpStatus status;
   private final String message;
 
