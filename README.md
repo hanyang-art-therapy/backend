@@ -51,7 +51,7 @@
 <br />
 
 🔗[기능 상세 설명 보기](https://solid-player-db7.notion.site/20c235cffd3f80ea9fc1f4146761c1db?source=copy_link)<br/>
-🔗[api 명세](https://www.notion.so/1f9235cffd3f80119182e44be79ad98e?v=1f9235cffd3f81798db0000ca7089a06)
+🔗[api 명세](https://www.notion.so/1f9235cffd3f80119182e44be79ad98e?v=1f9235cffd3f81798db0000ca7089a06)<br/>
 🔗[트러블 슈팅](https://www.notion.so/222235cffd3f805a82d6f5dc92ba3d67?v=222235cffd3f8091b706000c29cff509)
 <br/><br/>
 
